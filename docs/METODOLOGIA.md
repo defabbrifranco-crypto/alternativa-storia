@@ -1,61 +1,54 @@
 # Metodologia
 
-Questo documento descrive i criteri con cui il prototipo rappresenta lo scenario storico e dichiara cosa **non** è ancora verificato. Riferimento: issue #3.
+Questo documento descrive i criteri con cui sono trattati i dati storici del prototipo. **Copertura attuale: parziale.** Sono documentati i dati di popolazione e gli status politici al 1 gennaio 1960. Confini, regole di territorio e altri dati incorporati nell'HTML non sono ancora censiti (vedi "Lacune").
 
-## Stato del documento
+## Data di riferimento
 
-Bozza. Le sezioni marcate **[da verificare]** descrivono intenzioni o ipotesi, non fatti accertati sul codice o sui dati.
+Lo scenario parte il **1 gennaio 1960**. Ogni status politico va letto a quella data, non a fine anno. Un'indipendenza avvenuta dopo il 1 gennaio 1960 non vale per lo scenario: Cipro, per esempio, diventa indipendente il 16 agosto 1960 e al 1 gennaio 1960 è colonia britannica.
 
-## Natura del prototipo
+## Sovranità legale e controllo effettivo
 
-Il prototipo è dimostrativo. Dall'interfaccia del file `src/storia-alternativa-prototipo-map-overlay.html`: le conseguenze delle azioni sono generate da un modello linguistico, non da un motore a regole fisse. Le conseguenze narrate non sono quindi previsioni storiche e non hanno valore predittivo.
+Sono due attributi distinti.
 
-## Scenario fisso
+- **Sovranità legale**: a quale Stato appartiene giuridicamente un territorio.
+- **Controllo effettivo**: chi lo amministra o lo occupa di fatto.
 
-Lo scenario fisso dichiarato nell'interfaccia è "Europa, 1 gennaio 1960", con quattro categorie di appartenenza mostrate in legenda: NATO e alleati, Patto di Varsavia e blocco comunista, Non allineata, Colonie e protettorati.
+I due valori possono divergere (occupazioni, protettorati, territori contesi). Il dataset non li unifica. La rappresentazione grafica delle divergenze è tracciata nella issue #2.
 
-La data di riferimento è il **1 gennaio 1960**: ogni dato storico dello scenario fisso deve essere riferito a quella data, non a date precedenti o successive. **[da verificare nel dataset]**
+## Entità e perimetro
 
-## Concetti usati
+- Ogni record dichiara l'**entità** e, se serve, il **perimetro** (per esempio "Pakistan occidentale", "Intero Stato, inclusa la parte asiatica").
+- Le repubbliche sovietiche non hanno un dato proprio: il valore dell'URSS è riferito all'intera Unione.
+- Se più entità del file condividono un'unica entità sulla mappa (caso Yemen), i valori si **mostrano e non si sommano** (`aggregation: show_not_sum`).
+- Un valore il cui perimetro è incerto (Malaysia/Malaya, Giordania) porta un flag e non va confrontato con altri stati.
 
-L'interfaccia distingue per ogni territorio i campi **Proprietario**, **Controllore**, **Capoluogo**, **Popolazione 1960**, **Popolazione dello Stato**, **Infrastrutture**, **Stabilità locale**, **Importanza strategica**, **Unità presenti**.
+## Fonti e serie
 
-Criterio adottato (principio di progetto):
+- Le fonti sono registrate in `src/data/population_1960.json` (`meta.sources`) e descritte in `docs/FONTI.md`.
+- **Serie diverse non si sommano né si confrontano** senza verifica dei perimetri: Maddison, Statistics and Data e ONU hanno metodi diversi.
+- Una fonte secondaria (JetPunk) è tollerata solo come segnaposto e va sostituita con la fonte primaria (ONU, *World Population Prospects*).
 
-- **Proprietario**: chi detiene la sovranità legale sul territorio.
-- **Controllore**: chi esercita il controllo effettivo, che può differire dal proprietario in caso di occupazione.
-- Le repubbliche sovietiche sono trattate come suddivisioni dell'URSS e non come Stati sovrani. **[da verificare nel dataset]**
+## Livelli di affidabilità
 
-## Valori numerici
+| Livello | Significato |
+|---|---|
+| verificato | Controllato su fonte consultabile e citata in `FONTI.md` |
+| da verificare | Riportato dai file di origine, non ricontrollato |
+| stimato | Cifra dichiaratamente approssimata o arrotondata |
 
-I campi numerici (popolazione, infrastrutture, stabilità, importanza strategica, unità) non hanno per ora una fonte dichiarata. Finché non compare una fonte in `FONTI.md`, vanno considerati **stime di gioco** e non dati storici.
+Nel dataset il campo `verified` è `false` per tutti i record: nessun valore numerico è stato ricontrollato sulla fonte primaria.
 
-Gli indicatori di nazione (Stabilità, Economia, Esercito, Prestigio) partono da 50 nell'interfaccia e sono parametri di gioco, non misure storiche.
+## Correzioni di status
 
-## Casi dubbi da documentare
+Quando lo status di un CSV di origine è incompatibile con la data di riferimento, il dataset lo corregge e lo segnala con `status_origin: "revisione"`, un flag e una nota. L'elenco è in `docs/data-notes-population-1960.md`.
 
-Territori il cui status al 1 gennaio 1960 richiede una scheda con fonte e motivazione della scelta. L'elenco è provvisorio e non ancora confrontato con il dataset:
+## Lacune (non ancora documentate)
 
-- Siria e Egitto nella Repubblica Araba Unita. **[da verificare]**
-- Cipro. **[da verificare]**
-- Territori coloniali e protettorati. **[da verificare]**
+- Criteri di scelta dei confini e delle geometrie della mappa.
+- Fonti dei dati territoriali diversi dalla popolazione.
+- Regole di territorio e di diplomazia incorporate nell'HTML.
+- Status per le entità del primo CSV, che non forniva questa informazione.
 
-## Modifiche proposte dal modello linguistico
+## Aggiornamenti
 
-Le variazioni territoriali suggerite dall'AI devono essere validate prima dell'applicazione (vedi issue #2). **[da verificare nel codice]**
-
-## Criteri per le fonti
-
-Ordine di preferenza:
-
-1. Fonti primarie e statistiche ufficiali dell'epoca o censimenti nazionali.
-2. Opere storiografiche accademiche e atlanti storici.
-3. Enciclopedie e fonti secondarie, solo come supporto.
-
-Ogni voce in `FONTI.md` indica fonte, data di consultazione e livello di affidabilità.
-
-## Limiti noti
-
-- Nessun dato dello scenario è al momento collegato a una fonte.
-- Il censimento dei dati incorporati nel file non è stato fatto.
-- Il prototipo dichiara di ispirarsi al funzionamento di un altro gioco di storia alternativa; non ne riusa materiali documentati qui.
+Ogni modifica ai dati passa da una pull request. Una correzione di status o di valore indica nel messaggio di commit la fonte consultata.
