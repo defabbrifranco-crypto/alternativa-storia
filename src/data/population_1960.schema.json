@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Popolazione 1960",
+  "type": "object",
+  "required": ["meta", "records"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["reference_date", "global_warning", "sources"],
+      "properties": {
+        "reference_date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "global_warning": {"type": "string", "minLength": 1},
+        "sources": {"type": "object", "additionalProperties": {"type": "string"}}
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "entity", "map_id", "value", "source_id", "verified", "flags"],
+        "properties": {
+          "id": {"type": "string"},
+          "entity": {"type": "string"},
+          "map_id": {"type": ["string", "null"]},
+          "value": {"type": "integer", "minimum": 1},
+          "status_1960_01_01": {"type": ["string", "null"]},
+          "status_origin": {"enum": ["file", "revisione", null]},
+          "perimeter": {"type": ["string", "null"]},
+          "source_id": {"type": "string"},
+          "verified": {"type": "boolean"},
+          "aggregation": {"enum": ["show_not_sum"]},
+          "alternative_values": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["value", "source_id"],
+              "properties": {
+                "value": {"type": "integer", "minimum": 1},
+                "source_id": {"type": "string"},
+                "note": {"type": "string"}
+              }
+            }
+          },
+          "flags": {"type": "array", "items": {"type": "string"}},
+          "note": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}
