@@ -205,7 +205,7 @@ const { launch, check, summary } = require('./harness');
     T.addMarker({ tipo: 'base', nome: 'Base C', lat: 48.85, lon: 2.35, nota: 'Nota C' }, 'giocatore');
   }, ids);
   const doc1 = await ev(() => { const T = window.__t; return JSON.parse(JSON.stringify(T.buildSavePayload())); });
-  check('a save has the markers, the sequence number and nothing else new', doc1.markers.length === 3 && doc1.markerSeq === 3 && doc1.v === 3 && Object.keys(doc1).sort().join() === 'changes,game,markerSeq,markers,savedAt,selectedCountryId,v', Object.keys(doc1));
+  check('a save has the markers, the sequence number and nothing else new', doc1.markers.length === 3 && doc1.markerSeq === 3 && doc1.v === 3 && doc1.schemaVersion === 3 && Object.keys(doc1).sort().join() === 'changes,game,markerSeq,markers,savedAt,schemaVersion,selectedCountryId,v', Object.keys(doc1));
   const back = await ev(doc => {
     const T = window.__t;
     const before = JSON.stringify(T.markersForSave());

@@ -1,0 +1,17 @@
+{
+  "name": "alternativa-storia",
+  "version": "0.24.0",
+  "private": true,
+  "description": "Prototipo di gioco di storia alternativa con mappa interattiva",
+  "scripts": {
+    "test": "node --test && node tests/browser/run.js",
+    "test:data": "node --test",
+    "test:browser": "node tests/browser/run.js"
+  },
+  "devDependencies": {
+    "playwright": "1.56.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -16,6 +16,7 @@ const SUITES = [
   ['t8_labels.js', 'Etichette sulla mappa'],
   ['t10_markers.js', 'Segnaposto'],
   ['t11_engine.js', 'Motore: sovranità e controllo, sessioni, validazione dei salvataggi'],
+  ['t12_providers.js', 'Fuori da Claude: salvataggi nel browser, esporta/importa, modalità manuale'],
 ];
 if (process.argv.includes('--perf')) SUITES.push(['t6_perf.js', 'Prestazioni (soglie dipendenti dalla macchina)']);
 

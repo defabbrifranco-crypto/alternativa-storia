@@ -1,0 +1,32 @@
+name: Prove automatiche
+
+# Parte a ogni push e a ogni pull request: controlla i dati e prova la pagina
+# in un browser vero (Chromium), con le risposte dell'AI simulate.
+on:
+  push:
+  pull_request:
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Scarica il repository
+        uses: actions/checkout@v4
+
+      - name: Prepara Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Installa le dipendenze
+        run: npm install --no-audit --no-fund
+
+      - name: Installa il browser di prova (Chromium)
+        run: npx playwright install --with-deps chromium
+
+      - name: Prove sui dati
+        run: node --test
+
+      - name: Prove della pagina nel browser
+        run: node tests/browser/run.js

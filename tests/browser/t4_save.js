@@ -28,7 +28,7 @@ const { launch, check, summary } = require('./harness');
   await page.waitForTimeout(150);
   check('manual save confirmed', (await txt('#saveStatus')) === 'Partita salvata.', await txt('#saveStatus'));
   const doc = store['save/state'];
-  check('v3 document with exactly the one changed province', doc.v === 3 && JSON.stringify(Object.keys(doc.changes)) === JSON.stringify([geo.A]) && doc.changes[geo.A].owner === 'ITA', doc.changes);
+  check('v3 document with exactly the one changed province', doc.v === 3 && doc.schemaVersion === 3 && JSON.stringify(Object.keys(doc.changes)) === JSON.stringify([geo.A]) && doc.changes[geo.A].owner === 'ITA', doc.changes);
   check('document size is small', JSON.stringify(doc).length < 6000, JSON.stringify(doc).length);
   await browser.close();
 
@@ -124,5 +124,24 @@ const { launch, check, summary } = require('./harness');
   const j = await page.evaluate(() => ({ u: window.__t.provinces.URSS_01.owner, i1: window.__t.provinces.ITA_01.owner, i2: window.__t.provinces.ITA_02.owner }));
   check('valid entry applied, junk ignored, no crash', j.u === 'FIN' && j.i1 === 'ITA' && j.i2 === 'ITA' && errors.length === 0, [j, errors]);
   await browser.close();
+
+  console.log('— the version a save declares: schemaVersion (v24), else v (older saves)');
+  const fin = { URSS_01: { owner: 'FIN', controller: 'FIN' } };
+  const cases = [
+    ['schemaVersion only (no v)', { schemaVersion: 3, changes: fin, game: null }, 'FIN', 'Partita caricata.'],
+    ['v and schemaVersion agree', { v: 3, schemaVersion: 3, changes: fin, game: null }, 'FIN', 'Partita caricata.'],
+    ['an older save with v only', { v: 3, changes: fin, game: null }, 'FIN', 'Partita caricata.'],
+    ['schemaVersion wins over v: an unknown future version is refused', { v: 3, schemaVersion: 99, changes: fin, game: null }, 'URSS', 'Salvataggio non valido o versione non supportata.'],
+    ['schemaVersion 2 reads the old province table', { schemaVersion: 2, provinces: { FRA_MAIN: { owner: 'GBR', controller: 'GBR' } }, game: null }, 'URSS', 'Partita caricata.'],
+    ['an unknown v without schemaVersion is refused', { v: 99, changes: {}, game: null }, 'URSS', 'Salvataggio non valido o versione non supportata.'],
+  ];
+  for (const [name, saved, expectOwner, expectStatus] of cases) {
+    ({ browser, page, errors } = await launch({ width: 640, height: 1100, mobile: false, store: { 'save/state': saved } }));
+    await page.click('#loadGameBtn');
+    await page.waitForTimeout(150);
+    const r = await page.evaluate(() => ({ owner: window.__t.provinces.URSS_01.owner, status: document.getElementById('saveStatus').textContent, fra: window.__t.provinces.FRA_01 ? window.__t.provinces.FRA_01.owner : null }));
+    check(name, r.owner === expectOwner && r.status === expectStatus && errors.length === 0, [r, errors]);
+    await browser.close();
+  }
   process.exit(summary() ? 1 : 0);
 })();
