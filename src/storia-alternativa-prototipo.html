@@ -171,6 +171,32 @@
   .dlg-row button, .dlg-actions button { flex:1 1 140px; }
   .dlg-msg { min-height:1.3em; margin:2px 0 8px; }
   .dlg-msg.err { color:var(--accent); font-weight:bold; }
+  /* modes: game / scenario editor (the editing controls exist only in the editor) */
+  .mode-bar { margin:0 0 10px; }
+  .mode-switch { display:flex; gap:6px; }
+  .mode-btn { flex:1 1 0; min-width:0; padding:9px 8px; border:1px solid var(--border); background:var(--panel); color:var(--muted);
+    border-radius:8px; cursor:pointer; font:inherit; font-size:.85rem; }
+  .mode-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .mode-btn[aria-disabled="true"] { opacity:.55; cursor:default; }
+  .mode-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  #modeNote { margin:6px 0 0; }
+  .editor-only { display:none; }
+  body.editing .editor-only { display:block; }
+  body.editing .game-only { display:none; }
+  body.editing .map-wrap { outline:2px dashed var(--accent); outline-offset:3px; }
+  #editorTools { margin-top:0; }
+  #editorSummary { margin:6px 0 0; }
+  #editorTools .ghost { margin-top:6px; }
+  #editorResetBtn.armed { border-color:var(--accent); color:var(--accent); font-weight:bold; }
+  /* fixed legend: owner and controller */
+  .legend-own { margin-bottom:4px; }
+  .sw { display:inline-block; width:18px; height:10px; border:1px solid var(--border); border-radius:2px; margin-right:5px; vertical-align:-1px; }
+  .sw-solid { background:#4a78a8; }
+  .sw-occ { background:repeating-linear-gradient(45deg, #b5543a 0 3.8px, rgba(255,255,255,.55) 3.8px 4.7px, #4a78a8 4.7px 8px); }
+  .occ-item { display:flex; flex-direction:column; align-items:flex-start; gap:1px; text-align:left; width:100%; font:inherit; font-size:.85rem;
+    padding:6px 4px; border:0; border-bottom:1px dashed var(--border); background:transparent; color:var(--ink); cursor:pointer; }
+  .occ-item .mk-sub { color:var(--muted); font-size:.72rem; }
+  .occ-item:hover { background:var(--user-msg); }
 </style>
 </head>
 <body>
@@ -180,7 +206,7 @@
     <div class="panel">
       <h1>🗺️ Storia Alternativa</h1>
       <p class="sub">Prototipo ispirato al funzionamento di Pax Historia: scegli lo scenario fisso della Guerra Fredda o crea un tuo scenario libero.</p>
-      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 24</p>
+      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 25</p>
     </div>
 
     <div class="panel hidden" id="resumeBanner">
@@ -194,6 +220,17 @@
     <div class="panel" id="fixedScenarioPanel">
       <h2 class="section-title">Scenario fisso — Europa, 31 dicembre 1960</h2>
       <p class="sub">Tocca un territorio sulla mappa, o cercalo per nome, per vederne i dettagli, oppure scegli uno Stato come nazione giocabile.</p>
+      <div class="mode-bar" id="modeBar">
+        <div class="mode-switch" role="group" aria-label="Modalità della mappa">
+          <button type="button" class="mode-btn active" id="modeGameBtn" aria-pressed="true">🎮 Gioco</button>
+          <button type="button" class="mode-btn" id="modeEditBtn" aria-pressed="false" aria-disabled="false">✏️ Editor scenario</button>
+        </div>
+        <p class="pp-note" id="modeNote" role="status" aria-live="polite"></p>
+        <div class="editor-only" id="editorTools">
+          <p class="pp-note" id="editorSummary"></p>
+          <button type="button" class="ghost" id="editorResetBtn">Ripristina lo scenario di partenza</button>
+        </div>
+      </div>
       <div class="legend">
         <span><i class="dot nato"></i>NATO e alleati</span>
         <span><i class="dot patto"></i>Patto di Varsavia e blocco comunista</span>
@@ -201,6 +238,16 @@
         <span><i class="dot colonia"></i>Colonie e protettorati</span>
         <span><i class="dot nd"></i>Alleanza da verificare</span>
       </div>
+      <div class="legend legend-own" id="ownLegend" role="group" aria-label="Proprietà e controllo">
+        <span><i class="sw sw-solid" aria-hidden="true"></i><b>Colore pieno</b>: il proprietario controlla il territorio</span>
+        <span><i class="sw sw-occ" aria-hidden="true"></i><b>Righe diagonali</b>: territorio occupato (fondo: proprietario, righe: chi lo controlla)</span>
+      </div>
+      <details class="pp-det" id="ownHelp">
+        <summary>Proprietario e controllore: che differenza c'è?</summary>
+        <p><b>Proprietario</b> (sovranità): lo Stato a cui il territorio appartiene di diritto. È il colore di fondo sulla mappa.</p>
+        <p><b>Controllore</b>: lo Stato che lo tiene di fatto, con truppe e amministrazione. Di solito è lo stesso del proprietario; se il territorio è occupato il proprietario resta quello di prima, cambia il controllore e sulla mappa compaiono le righe.</p>
+        <p>La partita finisce quando il tuo paese non controlla più nessun territorio, anche se ne resta il proprietario.</p>
+      </details>
       <div class="search-wrap">
         <input id="terrSearch" type="search" placeholder="🔍 Cerca uno Stato o una regione" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search" role="combobox" aria-label="Cerca uno Stato o una regione" aria-autocomplete="list" aria-expanded="false" aria-controls="terrResults">
         <div class="search-results hidden" id="terrResults" role="listbox"></div>
@@ -220,11 +267,14 @@
       <details class="pp-det marker-box" id="markerBox">
         <summary id="markerSummary">Segnaposto sulla mappa (0)</summary>
         <label class="mk-toggle"><input type="checkbox" id="markerShow" checked> Mostra i segnaposto sulla mappa</label>
-        <p class="pp-note" id="markerEmpty">Non ce ne sono ancora: li aggiunge il motore di gioco quando la storia lo richiede (centrali, truppe, ribelli, battaglie…). Puoi provarli dalla scheda di una provincia.</p>
+        <p class="pp-note" id="markerEmpty">Non ce ne sono ancora: li aggiunge il motore di gioco quando la storia lo richiede (centrali, truppe, ribelli, battaglie…). Puoi aggiungerne a mano con l'Editor scenario, dalla scheda di una provincia.</p>
         <div class="mk-list" id="markerList"></div>
         <details class="pp-det" id="markerLegendBox"><summary>Legenda dei simboli</summary><div class="mk-legend" id="markerLegend"></div></details>
       </details>
-      <p class="pp-note hidden" id="occNote">Righe diagonali: territorio occupato (colore del proprietario, righe del paese che lo controlla).</p>
+      <details class="pp-det hidden" id="occNote">
+        <summary id="occSummary">Territori occupati (0)</summary>
+        <div class="mk-list" id="occList"></div>
+      </details>
       <p class="sub" id="playingAs" style="margin-top:8px;">Nessuna nazione selezionata.</p>
 
       <div class="panel hidden" id="provincePanel" style="margin-top:10px;">
@@ -246,20 +296,21 @@
         <details class="pp-det hidden" id="pp-det"><summary>Note sulla suddivisione</summary><div id="pp-detbody"></div></details>
         <button class="primary hidden" id="pp-playBtn" style="margin-top:10px; width:100%;">Gioca come...</button>
 
-        <div class="demo-box">
-          <label for="pp-transferSelect">Demo: passa questa provincia a</label>
+        <div class="demo-box editor-only">
+          <label for="pp-transferSelect">Editor: passa questa provincia a</label>
           <select id="pp-transferSelect"></select>
           <button class="ghost" id="pp-transferBtn">Cedi sovranità e controllo</button>
           <button class="ghost" id="pp-controlBtn">Solo controllo (occupazione)</button>
         </div>
 
-        <div class="demo-box">
-          <label for="pp-markerType">Prova: aggiungi un segnaposto in questa provincia</label>
+        <div class="demo-box editor-only">
+          <label for="pp-markerType">Editor: aggiungi un segnaposto in questa provincia</label>
           <select id="pp-markerType"></select>
           <input id="pp-markerName" type="text" maxlength="40" placeholder="Nome (facoltativo)" autocomplete="off">
           <button class="ghost" id="pp-markerBtn" type="button">Aggiungi segnaposto</button>
           <p class="pp-note" id="pp-markerMsg"></p>
         </div>
+        <p class="pp-note game-only" id="pp-lockNote"></p>
       </div>
 
       <div class="panel hidden" id="markerPanel" style="margin-top:10px;">
@@ -286,7 +337,7 @@
         </div>
       </div>
 
-      <div class="save-row">
+      <div class="save-row game-only">
         <button class="ghost small" id="saveGameBtn">💾 Salva partita</button>
         <button class="ghost small" id="loadGameBtn">📂 Carica partita</button>
       </div>
@@ -295,7 +346,7 @@
         <button class="ghost small" id="importBtn" type="button">📥 Importa</button>
       </div>
       <p class="footnote" id="saveStatus"></p>
-      <p class="footnote" id="saveWhere"></p>
+      <p class="footnote game-only" id="saveWhere"></p>
     </div>
 
     <p class="divider" id="scenarioDivider">— oppure —</p>
@@ -417,8 +468,8 @@
   <div class="dlg-body">
     <h2 class="section-title" id="transferTitle">Esporta il salvataggio</h2>
     <div id="transferExport">
-      <p class="sub">Questo testo contiene tutta la partita. Conservalo in un file o in un appunto: per riprenderla basta incollarlo con «Importa».</p>
-      <label for="transferOut">Salvataggio (testo)</label>
+      <p class="sub" id="transferHelp">Questo testo contiene tutta la partita. Conservalo in un file o in un appunto: per riprenderla basta incollarlo con «Importa».</p>
+      <label for="transferOut" id="transferOutLabel">Salvataggio (testo)</label>
       <textarea id="transferOut" rows="7" readonly></textarea>
       <div class="dlg-row">
         <button class="ghost" id="transferCopy" type="button">Copia</button>
@@ -427,7 +478,7 @@
       <p class="pp-note" id="transferDownloadHint"></p>
     </div>
     <div id="transferImport" class="hidden">
-      <p class="sub">Scegli il file di un salvataggio esportato, oppure incolla il suo testo.</p>
+      <p class="sub">Scegli il file di un salvataggio o di uno scenario esportato, oppure incolla il suo testo.</p>
       <label for="transferFile">File di salvataggio</label>
       <input id="transferFile" type="file" accept=".json,application/json,text/plain">
       <label for="transferIn">Oppure incolla qui il testo</label>
@@ -4254,6 +4305,9 @@ window.MAP_SVG = {
   let mapGameStarted = false;   // true once a nation was picked on the map and the game is running
   let gameMode = null;          // null | 'fixed' (map scenario) | 'free'
   let gameOver = false;
+  let editorMode = false;       // scenario editor on: the map can be changed by hand (never while a game runs)
+  let modeUiReady = false;      // the mode bar is drawn once the page is fully built
+  let occSig = '';              // what the list of occupied territories shows now
 
   // Snapshot of the starting (31 Dec 1960) territorial state, used by "Nuova partita".
   const initialTerritory = {};
@@ -4766,11 +4820,11 @@ window.MAP_SVG = {
       pr.appendChild(b);
     } else pr.textContent = 'in mare';
     el('mp-year').textContent = m.anno || '—';
-    el('mp-origin').textContent = m.origine === 'giocatore' ? 'Aggiunto da te (prova)' : 'Motore di gioco';
+    el('mp-origin').textContent = m.origine === 'giocatore' ? 'Aggiunto da te (Editor)' : 'Motore di gioco';
     el('mp-note').textContent = m.nota || '';
     el('mp-note').classList.toggle('hidden', !m.nota);
     el('mp-disc').textContent = m.origine === 'giocatore'
-      ? 'Segnaposto di prova: non fa parte della storia generata dal motore.'
+      ? "Segnaposto dell'Editor: fa parte dello scenario, non della storia generata dal motore."
       : 'Generato dal motore di gioco: fa parte della storia alternativa, non è un dato storico verificato.';
     el('mp-focus').onclick = () => focusMarker(m.id);
     el('mp-remove').onclick = () => { removeMarker(m.id); if (gameMode) autoSave(); };
@@ -4815,6 +4869,7 @@ window.MAP_SVG = {
       const t = document.createElement('span'); t.textContent = MARKER_TYPES[k].label;
       d.appendChild(t); lg.appendChild(d);
     });
+    updateModeUI();
   }
   el('markerShow').onchange = () => { markersVisible = el('markerShow').checked; updateLabels(); };
   el('mp-close').onclick = closeMarkerPanel;
@@ -5071,11 +5126,12 @@ window.MAP_SVG = {
   function renderMapColors() {
     const mine = selectedCountryId ? new Set(getCountryProvinces(selectedCountryId)) : new Set();
     let occupied = 0;
+    const occIds = [];
     for (const id in provinceEls) {
       const prov = provinces[id];
       const c = countries[prov.owner];
       const occ = prov.controller !== prov.owner && own(countries, prov.controller) && !!c;
-      if (occ) occupied++;
+      if (occ) { occupied++; occIds.push(id); }
       const col = occ ? occupationFill(prov.owner, prov.controller) : (c ? c.color : '#999');
       const isMine = mine.has(id);
       const pc = paintCache[id] || (paintCache[id] = {});
@@ -5083,7 +5139,34 @@ window.MAP_SVG = {
       if (pc.mine !== isMine) { pc.mine = isMine; provinceEls[id].forEach(e => e.classList.toggle('mine', isMine)); }
     }
     el('occNote').classList.toggle('hidden', occupied === 0);
+    renderOccupations(occIds);
+    updateModeUI();
     drawSelection();
+  }
+  // The occupied territories as text (the stripes alone are not enough for everyone): tap one to open it.
+  function renderOccupations(ids) {
+    const sig = ids.map(id => id + ':' + provinces[id].owner + ':' + provinces[id].controller).join('|');
+    if (sig === occSig) return;
+    occSig = sig;
+    el('occSummary').textContent = `Territori occupati (${ids.length})`;
+    const box = el('occList');
+    box.innerHTML = '';
+    ids.slice().sort((a, b) => provName(a).localeCompare(provName(b), 'it')).slice(0, 60).forEach(id => {
+      const p = provinces[id];
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'occ-item';
+      const n = document.createElement('span'); n.textContent = provName(id);
+      const s = document.createElement('span'); s.className = 'mk-sub';
+      s.textContent = `Proprietario: ${countries[p.owner].name} · controllo: ${countries[p.controller].name}`;
+      b.append(n, s);
+      b.onclick = () => { selectProvince(id); focusProvince(id); };
+      box.appendChild(b);
+    });
+    if (ids.length > 60) {
+      const m = document.createElement('p');
+      m.className = 'pp-note'; m.textContent = `…e altri ${ids.length - 60}`;
+      box.appendChild(m);
+    }
   }
   // Outline of the province whose panel is open (two strokes, dark under light, so it reads on any colour).
   function drawSelection() {
@@ -5227,7 +5310,7 @@ window.MAP_SVG = {
     el('pp-detbody').innerHTML = notes.join('');
 
     const playBtn = el('pp-playBtn');
-    if (c && c.playable && !mapGameStarted) {
+    if (c && c.playable && !mapGameStarted && !editorMode) {
       playBtn.classList.remove('hidden');
       playBtn.textContent = 'Gioca come ' + c.name;
       playBtn.onclick = () => startFixedScenarioGame(p.owner);
@@ -5247,15 +5330,15 @@ window.MAP_SVG = {
       // A full transfer changes both legal ownership (drives map color,
       // per spec) and de-facto control together. The target is read first:
       // changing the owner reopens this panel, which rebuilds the select.
+      if (!editorMode) return;                      // manual changes belong to the editor
       const target = sel.value;
       transferProvince(id, target);
-      if (gameMode) { checkGameOver(); autoSave(); }
     };
     // control alone: the province stays its owner's, another state holds it (stripes on the map)
     el('pp-controlBtn').onclick = () => {
+      if (!editorMode) return;
       const target = sel.value;
       changeProvinceController(id, target);
-      if (gameMode) { checkGameOver(); autoSave(); }
     };
 
     // a test marker in this province (the engine adds the real ones)
@@ -5267,9 +5350,10 @@ window.MAP_SVG = {
     });
     el('pp-markerMsg').textContent = '';
     el('pp-markerBtn').onclick = () => {
+      if (!editorMode) return;
       const r = addMarker({ tipo: mt.value, nome: el('pp-markerName').value, provincia: id }, 'giocatore');
       el('pp-markerMsg').textContent = r.ok ? `Aggiunto: ${MARKER_TYPES[r.m.tipo].label} «${r.m.nome}».` : (r.silent ? 'Esiste già un segnaposto uguale.' : 'Non aggiunto: ' + r.why + '.');
-      if (r.ok) { el('pp-markerName').value = ''; if (gameMode) autoSave(); }
+      if (r.ok) el('pp-markerName').value = '';
     };
 
     el('provincePanel').classList.remove('hidden');
@@ -5696,15 +5780,22 @@ window.MAP_SVG = {
 
   // ---- export / import of a save (text or file) -------------------------------------
   const transferDlg = el('transferDialog');
+  let transferFilename = 'storia-alternativa-salvataggio.json';
   function transferNote(text, isErr) { const m = el('transferMsg'); m.classList.toggle('err', !!isErr); m.textContent = text; }
   function openTransfer(mode) {
     const exp = mode === 'export';
-    el('transferTitle').textContent = exp ? 'Esporta il salvataggio' : 'Importa un salvataggio';
+    const scen = !gameMode;                       // no game running: what is exported is the scenario (map and markers)
+    el('transferTitle').textContent = exp ? (scen ? 'Esporta lo scenario' : 'Esporta il salvataggio') : 'Importa un salvataggio';
     el('transferExport').classList.toggle('hidden', !exp);
     el('transferImport').classList.toggle('hidden', exp);
     transferNote('', false);
     if (exp) {
       el('transferOut').value = JSON.stringify(buildSavePayload());
+      el('transferHelp').textContent = scen
+        ? 'Questo testo contiene lo scenario: la mappa e i segnaposto, senza partita. Conservalo in un file o in un appunto: per riaverlo basta incollarlo con «Importa».'
+        : 'Questo testo contiene tutta la partita. Conservalo in un file o in un appunto: per riprenderla basta incollarlo con «Importa».';
+      el('transferOutLabel').textContent = scen ? 'Scenario (testo)' : 'Salvataggio (testo)';
+      transferFilename = scen ? 'storia-alternativa-scenario.json' : 'storia-alternativa-salvataggio.json';
       // Inside Claude's viewer a page cannot download by itself: it can only through the downloads capability.
       const canDownload = storageKind !== 'claude' || !!claudeDownloads;
       el('transferDownload').classList.toggle('hidden', !canDownload);
@@ -5720,17 +5811,17 @@ window.MAP_SVG = {
   el('exportBtn').onclick = () => openTransfer('export');
   el('importBtn').onclick = () => openTransfer('import');
   el('transferClose').onclick = () => { if (transferDlg.open) transferDlg.close(); };
-  el('transferCopy').onclick = () => copyText(el('transferOut'), el('transferMsg'), 'Salvataggio copiato.');
+  el('transferCopy').onclick = () => copyText(el('transferOut'), el('transferMsg'), gameMode ? 'Salvataggio copiato.' : 'Scenario copiato.');
   el('transferDownload').onclick = async () => {
     if (claudeDownloads) {                         // inside Claude: the viewer is asked, and may say no
-      try { await claudeDownloads.save({ filename: 'storia-alternativa-salvataggio.json', data: el('transferOut').value }); transferNote('Salvataggio scaricato.', false); }
+      try { await claudeDownloads.save({ filename: transferFilename, data: el('transferOut').value }); transferNote(gameMode ? 'Salvataggio scaricato.' : 'Scenario scaricato.', false); }
       catch (e) { const no = !!e && e.code === 'declined'; transferNote(no ? 'Download annullato.' : 'Download non riuscito: usa «Copia».', !no); }
       return;
     }
     try {
       const url = URL.createObjectURL(new Blob([el('transferOut').value], { type: 'application/json' }));
       const a = document.createElement('a');
-      a.href = url; a.download = 'storia-alternativa-salvataggio.json';
+      a.href = url; a.download = transferFilename;
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 2000);
       transferNote('Download avviato. Se non parte, usa «Copia».', false);
@@ -5749,9 +5840,9 @@ window.MAP_SVG = {
     let data;
     try { data = JSON.parse(el('transferIn').value.trim()); }
     catch (e) { transferNote('Il testo non è un salvataggio leggibile: controlla di averlo copiato tutto.', true); return; }
-    if (!applySave(data)) { transferNote('Questo non è un salvataggio valido, o è di una versione che non conosco.', true); return; }
-    el('saveStatus').textContent = 'Salvataggio importato.';
-    await writeSave();
+    if (!applySave(data)) { transferNote(loadRefusal || 'Questo non è un salvataggio valido, o è di una versione che non conosco.', true); return; }
+    el('saveStatus').textContent = gameMode ? 'Salvataggio importato.' : "Scenario importato: scegli una nazione per giocarlo o passa all'Editor per modificarlo.";
+    if (gameMode) await writeSave();            // a game becomes the saved game; a scenario never overwrites it
     if (transferDlg.open) transferDlg.close();
   };
 
@@ -5829,6 +5920,89 @@ window.MAP_SVG = {
     el('diploStartBtn').disabled = !enabled; el('diploSendBtn').disabled = !enabled;
   }
 
+  /* ---- modes: game / scenario editor ---------------------------------------------------------
+     In the editor the map is changed by hand (ownership, control, markers) while no game runs; the result is a
+     scenario (a save without a game), kept as a file with «Esporta». During a game the territory changes only
+     through the rules and the events of the story (the engine's changes, each one checked): the manual controls
+     are not there, and the editor cannot be switched on.                                                       */
+  function scenarioEdits() {                    // provinces that differ from the 31 December 1960 start
+    let n = 0;
+    for (const id in provinces) {
+      const p = provinces[id], i0 = initialTerritory[id];
+      if (!i0 || p.owner !== i0.owner || p.controller !== i0.controller) n++;
+    }
+    return n;
+  }
+  function setTextIf(id, text) { const n = el(id); if (n.textContent !== text) n.textContent = text; }
+  function modeNoteText() {
+    if (editorMode) return "Editor scenario: nessuna partita in corso. Tocca una provincia per cederla a un altro Stato o per aggiungervi un segnaposto. Le modifiche non si salvano da sole: «Esporta» ne fa un file. Per giocare torna a «Gioco».";
+    if (gameMode) return "Partita in corso: i territori cambiano solo per le regole e gli eventi della storia. Per modificare lo scenario a mano esci prima con «Nuova partita».";
+    return scenarioEdits() || markers.length
+      ? "Gioco: la mappa è stata modificata nell'Editor e la partita partirà da questo scenario. Tocca un territorio e scegli «Gioca come…»."
+      : "Gioco: tocca un territorio e scegli «Gioca come…». Per cambiare a mano la mappa usa l'Editor scenario.";
+  }
+  function updateModeUI() {
+    if (!modeUiReady) return;
+    if (gameMode) editorMode = false;           // never both
+    document.body.classList.toggle('editing', editorMode);
+    for (const [id, on] of [['modeGameBtn', !editorMode], ['modeEditBtn', editorMode]]) {
+      el(id).classList.toggle('active', on);
+      el(id).setAttribute('aria-pressed', String(on));
+    }
+    el('modeEditBtn').setAttribute('aria-disabled', String(!!gameMode));
+    setTextIf('modeNote', modeNoteText());
+    if (editorMode) {
+      const n = scenarioEdits(), m = markers.length;
+      setTextIf('editorSummary', n || m
+        ? `Modifiche rispetto al 31 dicembre 1960: ${n === 1 ? '1 provincia' : n + ' province'}, ${m === 1 ? '1 segnaposto' : m + ' segnaposto'}.`
+        : 'Nessuna modifica rispetto al 31 dicembre 1960.');
+    }
+    setTextIf('pp-lockNote', gameMode ? 'Durante la partita i territori cambiano solo per le regole e gli eventi della storia.' : 'Per cambiare i territori a mano usa «Editor scenario».');
+  }
+  function setEditorMode(on) {
+    if (on && gameMode) {                       // refused, and the note says why
+      el('modeNote').textContent = "L'Editor non è disponibile durante una partita. Per usarlo esci prima con «Nuova partita».";
+      return false;
+    }
+    editorMode = !!on;
+    disarmReset();
+    updateModeUI();
+    if (selectedProvinceId) openProvincePanel(selectedProvinceId);     // the play button and the editing controls follow the mode
+    return true;
+  }
+  el('modeGameBtn').onclick = () => setEditorMode(false);
+  el('modeEditBtn').onclick = () => setEditorMode(true);
+  // Back to the 31 December 1960 start (map and markers). Two presses: confirm() does not exist in every viewer.
+  let resetArmTimer = null;
+  function disarmReset() {
+    clearTimeout(resetArmTimer); resetArmTimer = null;
+    const b = el('editorResetBtn');
+    b.classList.remove('armed');
+    b.textContent = 'Ripristina lo scenario di partenza';
+  }
+  function restoreStartingScenario() {
+    for (const id in initialTerritory) {
+      provinces[id].owner = initialTerritory[id].owner;
+      provinces[id].controller = initialTerritory[id].controller;
+    }
+    clearMarkers();
+    renderMapColors();
+    if (selectedProvinceId) openProvincePanel(selectedProvinceId);
+    el('saveStatus').textContent = 'Scenario di partenza ripristinato.';
+  }
+  el('editorResetBtn').onclick = () => {
+    if (!editorMode || gameMode) return;
+    if (!resetArmTimer) {
+      const b = el('editorResetBtn');
+      b.classList.add('armed');
+      b.textContent = 'Premi ancora per confermare: le modifiche vanno perse';
+      resetArmTimer = setTimeout(disarmReset, 6000);
+      return;
+    }
+    disarmReset();
+    restoreStartingScenario();
+  };
+
   // Shows the game screen for a mode. Does not touch the model state.
   function showGameUI(mode) {
     gameMode = mode;
@@ -5836,6 +6010,7 @@ window.MAP_SVG = {
     el('yearLabel').textContent = state.year;
     renderStats();
     gameEl.classList.remove('hidden');
+    updateModeUI();                                     // a game is running: the editor is off
     el('resumeBanner').classList.add('hidden');
     if (mode === 'fixed') {
       setupEl.classList.remove('hidden');               // the map stays on the page
@@ -6317,7 +6492,9 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
     return out;
   }
   // Whatever goes wrong inside, the answer is the same clear message and the page keeps working.
+  let loadRefusal = '';                         // why the last load was refused, when it was refused on purpose
   function applySave(data) {
+    loadRefusal = '';
     try { return applySaveRaw(data); }
     catch (e) { el('saveStatus').textContent = 'Salvataggio non valido o versione non supportata.'; return false; }
   }
@@ -6329,9 +6506,14 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
       return false;
     }
     const g = data.game ? cleanSavedGame(data.game) : null;       // checked before anything is applied
+    if (!g && gameMode) {                       // a scenario cannot replace the map under a game that is running
+      loadRefusal = 'Una partita è in corso: per caricare uno scenario esci prima con «Nuova partita».';
+      el('saveStatus').textContent = loadRefusal;
+      return false;
+    }
     const lost = applyTerritorySave(data);
     applyMarkersSave(data);
-    if (!g) {                                   // territory-only save
+    if (!g) {                                   // a scenario: the map and the markers, no game
       if (own(countries, data.selectedCountryId)) selectCountry(data.selectedCountryId);
       renderMapColors();
       return true;
@@ -6379,7 +6561,12 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
     el('saveStatus').textContent = 'Partita caricata.';
     return true;
   }
-  el('saveGameBtn').onclick = saveGame;
+  // «Salva partita» saves the game that is running. Without one there is nothing to save: a scenario goes to a file
+  // («Esporta»), and a game saved earlier is never overwritten by a map without a game.
+  el('saveGameBtn').onclick = () => {
+    if (!gameMode) { el('saveStatus').textContent = 'Nessuna partita in corso da salvare. Per conservare uno scenario usa «Esporta».'; return; }
+    saveGame();
+  };
   el('loadGameBtn').onclick = loadGame;
 
   // Offer to continue a saved game when the page opens (and after "Nuova partita").
@@ -6393,6 +6580,8 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
   }
   el('resumeBtn').onclick = () => { if (savedSnapshot) applySave(savedSnapshot); };
   el('resumeDismissBtn').onclick = () => el('resumeBanner').classList.add('hidden');
+  modeUiReady = true;
+  updateModeUI();
   refreshResumeBanner();
 })();
 </script>

@@ -30,6 +30,8 @@ function instrument(html) {
     applyControlChanges: typeof applyControlChanges === 'undefined' ? null : applyControlChanges, getGameOver: () => gameOver, checkGameOver, getControlledProvinces: typeof getControlledProvinces === 'undefined' ? null : getControlledProvinces, renderMapColors, refreshResumeBanner });
   if (typeof storageKind !== 'undefined') Object.assign(window.__t, { getStorageKind: () => storageKind, aiViaClaude, getManualForced: () => manualForced,
     parseManualJson, promptText, openTransfer, cancelManual, saveVersion, askManual });
+  if (typeof editorMode !== 'undefined') Object.assign(window.__t, { getEditorMode: () => editorMode, setEditorMode, updateModeUI, scenarioEdits,
+    restoreStartingScenario, transferProvince, renderOccupations });
 })();`;
   return html.replace(tail, hook);
 }

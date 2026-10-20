@@ -35,10 +35,12 @@ Fuori da Claude i pulsanti **Salva partita** e **Carica partita**, il salvataggi
 - si perde se cancelli i dati del sito; alcuni browser (soprattutto Safari) possono cancellare i dati dei siti che non apri da tempo;
 - per le partite a cui tieni, o per spostarle su un altro dispositivo, usa **Esporta** e **Importa**.
 
+Questi pulsanti riguardano la **partita in corso**: senza una partita, «Salva partita» lo dice e non scrive nulla (così non può sovrascrivere una partita salvata prima). Uno scenario preparato con l'**Editor scenario** non si salva qui: si conserva come file con **Esporta** (vedi [EDITOR-SCENARIO.md](EDITOR-SCENARIO.md)).
+
 ## Esportare e importare una partita
 
-- **Esporta** mostra tutta la partita come testo. Puoi **Copiarlo** (per esempio in un appunto o in una chat con te stesso) oppure **Scaricare il file** `storia-alternativa-salvataggio.json`. Se il download non parte (alcune viste lo bloccano) usa «Copia».
-- **Importa** chiede di scegliere un file di salvataggio o di incollarne il testo, poi **Carica**. Se il testo non è un salvataggio leggibile, o è di una versione che la pagina non conosce, lo dice e non cambia nulla.
+- **Esporta** mostra tutta la partita come testo (se nessuna partita è in corso, mostra lo **scenario**: la mappa e i segnaposto). Puoi **Copiarlo** (per esempio in un appunto o in una chat con te stesso) oppure **Scaricare il file** `storia-alternativa-salvataggio.json` (`storia-alternativa-scenario.json` per uno scenario). Se il download non parte (alcune viste lo bloccano) usa «Copia».
+- **Importa** chiede di scegliere un file di salvataggio o di scenario, o di incollarne il testo, poi **Carica**. Uno scenario non si può importare mentre una partita è in corso (la pagina lo dice e non cambia nulla); una partita importata prende il posto di quella salvata. Se il testo non è un salvataggio leggibile, o è di una versione che la pagina non conosce, lo dice e non cambia nulla.
 - Un salvataggio importato viene sempre controllato: le parti malformate sono scartate, e i testi con codice HTML o script sono mostrati come testo, senza eseguirli. Per sicurezza importa solo salvataggi di cui ti fidi.
 - I salvataggi dichiarano la propria versione (`schemaVersion`). Quelli delle versioni precedenti si caricano ancora; quelli troppo vecchi o sconosciuti vengono rifiutati con un messaggio chiaro.
 
@@ -79,4 +81,4 @@ I dati e i fatti storici delle risposte sono quelli che produce l'assistente: va
   - il **modello** con `askManual`, che apre la finestra e restituisce la risposta incollata già interpretata (`parseManualJson`).
 - Il resto della pagina continua a chiamare `dbCap`, `sample(...)` e `sample.json(...)` senza sapere quale fornitore c'è dietro.
 - Il salvataggio ha `schemaVersion: 3` (e `v: 3`, per i lettori più vecchi); `saveVersion()` legge `schemaVersion` e, se manca, `v`.
-- Le prove sono in `tests/browser/t12_providers.js` (senza Claude, con `localStorage` bloccato, modalità manuale, esporta/importa) e `tests/browser/t4_save.js` (versioni dei salvataggi).
+- Le prove sono in `tests/browser/t12_providers.js` (senza Claude, con `localStorage` bloccato, modalità manuale, esporta/importa), `tests/browser/t4_save.js` (versioni dei salvataggi) e `tests/browser/t13_editor.js` (Editor scenario e scenari come file).

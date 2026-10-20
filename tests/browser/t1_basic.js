@@ -31,7 +31,7 @@ const { launch, check, summary } = require('./harness');
   check('labels: 83 states + 984 regions', r.labels === 83 + 984, r.labels);
   check('text nodes created lazily (far fewer than labels at start)', r.texts < 400, r.texts);
   const hd = await page.evaluate(() => ({ title: document.querySelector('#fixedScenarioPanel .section-title').textContent, pageTitle: document.title,
-    legend: [...document.querySelectorAll('#fixedScenarioPanel .legend span')].map(s => s.textContent.trim()),
+    legend: [...document.querySelectorAll('#fixedScenarioPanel .legend:not(.legend-own) span')].map(s => s.textContent.trim()),
     colours: ['KWT', 'CYP', 'OMN', 'QAT'].map(c => window.__t.countries[c].color + '/' + window.__t.countries[c].alliance) }));
   check('scenario title: 31 dicembre 1960', hd.title === 'Scenario fisso — Europa, 31 dicembre 1960', hd.title);
   check('page title unchanged', hd.pageTitle === 'Storia Alternativa — prototipo', hd.pageTitle);

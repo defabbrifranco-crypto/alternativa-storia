@@ -17,6 +17,7 @@ const SUITES = [
   ['t10_markers.js', 'Segnaposto'],
   ['t11_engine.js', 'Motore: sovranità e controllo, sessioni, validazione dei salvataggi'],
   ['t12_providers.js', 'Fuori da Claude: salvataggi nel browser, esporta/importa, modalità manuale'],
+  ['t13_editor.js', 'Modalità Gioco / Editor scenario, legenda di proprietà e controllo, scenario come file'],
 ];
 if (process.argv.includes('--perf')) SUITES.push(['t6_perf.js', 'Prestazioni (soglie dipendenti dalla macchina)']);
 

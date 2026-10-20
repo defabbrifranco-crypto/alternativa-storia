@@ -179,6 +179,11 @@ const { launch, check, summary } = require('./harness');
     check(`refused: ${name}`, r.ret === false && r.status === 'Salvataggio non valido o versione non supportata.', r);
   }
   check('refused saves leave map and game as they were', (await digest()) === d0 && (await ev(() => window.__t.getGameMode())) === 'fixed' && (await ev(() => window.__t.getState().nation)) === 'Germania Ovest');
+  // a scenario (a save without a game) cannot replace the map under a game that is running
+  const refusedScenario = await ev(A => { document.getElementById('saveStatus').textContent = ''; const r = window.__t.applySave({ v: 3, changes: { [A]: { owner: 'FRG', controller: 'FRG' } }, game: null });
+    return { r, status: document.getElementById('saveStatus').textContent, owner: window.__t.provinces[A].owner }; }, geo.A);
+  check('during a game a scenario is refused, with the reason, and the map stays as it was', refusedScenario.r === false && refusedScenario.status === 'Una partita è in corso: per caricare uno scenario esci prima con «Nuova partita».' && refusedScenario.owner === 'GDR' && (await digest()) === d0, refusedScenario);
+  await ev(() => window.__t.resetGame());          // with no game running the same saves are accepted
   const okMinimal = await ev(() => [window.__t.applySave({ v: 3, changes: {}, game: null }), window.__t.applySave({ v: 3, changes: {} }), window.__t.applySave({ v: 2, provinces: {} })]);
   check('minimal valid saves are accepted', okMinimal.every(x => x === true), okMinimal);
   const okChange = await ev(A => { const r = window.__t.applySave({ v: 3, changes: { [A]: { owner: 'FRG', controller: 'FRG' } }, game: null }); return [r, window.__t.provinces[A].owner]; }, geo.A);
@@ -191,11 +196,12 @@ const { launch, check, summary } = require('./harness');
     const r2 = t.applySave({ v: 2, provinces: poison });
     const r3 = t.applySave({ v: 3, changes: { [a]: { owner: 'constructor', controller: '__proto__' }, [b]: { owner: 'FRG', controller: 'toString' } }, selectedCountryId: 'constructor', game: null });
     return { r1, r2, r3, polluted: ({}).owner !== undefined || ({}).controller !== undefined || Object.prototype.hasOwnProperty.call(Object.prototype, 'owner'),
-      a: [t.provinces[a].owner, t.provinces[a].controller], b: [t.provinces[b].owner, t.provinces[b].controller], ctx: t.territoryContext() };
+      a: [t.provinces[a].owner, t.provinces[a].controller], b: [t.provinces[b].owner, t.provinces[b].controller], playing: document.getElementById('playingAs').textContent };
   }, [geo.A, geo.A2]);
   check('hostile keys (__proto__, constructor, toString) are ignored, nothing is polluted', host.r1 === true && host.r2 === true && host.polluted === false, host);
   check('hostile owners/controllers are ignored province by province', host.a.join() === 'GDR,GDR' && host.b.join() === 'GDR,GDR', host);
-  check('a hostile selected country is ignored', host.ctx.includes('Il giocatore guida Germania Ovest'), host.ctx.slice(0, 120));
+  check('a hostile selected country is ignored', host.playing === 'Nessuna nazione selezionata.', host.playing);
+  await restart('FRG');
   store['save/state'] = { v: 7, changes: {} };
   const lg1 = await ev(() => window.__t.loadGame().then(r => ({ r, status: document.getElementById('saveStatus').textContent, mode: window.__t.getGameMode() })));
   check('"Carica" with an unusable save: refused, said so, game kept', lg1.r === false && lg1.status === 'Salvataggio non valido o versione non supportata.' && lg1.mode === 'fixed', lg1);
@@ -307,8 +313,9 @@ const { launch, check, summary } = require('./harness');
     text: (window.__t.openProvincePanel(A), document.getElementById('pp-controller').textContent), markers: window.__t.getMarkers().length }), geo.A);
   check('loading brings the occupation back (map, panel text, marker)', back2 === true && restored.o === 'GDR' && restored.c === 'FRG' && /^url\(#occ\d+\)$/.test(restored.fill) && restored.note && restored.text.includes('(occupazione)') && restored.markers === 1, restored);
 
-  console.log('— the province card: two separate buttons');
-  await restart('FRG');
+  console.log('— the province card: two separate buttons (scenario editor)');
+  await ev(() => window.__t.resetGame());
+  await page.click('#modeEditBtn');
   await ev(A => window.__t.selectProvince(A), geo.A);
   check('both buttons exist and say what they do', await ev(() => /sovranit/i.test(document.getElementById('pp-transferBtn').textContent) && /controllo/i.test(document.getElementById('pp-controlBtn').textContent)));
   await page.selectOption('#pp-transferSelect', 'FRG');

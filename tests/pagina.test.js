@@ -34,7 +34,7 @@ test('la pagina dichiara la propria versione e la versione dei salvataggi', () =
   assert.ok(page, 'manca la nota «Versione N» nella pagina');
   const save = html.match(/schemaVersion: (\d+)/);
   assert.ok(save, 'il salvataggio non dichiara schemaVersion');
-  assert.ok(Number(page[1]) >= 24, 'la versione scritta nella pagina non è aggiornata');
+  assert.ok(Number(page[1]) >= 25, 'la versione scritta nella pagina non è aggiornata');
   assert.ok(Number(save[1]) >= 3);
 });
 
@@ -43,6 +43,19 @@ test('la pagina funziona anche senza Claude: sono previsti il salvataggio nel br
     assert.ok(html.includes(`id="${id}"`), `manca l'elemento ${id}`);
   }
   assert.ok(html.includes("const LS_PREFIX = 'storia-alternativa:'"));
+});
+
+test('Gioco ed Editor scenario sono modalità separate, e la legenda di proprietà e controllo c\'è sempre', () => {
+  for (const id of ['modeGameBtn', 'modeEditBtn', 'modeNote', 'editorResetBtn', 'ownLegend', 'ownHelp', 'occNote', 'pp-lockNote']) {
+    assert.ok(html.includes(`id="${id}"`), `manca l'elemento ${id}`);
+  }
+  // i comandi manuali (cedere una provincia, aggiungere un segnaposto) stanno solo nell'Editor
+  assert.ok(/<div class="demo-box editor-only">\s*<label for="pp-transferSelect">/.test(html), 'i comandi di cessione non sono riservati all\'Editor');
+  assert.ok(/<div class="demo-box editor-only">\s*<label for="pp-markerType">/.test(html), 'l\'aggiunta di segnaposto non è riservata all\'Editor');
+  assert.ok(html.includes('body.editing .editor-only { display:block; }') && html.includes('.editor-only { display:none; }'));
+  // la legenda spiega proprietario e controllore a parole
+  assert.ok(html.includes('<b>Colore pieno</b>') && html.includes('<b>Righe diagonali</b>'));
+  assert.ok(html.includes('Proprietario e controllore: che differenza c'));
 });
 
 test('index.html porta alla pagina e il file esiste', () => {

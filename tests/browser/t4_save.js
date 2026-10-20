@@ -101,18 +101,21 @@ const { launch, check, summary } = require('./harness');
   check('no page errors during migration', errors.length === 0, errors);
   await browser.close();
 
-  console.log('— territory-only save and load (no game running)');
+  console.log('— a scenario (a save without a game) and the game buttons');
   const store3 = {};
   ({ browser, page, errors } = await launch({ width: 640, height: 1100, mobile: false, store: store3 }));
   await page.evaluate(() => { window.__t.changeProvinceOwner('URSS_01', 'FIN'); window.__t.changeProvinceController('URSS_01', 'FIN'); });
   await page.click('#saveGameBtn');
   await page.waitForTimeout(150);
+  check('without a game «Salva partita» says there is nothing to save, and writes nothing', (await txt('#saveStatus')) === 'Nessuna partita in corso da salvare. Per conservare uno scenario usa «Esporta».' && store3['save/state'] === undefined, [await txt('#saveStatus'), store3]);
+  // what the previous version wrote when the button was pressed with no game: a scenario in the slot
+  store3['save/state'] = await page.evaluate(() => JSON.parse(JSON.stringify(window.__t.buildSavePayload())));
   const d3 = store3['save/state'];
-  check('territory-only v3 save (game null)', d3 && d3.v === 3 && d3.game === null && Object.keys(d3.changes).length === 1, d3);
+  check('a scenario is a v3 document with game null and only the changed province', d3 && d3.v === 3 && d3.schemaVersion === 3 && d3.game === null && Object.keys(d3.changes).length === 1, d3);
   await page.evaluate(() => window.__t.changeProvinceOwner('URSS_01', 'URSS'));
   await page.click('#loadGameBtn');
   await page.waitForTimeout(150);
-  check('loading restores the territory', await page.evaluate(() => window.__t.provinces.URSS_01.owner === 'FIN'));
+  check('«Carica partita» still reads a scenario from the slot: the territory comes back', await page.evaluate(() => window.__t.provinces.URSS_01.owner === 'FIN'));
   check('and no game starts', await page.evaluate(() => window.__t.getGameMode() === null));
   await browser.close();
 

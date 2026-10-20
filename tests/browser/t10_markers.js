@@ -267,7 +267,7 @@ const { launch, check, summary } = require('./harness');
       cls: document.querySelector('[data-marker="' + id + '"]').classList.contains('sel'), icon: g('mp-icon').children.length, origin: g('mp-origin').textContent, disc: g('mp-disc').textContent, selProv: window.__t.getSelectedProvince() };
   }, target.id);
   check('a tap on a marker opens its card (and not the province under it)', sel1.sel === target.id && sel1.panel && sel1.prov && sel1.cls && sel1.selProv === null && sel1.icon > 0, sel1);
-  check('the card names the kind and says this is a test marker', /prova/.test(sel1.name) && sel1.type.length > 3 && sel1.origin.includes('prova') && sel1.disc.includes('Segnaposto di prova'), sel1);
+  check('the card names the kind and says the marker comes from the editor', /prova/.test(sel1.name) && sel1.type.length > 3 && sel1.origin.includes('Editor') && sel1.disc.includes("Segnaposto dell'Editor"), sel1);
   // a tap on the land closes it and opens the province
   const land = await ev(() => { const T = window.__t; const pid = Object.keys(T.provinces).find(id => T.provinces[id].owner === 'POL'); T.setView(1100, 600, 5); const b = T.provinceEls[pid][0].getBoundingClientRect(); return { pid, x: b.x + b.width / 2, y: b.y + b.height / 2 }; });
   await page.mouse.click(land.x, land.y);
@@ -347,15 +347,17 @@ const { launch, check, summary } = require('./harness');
   await page.click('#mp-close');
   check('the close button closes the card', await ev(() => document.getElementById('markerPanel').classList.contains('hidden') && window.__t.getSelectedMarkerId() === null));
 
-  console.log('— a test marker from the province card');
+  console.log('— a marker added by hand from the province card (scenario editor)');
   await ev(i => { const T = window.__t; T.clearMarkers(); T.selectProvince(i.FRG); }, ids);
+  check('outside the editor the card cannot add markers', await ev(() => document.getElementById('pp-markerBtn').offsetParent === null));
+  await page.click('#modeEditBtn');
   const dm = await ev(() => { const s = document.getElementById('pp-markerType'); return { opts: s.options.length, first: s.options[0].textContent }; });
   check('the province card offers every kind', dm.opts === 17, dm);
   await page.selectOption('#pp-markerType', 'nucleare');
   await page.fill('#pp-markerName', 'Reattore di prova');
   await page.click('#pp-markerBtn');
   const dm2 = await ev(i => { const T = window.__t, m = T.getMarkers()[0]; return { n: T.getMarkers().length, m: m && [m.tipo, m.nome, m.provincia === i.FRG, m.origine], msg: document.getElementById('pp-markerMsg').textContent, shown: !document.getElementById('provincePanel').classList.contains('hidden') }; }, ids);
-  check('it adds a test marker in that province and says so', dm2.n === 1 && dm2.m[0] === 'nucleare' && dm2.m[1] === 'Reattore di prova' && dm2.m[2] && dm2.m[3] === 'giocatore' && /Aggiunto/.test(dm2.msg) && dm2.shown, dm2);
+  check('it adds a marker in that province and says so', dm2.n === 1 && dm2.m[0] === 'nucleare' && dm2.m[1] === 'Reattore di prova' && dm2.m[2] && dm2.m[3] === 'giocatore' && /Aggiunto/.test(dm2.msg) && dm2.shown, dm2);
   await page.selectOption('#pp-markerType', 'nucleare');
   await page.fill('#pp-markerName', 'Reattore di prova');
   await page.click('#pp-markerBtn');

@@ -95,9 +95,13 @@ const { launch, check, summary } = require('./harness');
   await page.evaluate(id => window.__t.selectProvince(id), mag);
   check('Funchal marker described as conventional', (await txt('#pp-shape')).includes('marcatore convenzionale'), await txt('#pp-shape'));
 
-  console.log('— demo transfer from the panel');
+  console.log('— hand a province over from the card (scenario editor)');
   const ch = await idOf('Vaud', 'CHE') || (await page.evaluate(() => Object.keys(window.__t.provinces).find(i => i.startsWith('CHE_'))));
   await page.evaluate(id => window.__t.selectProvince(id), ch);
+  const shown = ids => page.evaluate(l => l.map(i => document.getElementById(i).offsetParent !== null), ids);
+  check('in «Gioco» the card has no editing controls', (await shown(['pp-transferSelect', 'pp-transferBtn', 'pp-controlBtn', 'pp-markerBtn'])).every(v => v === false), await shown(['pp-transferSelect', 'pp-transferBtn', 'pp-controlBtn', 'pp-markerBtn']));
+  await page.click('#modeEditBtn');
+  check('in the editor the controls appear', (await shown(['pp-transferSelect', 'pp-transferBtn', 'pp-controlBtn', 'pp-markerBtn'])).every(v => v === true));
   await page.selectOption('#pp-transferSelect', 'FRA');
   await page.click('#pp-transferBtn');
   const after = await page.evaluate(id => ({ o: window.__t.provinces[id].owner, c: window.__t.provinces[id].controller, fill: window.__t.provinceEls[id][0].getAttribute('fill'), fra: window.__t.countries.FRA.color, own: document.getElementById('pp-owner').textContent }), ch);

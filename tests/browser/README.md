@@ -60,6 +60,7 @@ Su GitHub le stesse prove partono da sole a ogni push e a ogni pull request (`.g
 | `t10_markers.js` | segnaposto: tipi, posizione, raggruppamento, salvataggio |
 | `t11_engine.js` | sovranità e controllo, risposte in ritardo, validazione dei salvataggi |
 | `t12_providers.js` | fuori da Claude: salvataggi nel browser, esporta/importa, modalità manuale, `localStorage` bloccato |
+| `t13_editor.js` | modalità «Gioco» ed «Editor scenario», legenda fissa di proprietà e controllo, scenario come file, blocco dell'Editor durante la partita |
 
 ## Attenzione
 

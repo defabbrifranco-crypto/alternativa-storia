@@ -119,9 +119,12 @@ const { launch, check, summary } = require('./harness');
   console.log('— game over');
   const own = await page.evaluate(() => window.__t.getCountryProvinces('FRG'));
   await page.evaluate(ids => { for (const id of ids.slice(1)) { window.__t.changeProvinceOwner(id, 'GDR'); window.__t.changeProvinceController(id, 'GDR'); } }, own);   // a real loss: sovereignty and control both
-  await page.evaluate(id => window.__t.selectProvince(id), own[0]);
-  await page.selectOption('#pp-transferSelect', 'GDR');
-  await page.click('#pp-transferBtn');
+  // the last one goes the way every change goes during a game: through the story (the engine's change, checked)
+  await page.evaluate(last => window.__queue.push({ evento_titolo: 'La caduta', narrativa: 'Anche l\'ultima provincia cede.', riepilogo_mondo: 'Il paese è caduto.', nuovo_anno: 'marzo 1961',
+    stabilita: 10, economia: 10, esercito: 10, prestigio: 10, cambi_territoriali: [{ provincia: last, nuovo_proprietario: 'GDR' }] }), own[0]);
+  await page.fill('#actionInput', 'Resisto fino all\'ultimo');
+  await page.click('#actBtn');
+  await page.waitForFunction(() => document.getElementById('thinking').classList.contains('hidden') && document.getElementById('log').textContent.includes('la partita è finita'), null, { timeout: 5000 });
   const over = await page.evaluate(() => ({ log: document.getElementById('log').textContent, act: document.getElementById('actBtn').disabled }));
   check('losing the last territory ends the game', over.log.includes('la partita è finita') && over.act === true, over);
 
