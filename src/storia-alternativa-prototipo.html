@@ -8,6 +8,7 @@
   :root {
     --bg: #f4f1ea; --panel: #ffffff; --ink: #2b2419; --muted: #6b6255;
     --accent: #8a3324; --border: #d8d0c0; --user-msg: #efe6d8;
+    --on-accent: #ffffff; --field-border: #857a69; --focus: #0b57d0;
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -15,12 +16,12 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #1b1712; --panel: #262019; --ink: #ece4d6; --muted: #a89e8c;
-      --accent: #d97757; --border: #3a3327; --user-msg: #332b20;
+      --accent: #d97757; --border: #3a3327; --user-msg: #332b20; --on-accent: #1b1712; --field-border: #7d7364; --focus: #8ab4f8;
     }
   }
   :root[data-theme="dark"] {
     --bg: #1b1712; --panel: #262019; --ink: #ece4d6; --muted: #a89e8c;
-    --accent: #d97757; --border: #3a3327; --user-msg: #332b20;
+    --accent: #d97757; --border: #3a3327; --user-msg: #332b20; --on-accent: #1b1712; --field-border: #7d7364; --focus: #8ab4f8;
   }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
   * { box-sizing: border-box; }
@@ -33,12 +34,12 @@
   .sub { color: var(--muted); font-size: 0.85rem; margin: 0 0 8px; }
   .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
   label { display:block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
-  input, textarea, select { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border);
+  input, textarea, select { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--field-border);
     background: var(--bg); color: var(--ink); font-family: inherit; font-size: 0.95rem; margin-bottom: 10px; }
   .presets { display:flex; flex-wrap:wrap; gap:6px; margin-bottom: 10px; }
   .preset-btn { font-size: 0.75rem; padding: 5px 9px; border-radius: 999px; border: 1px solid var(--border);
     background: var(--bg); color: var(--ink); cursor:pointer; }
-  button.primary { background: var(--accent); color: #fff; border:none; padding: 10px 16px; border-radius: 6px;
+  button.primary { background: var(--accent); color: var(--on-accent); border:none; padding: 10px 16px; border-radius: 6px;
     font-size: 0.95rem; cursor:pointer; }
   button.primary:disabled { opacity: 0.5; cursor: default; }
   button.ghost { background: transparent; border: 1px solid var(--border); color: var(--ink); padding: 8px 12px;
@@ -53,7 +54,7 @@
   .tabs { display:flex; gap:6px; }
   .tab-btn { flex:1; padding:8px; border:1px solid var(--border); background:var(--panel); color:var(--muted);
     border-radius:8px; cursor:pointer; font-size:0.85rem; }
-  .tab-btn.active { background: var(--accent); color:#fff; border-color: var(--accent); }
+  .tab-btn.active { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
   .log { display:flex; flex-direction:column; gap: 10px; max-height: 40vh; overflow-y: auto; padding-right: 4px; }
   .entry-year { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .04em; color: var(--accent); }
   .entry-headline { font-weight: bold; font-size: 0.95rem; margin: 2px 0 2px; }
@@ -61,7 +62,7 @@
   .entry-narr { font-size: 0.92rem; line-height: 1.45; }
   .entry-advisor { font-size: 0.88rem; font-style: italic; color: var(--muted); border-left: 2px solid var(--accent); padding-left: 8px; }
   .bubble { max-width: 85%; border-radius: 10px; padding: 8px 10px; font-size: 0.9rem; line-height:1.4; }
-  .bubble-user { align-self:flex-end; background: var(--accent); color:#fff; }
+  .bubble-user { align-self:flex-end; background: var(--accent); color: var(--on-accent); }
   .bubble-other { align-self:flex-start; background: var(--user-msg); }
   .row { display:flex; gap:8px; align-items:flex-end; }
   .row > div:first-child { flex: 1; }
@@ -176,9 +177,8 @@
   .mode-switch { display:flex; gap:6px; }
   .mode-btn { flex:1 1 0; min-width:0; padding:9px 8px; border:1px solid var(--border); background:var(--panel); color:var(--muted);
     border-radius:8px; cursor:pointer; font:inherit; font-size:.85rem; }
-  .mode-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .mode-btn.active { background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
   .mode-btn[aria-disabled="true"] { opacity:.55; cursor:default; }
-  .mode-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
   #modeNote { margin:6px 0 0; }
   .editor-only { display:none; }
   body.editing .editor-only { display:block; }
@@ -197,17 +197,62 @@
     padding:6px 4px; border:0; border-bottom:1px dashed var(--border); background:transparent; color:var(--ink); cursor:pointer; }
   .occ-item .mk-sub { color:var(--muted); font-size:.72rem; }
   .occ-item:hover { background:var(--user-msg); }
+  /* accessibility: text only for readers, skip link, a visible focus everywhere, targets of at least 24 px */
+  .sr-only { position:absolute !important; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0; }
+  .skip-link { position:absolute; left:8px; top:-60px; z-index:100; padding:8px 14px; border-radius:6px; background:var(--accent); color:var(--on-accent);
+    font:inherit; font-size:.9rem; text-decoration:none; }
+  .skip-link:focus { top:calc(8px + env(safe-area-inset-top, 0px)); }
+  main:focus { outline:none; }
+  :focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
+  input:focus-visible, textarea:focus-visible, select:focus-visible { outline-offset:0; }
+  ::placeholder { color:var(--muted); opacity:1; }
+  .chip, .preset-btn, button.ghost.small { min-height:24px; }
+  .pp-det > summary { padding:5px 0; }
+  .mk-toggle input[type="checkbox"] { width:24px; height:24px; flex:none; accent-color:var(--accent); }
+  .chip { display:inline-flex; align-items:center; }
+  /* the map by keyboard: the whole map is one tab stop; a ring marks the territory that has the focus */
+  .province-poly:focus { outline:none; }
+  .foc-layer { pointer-events:none; }
+  .foc-casing { fill:none; stroke:#20180f; stroke-width:10px; vector-effect:non-scaling-stroke; stroke-linejoin:round; }
+  .foc-ring { fill:none; stroke:#fff; stroke-width:7px; vector-effect:non-scaling-stroke; stroke-linejoin:round; }
+  .marker .mk-selbg { fill:none; stroke:#20180f; stroke-width:5.4; opacity:0; pointer-events:none; }
+  .marker.sel .mk-selbg, .marker:focus-visible .mk-selbg { opacity:1; }
+  /* the territories as text, by state */
+  .terr-list { margin-top:6px; max-height:340px; overflow-y:auto; }
+  .tl-state { border-bottom:1px dashed var(--border); }
+  .tl-state > summary { padding:6px 4px; font-size:.85rem; }
+  .tl-items { display:flex; flex-wrap:wrap; gap:4px; padding:2px 4px 8px; }
+  .tl-item { font:inherit; font-size:.78rem; min-height:24px; padding:3px 9px; border-radius:999px; border:1px solid var(--border);
+    background:var(--bg); color:var(--ink); cursor:pointer; text-align:left; }
+  .tl-item:hover { background:var(--user-msg); }
+  .tl-item .mk-sub { color:var(--muted); font-size:.72rem; }
+  /* whoever asks the system for less motion gets none: no transitions, no pulses, no smooth scrolling */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important; }
+    .province-poly.flash { animation:none; stroke:#ffd54a; stroke-width:4px; }
+    .marker.fresh .mk-ping { animation:none; opacity:.9; transform:scale(1.5); }
+  }
+  @media (forced-colors: active) {
+    .foc-casing { stroke:CanvasText; }
+    .foc-ring { stroke:Canvas; }
+    .mode-btn.active, .tab-btn.active { forced-color-adjust:none; background:Highlight; color:HighlightText; border-color:Highlight; }
+    .meter-track { forced-color-adjust:none; background:Canvas; border:1px solid CanvasText; }
+    .meter-fill { forced-color-adjust:none; background:Highlight; }
+    .dot, .sw { forced-color-adjust:none; border:1px solid CanvasText; }
+  }
 </style>
 </head>
 <body>
-<div class="app">
+<a class="skip-link" href="#main" id="skipLink">Vai al contenuto principale</a>
+<div class="sr-only" id="a11yStatus" role="status" aria-live="polite" aria-atomic="true"></div>
+<main class="app" id="main" tabindex="-1">
 
   <div id="setup">
-    <div class="panel">
-      <h1>🗺️ Storia Alternativa</h1>
+    <header class="panel" id="appHead">
+      <h1 id="appTitle" tabindex="-1"><span aria-hidden="true">🗺️ </span>Storia Alternativa</h1>
       <p class="sub">Prototipo ispirato al funzionamento di Pax Historia: scegli lo scenario fisso della Guerra Fredda o crea un tuo scenario libero.</p>
-      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 25</p>
-    </div>
+      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 26</p>
+    </header>
 
     <div class="panel hidden" id="resumeBanner">
       <p class="sub" id="resumeText" style="margin:0 0 8px;"></p>
@@ -217,13 +262,13 @@
       </div>
     </div>
 
-    <div class="panel" id="fixedScenarioPanel">
-      <h2 class="section-title">Scenario fisso — Europa, 31 dicembre 1960</h2>
+    <section class="panel" id="fixedScenarioPanel" aria-labelledby="fixedTitle">
+      <h2 class="section-title" id="fixedTitle" tabindex="-1">Scenario fisso — Europa, 31 dicembre 1960</h2>
       <p class="sub">Tocca un territorio sulla mappa, o cercalo per nome, per vederne i dettagli, oppure scegli uno Stato come nazione giocabile.</p>
       <div class="mode-bar" id="modeBar">
         <div class="mode-switch" role="group" aria-label="Modalità della mappa">
-          <button type="button" class="mode-btn active" id="modeGameBtn" aria-pressed="true">🎮 Gioco</button>
-          <button type="button" class="mode-btn" id="modeEditBtn" aria-pressed="false" aria-disabled="false">✏️ Editor scenario</button>
+          <button type="button" class="mode-btn active" id="modeGameBtn" aria-pressed="true"><span aria-hidden="true">🎮 </span>Gioco</button>
+          <button type="button" class="mode-btn" id="modeEditBtn" aria-pressed="false" aria-disabled="false"><span aria-hidden="true">✏️ </span>Editor scenario</button>
         </div>
         <p class="pp-note" id="modeNote" role="status" aria-live="polite"></p>
         <div class="editor-only" id="editorTools">
@@ -232,11 +277,11 @@
         </div>
       </div>
       <div class="legend">
-        <span><i class="dot nato"></i>NATO e alleati</span>
-        <span><i class="dot patto"></i>Patto di Varsavia e blocco comunista</span>
-        <span><i class="dot neutro"></i>Non allineata</span>
-        <span><i class="dot colonia"></i>Colonie e protettorati</span>
-        <span><i class="dot nd"></i>Alleanza da verificare</span>
+        <span><i class="dot nato" aria-hidden="true"></i>NATO e alleati</span>
+        <span><i class="dot patto" aria-hidden="true"></i>Patto di Varsavia e blocco comunista</span>
+        <span><i class="dot neutro" aria-hidden="true"></i>Non allineata</span>
+        <span><i class="dot colonia" aria-hidden="true"></i>Colonie e protettorati</span>
+        <span><i class="dot nd" aria-hidden="true"></i>Alleanza da verificare</span>
       </div>
       <div class="legend legend-own" id="ownLegend" role="group" aria-label="Proprietà e controllo">
         <span><i class="sw sw-solid" aria-hidden="true"></i><b>Colore pieno</b>: il proprietario controlla il territorio</span>
@@ -253,17 +298,26 @@
         <div class="search-results hidden" id="terrResults" role="listbox"></div>
       </div>
       <p class="sub" id="regionNote">Gli Stati più grandi sono divisi nelle loro regioni del 1960. I confini interni sono approssimati: derivano da un solo punto per unità e non sono confini storici.</p>
+      <p class="sr-only" id="mapHint">Mappa interattiva con oltre mille territori, un solo punto di sosta. Con le frecce passi al territorio vicino nella direzione scelta, con Invio o Spazio ne apri la scheda, con più e meno cambi lo zoom, con zero torni all'Europa. In alternativa usa la ricerca o l'elenco dei territori.</p>
       <div class="map-wrap">
-        <div class="map-controls">
-          <button class="zoom-btn" id="zoomInBtn" type="button">+</button>
-          <button class="zoom-btn" id="zoomOutBtn" type="button">−</button>
-          <button class="zoom-btn" id="recenterBtn" type="button" title="Torna all'Europa">⤾</button>
-          <button class="zoom-btn" id="worldBtn" type="button" title="Tutta la mappa">🌍</button>
+        <div class="map-controls" role="group" aria-label="Controlli della mappa">
+          <button class="zoom-btn" id="zoomInBtn" type="button" aria-label="Ingrandisci" title="Ingrandisci">+</button>
+          <button class="zoom-btn" id="zoomOutBtn" type="button" aria-label="Riduci" title="Riduci">−</button>
+          <button class="zoom-btn" id="recenterBtn" type="button" aria-label="Torna all'Europa" title="Torna all'Europa">⤾</button>
+          <button class="zoom-btn" id="worldBtn" type="button" aria-label="Mostra tutta la mappa" title="Tutta la mappa">🌍</button>
         </div>
-        <svg id="euroSvg" viewBox="0 0 5112 2058" preserveAspectRatio="xMidYMid meet">
+        <svg id="euroSvg" viewBox="0 0 5112 2058" preserveAspectRatio="xMidYMid meet" role="group" aria-label="Mappa interattiva dell'Europa e dell'Asia" aria-describedby="mapHint">
           <g id="mapLayer"></g>
         </svg>
       </div>
+      <details class="pp-det" id="kbdHelp">
+        <summary>Come usare la mappa da tastiera</summary>
+        <p>Premi <b>Tab</b> per entrare nella mappa: tutti i territori contano come un solo punto di sosta. Poi usa le <b>frecce</b> per passare al territorio vicino nella direzione scelta; <b>Invio</b> o <b>Spazio</b> ne apre la scheda. <b>+</b> e <b>−</b> ingrandiscono e riducono, <b>0</b> torna all'Europa. Per trovare un territorio per nome usa la ricerca qui sopra o l'elenco qui sotto. I segnaposto sulla mappa sono punti di sosta a parte (Invio ne apre la scheda): l'elenco «Segnaposto sulla mappa» è un'alternativa.</p>
+      </details>
+      <details class="pp-det" id="terrListBox">
+        <summary id="terrListSummary">Elenco dei territori per Stato</summary>
+        <div class="terr-list" id="terrList"></div>
+      </details>
       <details class="pp-det marker-box" id="markerBox">
         <summary id="markerSummary">Segnaposto sulla mappa (0)</summary>
         <label class="mk-toggle"><input type="checkbox" id="markerShow" checked> Mostra i segnaposto sulla mappa</label>
@@ -275,10 +329,10 @@
         <summary id="occSummary">Territori occupati (0)</summary>
         <div class="mk-list" id="occList"></div>
       </details>
-      <p class="sub" id="playingAs" style="margin-top:8px;">Nessuna nazione selezionata.</p>
+      <p class="sub" id="playingAs" role="status" style="margin-top:8px;">Nessuna nazione selezionata.</p>
 
-      <div class="panel hidden" id="provincePanel" style="margin-top:10px;">
-        <h3 id="pp-name">—</h3>
+      <section class="panel hidden" id="provincePanel" aria-label="Scheda del territorio" style="margin-top:10px;">
+        <h3 id="pp-name" tabindex="-1">—</h3>
         <div class="pp-row"><span>Proprietario</span><strong id="pp-owner">—</strong></div>
         <div class="pp-row"><span>Controllore</span><strong id="pp-controller">—</strong></div>
         <div class="pp-row hidden" id="pp-type-row"><span>Tipo di unità</span><strong id="pp-type">—</strong></div>
@@ -306,14 +360,14 @@
         <div class="demo-box editor-only">
           <label for="pp-markerType">Editor: aggiungi un segnaposto in questa provincia</label>
           <select id="pp-markerType"></select>
-          <input id="pp-markerName" type="text" maxlength="40" placeholder="Nome (facoltativo)" autocomplete="off">
+          <input id="pp-markerName" type="text" maxlength="40" placeholder="Nome (facoltativo)" aria-label="Nome del segnaposto (facoltativo)" autocomplete="off">
           <button class="ghost" id="pp-markerBtn" type="button">Aggiungi segnaposto</button>
-          <p class="pp-note" id="pp-markerMsg"></p>
+          <p class="pp-note" id="pp-markerMsg" role="status"></p>
         </div>
         <p class="pp-note game-only" id="pp-lockNote"></p>
-      </div>
+      </section>
 
-      <div class="panel hidden" id="markerPanel" style="margin-top:10px;">
+      <section class="panel hidden" id="markerPanel" aria-label="Scheda del segnaposto" style="margin-top:10px;">
         <div class="mp-head"><span>Segnaposto</span><button type="button" class="ghost small" id="mp-close" aria-label="Chiudi la scheda">✕</button></div>
         <div id="mp-detail">
           <div class="mp-title">
@@ -335,39 +389,40 @@
           <h3 id="mp-group-title">—</h3>
           <div class="mk-list" id="mp-group-list"></div>
         </div>
-      </div>
+      </section>
 
       <div class="save-row game-only">
-        <button class="ghost small" id="saveGameBtn">💾 Salva partita</button>
-        <button class="ghost small" id="loadGameBtn">📂 Carica partita</button>
+        <button class="ghost small" id="saveGameBtn"><span aria-hidden="true">💾 </span>Salva partita</button>
+        <button class="ghost small" id="loadGameBtn"><span aria-hidden="true">📂 </span>Carica partita</button>
       </div>
       <div class="save-row">
-        <button class="ghost small" id="exportBtn" type="button">📤 Esporta</button>
-        <button class="ghost small" id="importBtn" type="button">📥 Importa</button>
+        <button class="ghost small" id="exportBtn" type="button"><span aria-hidden="true">📤 </span>Esporta</button>
+        <button class="ghost small" id="importBtn" type="button"><span aria-hidden="true">📥 </span>Importa</button>
       </div>
-      <p class="footnote" id="saveStatus"></p>
+      <p class="footnote" id="saveStatus" role="status"></p>
       <p class="footnote game-only" id="saveWhere"></p>
-    </div>
+    </section>
 
     <p class="divider" id="scenarioDivider">— oppure —</p>
 
-    <div class="panel" id="freeScenarioPanel">
-      <h2 class="section-title">Scenario libero</h2>
+    <section class="panel" id="freeScenarioPanel" aria-labelledby="freeTitle">
+      <h2 class="section-title" id="freeTitle">Scenario libero</h2>
       <div class="presets" id="presets"></div>
-      <label>Nazione / fazione</label>
+      <label for="nation">Nazione / fazione</label>
       <input id="nation" placeholder="es. Impero Romano">
-      <label>Anno di partenza</label>
+      <label for="startYear">Anno di partenza</label>
       <input id="startYear" placeholder="es. 400 d.C.">
-      <label>Premessa (opzionale)</label>
+      <label for="premise">Premessa (opzionale)</label>
       <textarea id="premise" rows="2" placeholder="es. Roma non è mai caduta"></textarea>
       <button class="primary" id="startBtn">Inizia la partita</button>
-    </div>
+    </section>
   </div>
 
-  <div id="game" class="hidden">
+  <section id="game" class="hidden" aria-labelledby="gameTitle">
+    <h2 class="sr-only" id="gameTitle" tabindex="-1">Partita in corso</h2>
     <div class="game-actions">
-      <button class="ghost small hidden" id="backToMapBtn" type="button">🗺️ Torna alla mappa</button>
-      <button class="ghost small" id="newGameBtn" type="button">🔄 Nuova partita</button>
+      <button class="ghost small hidden" id="backToMapBtn" type="button"><span aria-hidden="true">🗺️ </span>Torna alla mappa</button>
+      <button class="ghost small" id="newGameBtn" type="button"><span aria-hidden="true">🔄 </span>Nuova partita</button>
     </div>
     <label class="mk-toggle" id="manualToggleRow"><input type="checkbox" id="manualToggle"> <span id="manualToggleText"></span></label>
     <div class="panel status">
@@ -375,38 +430,38 @@
       <div>Anno: <strong id="yearLabel"></strong></div>
     </div>
 
-    <div class="panel stats" id="stats">
+    <div class="panel stats" id="stats" role="group" aria-label="Statistiche della nazione">
       <div>
         <div class="stat-label"><span>Stabilità</span><span id="v-stabilita">50</span></div>
-        <div class="meter-track"><div class="meter-fill" id="f-stabilita" style="width:50%"></div></div>
+        <div class="meter-track" aria-hidden="true"><div class="meter-fill" id="f-stabilita" style="width:50%"></div></div>
       </div>
       <div>
         <div class="stat-label"><span>Economia</span><span id="v-economia">50</span></div>
-        <div class="meter-track"><div class="meter-fill" id="f-economia" style="width:50%"></div></div>
+        <div class="meter-track" aria-hidden="true"><div class="meter-fill" id="f-economia" style="width:50%"></div></div>
       </div>
       <div>
         <div class="stat-label"><span>Esercito</span><span id="v-esercito">50</span></div>
-        <div class="meter-track"><div class="meter-fill" id="f-esercito" style="width:50%"></div></div>
+        <div class="meter-track" aria-hidden="true"><div class="meter-fill" id="f-esercito" style="width:50%"></div></div>
       </div>
       <div>
         <div class="stat-label"><span>Prestigio</span><span id="v-prestigio">50</span></div>
-        <div class="meter-track"><div class="meter-fill" id="f-prestigio" style="width:50%"></div></div>
+        <div class="meter-track" aria-hidden="true"><div class="meter-fill" id="f-prestigio" style="width:50%"></div></div>
       </div>
     </div>
 
-    <div class="tabs">
-      <button class="tab-btn active" id="tabActions">Azioni</button>
-      <button class="tab-btn" id="tabDiplo">Diplomazia</button>
+    <div class="tabs" role="tablist" aria-label="Sezioni della partita">
+      <button class="tab-btn active" id="tabActions" type="button" role="tab" aria-selected="true" aria-controls="actionsPanel" tabindex="0">Azioni</button>
+      <button class="tab-btn" id="tabDiplo" type="button" role="tab" aria-selected="false" aria-controls="diploPanel" tabindex="-1">Diplomazia</button>
     </div>
 
-    <div id="actionsPanel">
-      <div class="panel log" id="log"></div>
+    <div id="actionsPanel" role="tabpanel" aria-labelledby="tabActions">
+      <div class="panel log" id="log" role="log" aria-label="Cronaca della partita" tabindex="0"></div>
       <div class="panel">
-        <label>Cosa fai?</label>
+        <label for="actionInput">Cosa fai?</label>
         <textarea id="actionInput" rows="2" placeholder="es. Mobilita le riserve al confine orientale"></textarea>
         <div class="row">
           <div>
-            <label>Salto temporale</label>
+            <label for="jump">Salto temporale</label>
             <select id="jump">
               <option value="1 settimana">1 settimana</option>
               <option value="1 mese" selected>1 mese</option>
@@ -416,14 +471,14 @@
           </div>
           <button class="primary" id="actBtn">Agisci e avanza</button>
         </div>
-        <button class="ghost" id="advisorBtn">🧭 Chiedi consiglio al Consigliere</button>
+        <button class="ghost" id="advisorBtn"><span aria-hidden="true">🧭 </span>Chiedi consiglio al Consigliere</button>
         <p class="thinking hidden" id="thinking">Il motore storico sta elaborando...</p>
       </div>
     </div>
 
-    <div id="diploPanel" class="hidden">
+    <div id="diploPanel" class="hidden" role="tabpanel" aria-labelledby="tabDiplo">
       <div class="panel" id="diploSetup">
-        <label>Con chi vuoi negoziare?</label>
+        <label for="diploTarget">Con chi vuoi negoziare?</label>
         <input id="diploTarget" placeholder="es. il Cancelliere tedesco">
         <button class="primary" id="diploStartBtn">Inizia colloquio</button>
       </div>
@@ -432,9 +487,9 @@
           <strong id="diploTargetLabel"></strong>
           <button class="ghost small" id="diploResetBtn">Cambia</button>
         </div>
-        <div class="panel log" id="diploLog"></div>
+        <div class="panel log" id="diploLog" role="log" aria-label="Colloquio diplomatico" tabindex="0"></div>
         <div class="panel">
-          <textarea id="diploInput" rows="2" placeholder="Scrivi cosa vuoi dire..."></textarea>
+          <textarea id="diploInput" rows="2" placeholder="Scrivi cosa vuoi dire..." aria-label="Il tuo messaggio"></textarea>
           <button class="primary" id="diploSendBtn">Invia</button>
           <p class="thinking hidden" id="diploThinking">In attesa di risposta...</p>
         </div>
@@ -442,9 +497,9 @@
     </div>
 
     <p class="footnote">Prototipo dimostrativo: le conseguenze sono generate da un modello linguistico, non da un motore a regole fisse.</p>
-  </div>
+  </section>
 
-</div>
+</main>
 
 <dialog id="manualDialog" class="dlg" aria-labelledby="manualTitle">
   <div class="dlg-body">
@@ -4332,6 +4387,10 @@ window.MAP_SVG = {
     selectedProvinceId = provinceId;
     openProvincePanel(provinceId);
     renderMapColors();
+    if (provinces[provinceId]) {
+      setRoving(provinceId);                         // Tab brings the keyboard back to the territory that was opened
+      announce('Scheda aperta: ' + provLabel(provinceId) + '.');
+    }
   }
   function changeProvinceController(provinceId, countryId) {
     if (!own(provinces, provinceId) || !own(countries, countryId)) return;
@@ -4361,7 +4420,7 @@ window.MAP_SVG = {
   const mapLayer = el('mapLayer');
   const provinceEls = {};
   const labelEls = [];
-  let labelLayer = null, selLayer = null;
+  let labelLayer = null, selLayer = null, focLayer = null;
 
   // ---- map markers: kinds and symbols ----------------------------------------------------------------------------
   // Every symbol is drawn in a box centred on (0,0), about 22 units across: a round badge (r = 11) with a white ring,
@@ -4679,6 +4738,8 @@ window.MAP_SVG = {
   function buildMarkerLayer() {
     markerLayer = document.createElementNS(svgNS, 'g');
     markerLayer.setAttribute('class', 'marker-layer');
+    markerLayer.setAttribute('role', 'group');
+    markerLayer.setAttribute('aria-label', 'Segnaposto sulla mappa');
     mapLayer.appendChild(markerLayer);
     markerLayer.addEventListener('keydown', e => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
@@ -4701,7 +4762,7 @@ window.MAP_SVG = {
     g.setAttribute('tabindex', '0');
     g.setAttribute('role', 'button');
     g.setAttribute('aria-label', T.label + ': ' + m.nome);
-    g.innerHTML = '<title>' + escapeHtml(T.label + ': ' + m.nome) + '</title><circle class="mk-ping" r="12"/><circle class="mk-sel" r="15.5"/><circle class="mk-hit" r="17"/>' + markerBadge(m.tipo, markerBg(m));
+    g.innerHTML = '<title>' + escapeHtml(T.label + ': ' + m.nome) + '</title><circle class="mk-ping" r="12"/><circle class="mk-selbg" r="15.5"/><circle class="mk-sel" r="15.5"/><circle class="mk-hit" r="17"/>' + markerBadge(m.tipo, markerBg(m));
     markerLayer.appendChild(g);
     markerEls[m.id] = g;
     return g;
@@ -4882,6 +4943,7 @@ window.MAP_SVG = {
       const poly = document.createElementNS(svgNS,'polygon');
       poly.setAttribute('points', pts);
       poly.setAttribute('class','filler');
+      poly.setAttribute('aria-hidden', 'true');
       mapLayer.appendChild(poly);
     });
     // Provinces, in the order of window.MAP_SVG.provincePolys: region cells first, then the small
@@ -4891,11 +4953,14 @@ window.MAP_SVG = {
       const rings = window.MAP_SVG.provincePolys[id]; // array of point-strings (usually 1, more for islands)
       const R = provinces[id].region;
       const els = [];
-      rings.forEach(pts => {
+      rings.forEach((pts, ri) => {
         const poly = document.createElementNS(svgNS,'polygon');
         poly.setAttribute('points', pts);
         poly.setAttribute('class', 'province-poly' + (R && R.kind !== 'cell' ? ' pt' : ''));
         poly.dataset.id = id;
+        // one button per province (its first ring): the name is set by renderMapColors; the other rings are only shape
+        if (ri === 0) { poly.setAttribute('role', 'button'); poly.setAttribute('tabindex', '-1'); }
+        else poly.setAttribute('aria-hidden', 'true');
         const tip = document.createElementNS(svgNS, 'title');   // name on hover (desktop)
         tip.textContent = provName(id);
         poly.appendChild(tip);
@@ -4913,16 +4978,24 @@ window.MAP_SVG = {
       const path = document.createElementNS(svgNS, 'path');
       path.setAttribute('d', BRD[kind]);
       path.setAttribute('class', 'border-' + kind);
+      path.setAttribute('aria-hidden', 'true');
       mapLayer.appendChild(path);
     });
     // Outline of the selected province, above the borders and below the names.
+    // Ring of the territory that has the keyboard focus (under the selection outline).
+    focLayer = document.createElementNS(svgNS, 'g');
+    focLayer.setAttribute('class', 'foc-layer');
+    focLayer.setAttribute('aria-hidden', 'true');
+    mapLayer.appendChild(focLayer);
     selLayer = document.createElementNS(svgNS, 'g');
     selLayer.setAttribute('class', 'sel-layer');
+    selLayer.setAttribute('aria-hidden', 'true');
     mapLayer.appendChild(selLayer);
     // State names and region names, sized in screen pixels and shown only where they fit.
     // The <text> nodes are created the first time a name is needed (there are over a thousand).
     labelLayer = document.createElementNS(svgNS, 'g');
     labelLayer.setAttribute('class', 'label-layer');
+    labelLayer.setAttribute('aria-hidden', 'true');                 // the names are on the buttons already
     const addLabel = (name, x, y, cw, ch, extra) => {
       const words = name.split(' ');
       const half = Math.ceil(words.length / 2);
@@ -5125,7 +5198,7 @@ window.MAP_SVG = {
   }
   function renderMapColors() {
     const mine = selectedCountryId ? new Set(getCountryProvinces(selectedCountryId)) : new Set();
-    let occupied = 0;
+    let occupied = 0, ownersChanged = false;
     const occIds = [];
     for (const id in provinceEls) {
       const prov = provinces[id];
@@ -5137,7 +5210,11 @@ window.MAP_SVG = {
       const pc = paintCache[id] || (paintCache[id] = {});
       if (pc.col !== col) { pc.col = col; provinceEls[id].forEach(e => e.setAttribute('fill', col)); }
       if (pc.mine !== isMine) { pc.mine = isMine; provinceEls[id].forEach(e => e.classList.toggle('mine', isMine)); }
+      const sg = prov.owner + '>' + prov.controller;       // the accessible name says who owns and who holds it
+      if (pc.sg !== sg) { pc.sg = sg; ownersChanged = true; provinceEls[id][0].setAttribute('aria-label', provLabel(id)); }
     }
+    if (ownersChanged) terrListDirty = true;
+    if (terrListDirty && el('terrListBox').open) renderTerrList();
     el('occNote').classList.toggle('hidden', occupied === 0);
     renderOccupations(occIds);
     updateModeUI();
@@ -5159,7 +5236,7 @@ window.MAP_SVG = {
       const s = document.createElement('span'); s.className = 'mk-sub';
       s.textContent = `Proprietario: ${countries[p.owner].name} · controllo: ${countries[p.controller].name}`;
       b.append(n, s);
-      b.onclick = () => { selectProvince(id); focusProvince(id); };
+      b.onclick = () => { selectProvince(id); focusProvince(id); revealCard(); };
       box.appendChild(b);
     });
     if (ids.length > 60) {
@@ -5171,6 +5248,7 @@ window.MAP_SVG = {
   // Outline of the province whose panel is open (two strokes, dark under light, so it reads on any colour).
   function drawSelection() {
     if (!selLayer) return;
+    syncCurrent();
     while (selLayer.firstChild) selLayer.removeChild(selLayer.firstChild);
     const rings = selectedProvinceId && provinces[selectedProvinceId] ? window.MAP_SVG.provincePolys[selectedProvinceId] : null;
     if (!rings) return;
@@ -5293,7 +5371,7 @@ window.MAP_SVG = {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'chip';
       b.textContent = provName(nid) + (provinces[nid].owner !== p.owner ? ' · ' + provinces[nid].owner : '');
-      b.onclick = () => { selectProvince(nid); focusProvince(nid); };
+      b.onclick = () => { selectProvince(nid); focusProvince(nid); focusCardTitle(); };   // the buttons are rebuilt: the focus goes to the new card
       nbBox.appendChild(b);
     });
     if (nb.length > 16) {
@@ -5333,12 +5411,14 @@ window.MAP_SVG = {
       if (!editorMode) return;                      // manual changes belong to the editor
       const target = sel.value;
       transferProvince(id, target);
+      announce(`${provName(id)}: ora è di ${countries[target].name}, che ne ha anche il controllo.`);
     };
     // control alone: the province stays its owner's, another state holds it (stripes on the map)
     el('pp-controlBtn').onclick = () => {
       if (!editorMode) return;
       const target = sel.value;
       changeProvinceController(id, target);
+      announce(`${provName(id)}: il controllo passa a ${countries[target].name}.`);
     };
 
     // a test marker in this province (the engine adds the real ones)
@@ -5553,7 +5633,9 @@ window.MAP_SVG = {
   function closeSearch() {
     searchBox.classList.add('hidden');
     searchBox.textContent = '';
+    searchBox.setAttribute('role', 'listbox');
     searchInput.setAttribute('aria-expanded', 'false');
+    searchInput.removeAttribute('aria-activedescendant');
     searchItems = []; searchAct = -1;
   }
   function renderSearch() {
@@ -5561,6 +5643,7 @@ window.MAP_SVG = {
     const { items, total } = searchTerritories(searchInput.value);
     searchItems = items; searchAct = items.length ? 0 : -1;
     searchBox.textContent = '';
+    searchBox.setAttribute('role', items.length ? 'listbox' : 'status');       // a list without options is only a message
     if (!items.length) {
       const d = document.createElement('div');
       d.className = 'search-empty'; d.textContent = 'Nessun risultato';
@@ -5569,6 +5652,7 @@ window.MAP_SVG = {
     items.forEach((e, i) => {
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'search-item' + (i === 0 ? ' act' : '');
+      b.id = 'terrOpt' + i; b.tabIndex = -1;
       b.setAttribute('role', 'option'); b.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
       const n = document.createElement('span'); n.textContent = e.name;
       const s = document.createElement('span'); s.className = 'si-sub'; s.textContent = e.sub;
@@ -5583,6 +5667,7 @@ window.MAP_SVG = {
     }
     searchBox.classList.remove('hidden');
     searchInput.setAttribute('aria-expanded', 'true');
+    if (items.length) searchInput.setAttribute('aria-activedescendant', 'terrOpt0'); else searchInput.removeAttribute('aria-activedescendant');
   }
   function chooseSearch(e) {
     searchInput.value = '';
@@ -5597,6 +5682,7 @@ window.MAP_SVG = {
       b.classList.toggle('act', i === searchAct);
       b.setAttribute('aria-selected', i === searchAct ? 'true' : 'false');
       if (i === searchAct) {                                 // scroll the list itself, not the page
+        searchInput.setAttribute('aria-activedescendant', b.id);
         if (b.offsetTop < searchBox.scrollTop) searchBox.scrollTop = b.offsetTop;
         else if (b.offsetTop + b.offsetHeight > searchBox.scrollTop + searchBox.clientHeight) searchBox.scrollTop = b.offsetTop + b.offsetHeight - searchBox.clientHeight;
       }
@@ -5615,8 +5701,209 @@ window.MAP_SVG = {
   document.addEventListener('pointerdown', ev => { if (!(ev.target.closest && ev.target.closest('.search-wrap'))) closeSearch(); });
 
 
+  /* =========================================================
+     ACCESSIBILITY: names, keyboard, announcements, territories as text
+     - every province is a button with a name; the whole map is ONE tab stop (roving tabindex): the arrow keys go to the
+       neighbouring territory in that direction, Enter / Space opens its card, + / - / 0 zoom
+     - a polite status line tells what the page did (card opened, nothing in that direction, the engine is thinking)
+     - the territories are also listed as text, by state: a text alternative to the map
+     ========================================================= */
+  const a11yStatusEl = el('a11yStatus');
+  // the same sentence twice in a row must still be announced: a reader speaks a live region only when its text changes
+  function announce(msg) { if (a11yStatusEl) a11yStatusEl.textContent = a11yStatusEl.textContent === msg ? msg + '\u00a0' : msg; }
+  const reduceMotion = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const scrollBehavior = () => (reduceMotion() ? 'auto' : 'smooth');
+  function focusEl(id) { const n = el(id); if (!n) return; try { n.focus({ preventScroll: true }); } catch (e) { n.focus(); } }
+  function focusCardTitle() { focusEl('pp-name'); }
+  function revealCard() { const c = el('provincePanel'); if (c && c.scrollIntoView) c.scrollIntoView({ block: 'nearest', behavior: scrollBehavior() }); }
+
+  // The name of a territory: its name, its owner, and who holds it when that is somebody else.
+  function provLabel(id) {
+    const p = provinces[id], c = countries[p.owner], cc = countries[p.controller];
+    const name = provName(id), owner = c ? c.name : String(p.owner);
+    let s = name === owner ? name : name + ', ' + owner;
+    if (p.controller !== p.owner && cc) s += ', sotto controllo di ' + cc.name;
+    return s;
+  }
+  // aria-current marks the territory whose card is open
+  let currentEl = null, rovingEl = null, terrListDirty = true;
+  const terrOpenCodes = new Set();
+  function syncCurrent() {
+    const want = selectedProvinceId && provinceEls[selectedProvinceId] ? provinceEls[selectedProvinceId][0] : null;
+    if (want === currentEl) return;
+    if (currentEl) currentEl.removeAttribute('aria-current');
+    if (want) want.setAttribute('aria-current', 'true');
+    currentEl = want;
+  }
+  // roving tabindex: exactly one territory is a tab stop
+  function setRoving(id) {
+    const els = provinceEls[id];
+    if (!els || !els[0] || els[0] === rovingEl) return;
+    if (rovingEl) rovingEl.setAttribute('tabindex', '-1');
+    els[0].setAttribute('tabindex', '0');
+    rovingEl = els[0];
+  }
+  const centerCache = Object.create(null);
+  function provCenter(id) {                         // middle of the box of the largest ring
+    if (centerCache[id]) return centerCache[id];
+    let best = null;
+    provPolys(id).forEach(r => { const a = (r.x1 - r.x0) * (r.y1 - r.y0); if (!best || a > best.a) best = { a, x: (r.x0 + r.x1) / 2, y: (r.y0 + r.y1) / 2 }; });
+    return (centerCache[id] = best || { a: 0, x: 0, y: 0 });
+  }
+  const ARROWS = { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] };
+  // The territory to go to from `id` with an arrow: among the neighbours, the one that lies most nearly that way
+  // (within 60 degrees); if none does, among the neighbours of the neighbours, and so on up to three steps (islands).
+  function nextProvince(id, dir) {
+    const c0 = provCenter(id), seen = new Set([id]);
+    let frontier = [id];
+    for (let hop = 0; hop < 3; hop++) {
+      let best = null, bestScore = Infinity;
+      const next = [];
+      for (const f of frontier) for (const n of (provinces[f].neighbors || [])) {
+        if (!provinces[n] || !provinceEls[n] || seen.has(n)) continue;
+        seen.add(n); next.push(n);
+        const q = provCenter(n), dx = q.x - c0.x, dy = q.y - c0.y, d = Math.hypot(dx, dy);
+        if (d < 1e-6) continue;
+        const cos = (dx * dir[0] + dy * dir[1]) / d;
+        if (cos < (hop === 0 ? 0.5 : 0.7)) continue;
+        const score = d * (1 + 3 * (1 - cos));
+        if (score < bestScore) { bestScore = score; best = n; }
+      }
+      if (best) return best;
+      frontier = next;
+    }
+    return null;
+  }
+  // brings a territory into view when it is off the visible part of the map (never changes the zoom)
+  function ensureVisible(id) {
+    const q = provCenter(id), rect = svgEl.getBoundingClientRect();
+    const viewH = VBW * (rect.height / Math.max(1, rect.width));
+    const vx = tx + scale * q.x, vy = ty + scale * q.y;
+    const mx = VBW * 0.1, my = viewH * 0.1, y0 = VBH / 2 - viewH / 2, y1 = VBH / 2 + viewH / 2;
+    if (vx >= mx && vx <= VBW - mx && vy >= y0 + my && vy <= y1 - my) return false;
+    tx += VBW / 2 - vx; ty += VBH / 2 - vy;
+    updateTransform(); updateLabels();
+    return true;
+  }
+  function centerOn(id) {
+    const q = provCenter(id);
+    tx = VBW / 2 - scale * q.x; ty = VBH / 2 - scale * q.y;
+    updateTransform();
+  }
+  function showRing(id) {
+    if (!focLayer) return;
+    while (focLayer.firstChild) focLayer.removeChild(focLayer.firstChild);
+    const rings = id && provinces[id] ? window.MAP_SVG.provincePolys[id] : null;
+    if (!rings) return;
+    ['foc-casing', 'foc-ring'].forEach(cls => rings.forEach(pts => {
+      const poly = document.createElementNS(svgNS, 'polygon');
+      poly.setAttribute('points', pts);
+      poly.setAttribute('class', cls);
+      focLayer.appendChild(poly);
+    }));
+  }
+  function initMapKeyboard() {
+    const first = selectedProvinceId && provinceEls[selectedProvinceId] ? selectedProvinceId
+      : provinceAt(HOME_REGION.x + HOME_REGION.w / 2, HOME_REGION.y + HOME_REGION.h / 2) || Object.keys(provinceEls)[0];
+    setRoving(first);
+    const provOf = t => { const p = t && t.closest ? t.closest('.province-poly') : null; return p && p.dataset.id && provinces[p.dataset.id] ? p.dataset.id : null; };
+    // the focus events are heard on the HTML box around the map, not on the <svg>: an SVG element that listens to
+    // focus events becomes a Tab stop of its own in Chromium (an empty stop before the territories)
+    const mapBox = svgEl.parentNode;
+    mapBox.addEventListener('focusin', e => {
+      const id = provOf(e.target);
+      if (!id) return;
+      setRoving(id);
+      let vis = false;
+      try { vis = e.target.matches(':focus-visible'); } catch (err) { vis = false; }     // a ring only for the keyboard, not for a tap
+      showRing(vis ? id : null);
+    });
+    mapBox.addEventListener('focusout', e => { if (provOf(e.target)) showRing(null); });
+    svgEl.addEventListener('keydown', e => {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const id = provOf(e.target), k = e.key;
+      if (k === '+' || k === '=' || k === '-' || k === '_' || k === '0') {
+        e.preventDefault();
+        if (k === '0') { goHome(); return; }
+        if (id) centerOn(id);                                // zoom around the territory that has the focus
+        applyZoom(scale * ((k === '+' || k === '=') ? 1.3 : 0.75));
+        return;
+      }
+      if (!id) return;
+      if (ARROWS[k] && !e.shiftKey) {
+        e.preventDefault();
+        const n = nextProvince(id, ARROWS[k]);
+        if (!n) { announce('Nessun altro territorio in questa direzione.'); return; }
+        ensureVisible(n);
+        try { provinceEls[n][0].focus({ preventScroll: true }); } catch (err) { provinceEls[n][0].focus(); }
+        return;
+      }
+      if (k === 'Enter' || k === ' ' || k === 'Spacebar') {
+        e.preventDefault();
+        selectProvince(id);                                  // opens the card and announces it; the focus stays on the map
+        revealCard();
+      }
+    });
+  }
+
+  // The territories as text, by state: built the first time the list is opened, and again when ownership changes.
+  function renderTerrList() {
+    terrListDirty = false;
+    const box = el('terrList');
+    box.querySelectorAll('details').forEach(d => { if (d.open) terrOpenCodes.add(d.dataset.code); else terrOpenCodes.delete(d.dataset.code); });
+    const by = {};
+    for (const id in provinces) (by[provinces[id].owner] || (by[provinces[id].owner] = [])).push(id);
+    const groups = Object.keys(by).map(code => ({ code, name: countries[code] ? countries[code].name : code, ids: by[code] }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'it'));
+    const frag = document.createDocumentFragment();
+    groups.forEach(g => {
+      const d = document.createElement('details');
+      d.className = 'tl-state'; d.dataset.code = g.code;
+      if (terrOpenCodes.has(g.code)) d.open = true;
+      const s = document.createElement('summary');
+      s.textContent = `${g.name} (${g.ids.length})`;
+      const items = document.createElement('div');
+      items.className = 'tl-items';
+      g.ids.sort((a, b) => provName(a).localeCompare(provName(b), 'it')).forEach(id => {
+        const p = provinces[id], b = document.createElement('button');
+        b.type = 'button'; b.className = 'tl-item'; b.dataset.id = id;
+        b.textContent = provName(id);
+        if (p.controller !== p.owner && countries[p.controller]) {
+          const sub = document.createElement('span');
+          sub.className = 'mk-sub'; sub.textContent = ' · sotto controllo di ' + countries[p.controller].name;
+          b.appendChild(sub);
+        }
+        items.appendChild(b);
+      });
+      d.append(s, items);
+      frag.appendChild(d);
+    });
+    box.textContent = '';
+    box.appendChild(frag);
+    el('terrListSummary').textContent = `Elenco dei territori per Stato (${groups.length} Stati)`;
+  }
+  function initTerrList() {
+    const box = el('terrListBox');
+    box.addEventListener('toggle', () => { if (box.open && terrListDirty) renderTerrList(); });
+    el('terrList').addEventListener('click', e => {
+      const b = e.target && e.target.closest ? e.target.closest('.tl-item') : null;
+      if (!b || !provinces[b.dataset.id]) return;
+      selectProvince(b.dataset.id); focusProvince(b.dataset.id); revealCard();
+    });
+  }
+
+  // the skip link moves the focus by script too (a link to #main would not always be followed inside a viewer)
+  el('skipLink').addEventListener('click', e => {
+    e.preventDefault();
+    const m = el('main');
+    try { m.focus({ preventScroll: true }); } catch (err) { m.focus(); }
+    m.scrollIntoView({ block: 'start', behavior: 'auto' });
+  });
+
   buildMap();
   goHome();
+  initMapKeyboard();
+  initTerrList();
   if (typeof window.addEventListener === 'function') window.addEventListener('resize', updateLabels);
 
   // Capabilities (persistence + language model), requested in parallel.
@@ -6010,6 +6297,7 @@ window.MAP_SVG = {
     el('yearLabel').textContent = state.year;
     renderStats();
     gameEl.classList.remove('hidden');
+    el('gameTitle').setAttribute('aria-level', mode === 'free' ? '1' : '2');     // the page has one h1 at a time
     updateModeUI();                                     // a game is running: the editor is off
     el('resumeBanner').classList.add('hidden');
     if (mode === 'fixed') {
@@ -6036,6 +6324,7 @@ window.MAP_SVG = {
     gameOver = false; mapGameStarted = false;
     logEl.innerHTML = '';
     showGameUI('free');
+    focusEl('gameTitle');
     autoSave();
   }
   el('startBtn').onclick = () => {
@@ -6200,7 +6489,8 @@ window.MAP_SVG = {
     showGameUI('fixed');
     if (selectedProvinceId) openProvincePanel(selectedProvinceId);   // hides the play button
     autoSave();
-    gameEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    gameEl.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+    focusEl('gameTitle');
   }
 
   function resetGame() {
@@ -6234,19 +6524,30 @@ window.MAP_SVG = {
     el('freeScenarioPanel').classList.remove('hidden');
     el('scenarioDivider').classList.remove('hidden');
     refreshResumeBanner();          // the previous game is still saved: offer to continue it
-    setupEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setupEl.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
+    focusEl('appTitle');
   }
   el('newGameBtn').onclick = resetGame;
-  el('backToMapBtn').onclick = () => el('fixedScenarioPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  el('backToMapBtn').onclick = () => { el('fixedScenarioPanel').scrollIntoView({ behavior: scrollBehavior(), block: 'start' }); focusEl('fixedTitle'); };
 
-  el('tabActions').onclick = () => {
-    el('tabActions').classList.add('active'); el('tabDiplo').classList.remove('active');
-    el('actionsPanel').classList.remove('hidden'); el('diploPanel').classList.add('hidden');
-  };
-  el('tabDiplo').onclick = () => {
-    el('tabDiplo').classList.add('active'); el('tabActions').classList.remove('active');
-    el('diploPanel').classList.remove('hidden'); el('actionsPanel').classList.add('hidden');
-  };
+  // the two sections are real tabs: one is selected, the arrow keys / Home / End go from one to the other
+  function selectTab(which, focus) {
+    const act = which === 'actions', a = el('tabActions'), d = el('tabDiplo');
+    a.classList.toggle('active', act); d.classList.toggle('active', !act);
+    a.setAttribute('aria-selected', String(act)); d.setAttribute('aria-selected', String(!act));
+    a.tabIndex = act ? 0 : -1; d.tabIndex = act ? -1 : 0;
+    el('actionsPanel').classList.toggle('hidden', !act); el('diploPanel').classList.toggle('hidden', act);
+    if (focus) (act ? a : d).focus();
+  }
+  el('tabActions').onclick = () => selectTab('actions');
+  el('tabDiplo').onclick = () => selectTab('diplo');
+  el('tabActions').parentNode.addEventListener('keydown', e => {
+    if (!e.target.classList || !e.target.classList.contains('tab-btn')) return;
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+    e.preventDefault();
+    const onActions = e.target.id === 'tabActions';
+    selectTab((e.key === 'Home' ? true : e.key === 'End' ? false : !onActions) ? 'actions' : 'diplo', true);
+  });
 
   actBtn.onclick = async () => {
     const actionInput = el('actionInput');
@@ -6256,6 +6557,7 @@ window.MAP_SVG = {
     const requestSession = gameSession;
     actBtn.disabled = true;
     thinkingEl.classList.remove('hidden');
+    announce('Il motore storico sta elaborando…');
     addLog({ k: 'a', text: action });
 
     const s = state.stats;
@@ -6303,6 +6605,7 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
     const requestSession = gameSession;
     advisorBtn.disabled = true;
     thinkingEl.classList.remove('hidden');
+    announce('Il Consigliere sta preparando un consiglio…');
     const s = state.stats;
     const prompt = `Sei un consigliere storico per chi guida ${state.nation} nell'anno ${state.year}. ${territoryContext()} Stato del mondo: ${state.worldSummary || "inizio partita"}. Statistiche: Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}. Dai un breve consiglio strategico (2-3 frasi) su cosa potrebbe fare ora, in italiano.`;
     try {
@@ -6358,6 +6661,7 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
     const live = () => requestGame === gameSession && requestDiplo === diplomacySession;
     btn.disabled = true;
     el('diploThinking').classList.remove('hidden');
+    announce('In attesa di risposta…');
     addBubble({ w: 'u', t: msg });
 
     const isFirst = state.diplo.history.length === 0;
@@ -6534,10 +6838,12 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
     mapGameStarted = g.mode === 'fixed';
     selectedCountryId = (mapGameStarted && own(countries, data.selectedCountryId)) ? data.selectedCountryId : null;
 
+    [logEl, diploLogEl].forEach(n => n.setAttribute('aria-live', 'off'));       // a loaded game is not read out entry by entry
     logEl.innerHTML = '';
     state.log.forEach(e => addTo(logEl, renderLogEntry(e)));
     diploLogEl.innerHTML = '';
     state.diplo.bubbles.forEach(b => addTo(diploLogEl, renderBubble(b)));
+    setTimeout(() => [logEl, diploLogEl].forEach(n => n.removeAttribute('aria-live')), 400);
     if (state.diplo.target) {
       el('diploTargetLabel').textContent = state.diplo.target;
       el('diploSetup').classList.add('hidden'); el('diploChat').classList.remove('hidden');
@@ -6578,7 +6884,7 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
     el('resumeText').textContent = `Partita salvata: ${String(g.nation || '')}, ${String(g.year || '')}${g.over ? ' (conclusa)' : ''}.`;
     el('resumeBanner').classList.remove('hidden');
   }
-  el('resumeBtn').onclick = () => { if (savedSnapshot) applySave(savedSnapshot); };
+  el('resumeBtn').onclick = () => { if (savedSnapshot && applySave(savedSnapshot)) focusEl('gameTitle'); };
   el('resumeDismissBtn').onclick = () => el('resumeBanner').classList.add('hidden');
   modeUiReady = true;
   updateModeUI();

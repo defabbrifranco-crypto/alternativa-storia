@@ -34,7 +34,7 @@ test('la pagina dichiara la propria versione e la versione dei salvataggi', () =
   assert.ok(page, 'manca la nota «Versione N» nella pagina');
   const save = html.match(/schemaVersion: (\d+)/);
   assert.ok(save, 'il salvataggio non dichiara schemaVersion');
-  assert.ok(Number(page[1]) >= 25, 'la versione scritta nella pagina non è aggiornata');
+  assert.ok(Number(page[1]) >= 26, 'la versione scritta nella pagina non è aggiornata');
   assert.ok(Number(save[1]) >= 3);
 });
 
@@ -56,6 +56,54 @@ test('Gioco ed Editor scenario sono modalità separate, e la legenda di propriet
   // la legenda spiega proprietario e controllore a parole
   assert.ok(html.includes('<b>Colore pieno</b>') && html.includes('<b>Righe diagonali</b>'));
   assert.ok(html.includes('Proprietario e controllore: che differenza c'));
+});
+
+// ---- Accessibilità (issue #4): controlli che non richiedono il browser. Le prove vere sono in tests/browser/t14_a11y.js.
+const bodyStart = html.indexOf('<body');
+const body = html.slice(bodyStart, html.indexOf('<script', bodyStart));      // il documento, senza il codice
+const css = html.slice(html.indexOf('<style'), html.indexOf('</style>'));
+const bodyIds = [...body.matchAll(/\sid="([^"]+)"/g)].map(m => m[1]);
+
+test('accessibilità: un solo <main>, collegamento «Vai al contenuto», area per gli annunci', () => {
+  assert.strictEqual((body.match(/<main[ >]/g) || []).length, 1, 'ci deve essere un solo <main>');
+  assert.ok(/<a class="skip-link" href="#main" id="skipLink">/.test(body), 'manca il collegamento «Vai al contenuto»');
+  assert.ok(/<main[^>]*id="main"[^>]*tabindex="-1"/.test(body), 'il <main> deve poter ricevere il focus');
+  assert.ok(/id="a11yStatus" role="status" aria-live="polite"/.test(body), 'manca l\'area degli annunci (role="status")');
+  assert.ok(/<html lang="it">/.test(html));
+});
+
+test('accessibilità: nessun id ripetuto, riferimenti ARIA che puntano a qualcosa, nessun tabindex positivo', () => {
+  assert.deepStrictEqual(bodyIds.filter((id, i) => bodyIds.indexOf(id) !== i), [], 'id ripetuti');
+  for (const attr of ['aria-labelledby', 'aria-describedby', 'aria-controls']) {
+    for (const m of body.matchAll(new RegExp(attr + '="([^"]+)"', 'g'))) {
+      for (const id of m[1].split(/\s+/)) assert.ok(bodyIds.includes(id), `${attr}="${id}" non punta a nessun elemento`);
+    }
+  }
+  assert.ok(!/tabindex="[1-9]/.test(html), 'tabindex positivo: cambia l\'ordine naturale della tastiera');
+});
+
+test('accessibilità: ogni etichetta è legata a un campo, ogni pulsante ha un nome', () => {
+  for (const m of body.matchAll(/<label\b([^>]*)>([\s\S]*?)<\/label>/g)) {
+    const f = /\bfor="([^"]+)"/.exec(m[1]);
+    if (f) assert.ok(bodyIds.includes(f[1]), `<label for="${f[1]}"> non punta a nessun campo`);
+    else assert.ok(/<(input|select|textarea)\b/.test(m[2]), 'etichetta senza campo: ' + m[0].slice(0, 80));
+  }
+  // un pulsante senza testo (il testo può arrivare dal codice) deve avere almeno aria-label
+  for (const m of body.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)) {
+    const text = m[2].replace(/<span aria-hidden="true">[^<]*<\/span>/g, '').replace(/<[^>]+>/g, '').trim();
+    const id = (/\bid="([^"]+)"/.exec(m[1]) || [])[1] || m[0].slice(0, 40);
+    assert.ok(text || /aria-label="[^"]+"/.test(m[1]), 'pulsante senza nome: ' + id);
+  }
+});
+
+test('accessibilità: il foglio di stile rispetta le preferenze di sistema e non nasconde il focus', () => {
+  for (const q of ['@media (prefers-reduced-motion: reduce)', '@media (forced-colors: active)', ':focus-visible']) {
+    assert.ok(css.includes(q), 'manca ' + q);
+  }
+  // ogni «outline: none» deve avere un'alternativa visibile: oggi sono tre, tutte con un segno di sostituzione provato in t14_a11y.js
+  const lines = css.split('\n').filter(l => /outline\s*:\s*(none|0)\b/.test(l)).map(l => l.trim());
+  const allowed = ['.marker-layer .marker, .marker-layer .mk-cluster {', 'main:focus {', '.province-poly:focus {'];
+  for (const l of lines) assert.ok(allowed.some(a => l.startsWith(a)), 'outline tolto senza alternativa: ' + l.slice(0, 80));
 });
 
 test('index.html porta alla pagina e il file esiste', () => {

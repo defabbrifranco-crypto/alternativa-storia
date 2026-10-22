@@ -61,6 +61,14 @@ Su GitHub le stesse prove partono da sole a ogni push e a ogni pull request (`.g
 | `t11_engine.js` | sovranità e controllo, risposte in ritardo, validazione dei salvataggi |
 | `t12_providers.js` | fuori da Claude: salvataggi nel browser, esporta/importa, modalità manuale, `localStorage` bloccato |
 | `t13_editor.js` | modalità «Gioco» ed «Editor scenario», legenda fissa di proprietà e controllo, scenario come file, blocco dell'Editor durante la partita |
+| `t14_a11y.js` | accessibilità: punti di riferimento e titoli, nomi dei controlli, mappa da tastiera, elenco dei territori, annunci, contrasto (due misure indipendenti), dimensione dei comandi, movimento ridotto, alto contrasto, partita intera con la sola tastiera |
+
+## Come funziona `t14_a11y.js`
+
+- Il «lettore di schermo» della prova è l'**albero dell'accessibilità** che Chromium calcola per ogni pagina (ruoli, nomi, stati: la stessa fonte da cui attingono i lettori veri). Non sostituisce una prova con NVDA, VoiceOver o TalkBack, che resta da fare a mano (vedi `docs/ACCESSIBILITA.md`).
+- Il **contrasto** si misura in due modi indipendenti: un controllo scritto per la prova (testo e segnaposto, tema chiaro e scuro, soglie 4,5 su 1 e 3 su 1 per il testo grande) e il controllo del contrasto di Chromium stesso (`Audits.checkContrast`). Quest'ultimo ignora le emoji (immagini a colori) e il testo dentro un `<details>` chiuso (calcolato ma mai disegnato, quindi misurato su pixel vuoti).
+- Un controllo cerca i **comandi solo per il mouse** (cursore a mano ma non raggiungibili con Tab) e un altro la **dimensione minima di 24 × 24 px**. Prima di usarli la prova li mette alla prova con un difetto messo apposta: uno strumento che non si lamenta mai non vale nulla.
+- Non è `axe`: nel nostro ambiente di sviluppo il registro dei pacchetti non era raggiungibile, quindi `axe-core` non è stato eseguito (vedi `docs/ACCESSIBILITA.md`).
 
 ## Attenzione
 

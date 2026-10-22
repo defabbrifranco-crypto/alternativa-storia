@@ -32,6 +32,8 @@ function instrument(html) {
     parseManualJson, promptText, openTransfer, cancelManual, saveVersion, askManual });
   if (typeof editorMode !== 'undefined') Object.assign(window.__t, { getEditorMode: () => editorMode, setEditorMode, updateModeUI, scenarioEdits,
     restoreStartingScenario, transferProvince, renderOccupations });
+  if (typeof renderTerrList !== 'undefined') Object.assign(window.__t, { renderTerrList, provLabel, provCenter, nextProvince, ensureVisible, setRoving,
+    announce, scrollBehavior, getRoving: () => rovingEl });
 })();`;
   return html.replace(tail, hook);
 }
