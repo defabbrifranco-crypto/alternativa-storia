@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node --test && node tests/browser/run.js",
     "test:data": "node --test",
-    "test:browser": "node tests/browser/run.js"
+    "test:browser": "node tests/browser/run.js",
+    "lint": "node --test tests/lint.test.js"
   },
   "devDependencies": {
     "playwright": "1.56.0"
