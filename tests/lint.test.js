@@ -116,3 +116,39 @@ test('i collegamenti relativi dei documenti portano a file che esistono', () => 
     }
   }
 });
+
+// Legge una costante in forma JSON scritta nella pagina (per esempio «const COUNTRY_NOTES = {...};»).
+function leggiCostante(src, nome) {
+  const marca = `const ${nome} = `;
+  const inizio = src.indexOf(marca);
+  assert.ok(inizio >= 0, `nella pagina manca «${marca}»`);
+  const i = inizio + marca.length, apre = src[i], chiude = apre === '{' ? '}' : ']';
+  let profondita = 0, inStringa = false, esc = false, j = i;
+  for (; j < src.length; j++) {
+    const c = src[j];
+    if (inStringa) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inStringa = false; continue; }
+    if (c === '"') { inStringa = true; continue; }
+    if (c === apre) profondita++;
+    else if (c === chiude && --profondita === 0) { j++; break; }
+  }
+  return JSON.parse(src.slice(i, j));
+}
+
+test('i numeri sulle unità in docs/CONFINI-MAPPA.md coincidono con le note della pagina', () => {
+  // Solo i numeri che si leggono dal file senza aprire un browser (stati suddivisi, unità disegnate e non).
+  // Il documento cita anche il numero delle province: quello si misura nel browser e non è controllato qui.
+  const doc = read('docs/CONFINI-MAPPA.md');
+  const src = read('src/storia-alternativa-prototipo.html');
+  const note = Object.values(leggiCostante(src, 'COUNTRY_NOTES'));
+  const singoli = Object.keys(leggiCostante(src, 'SINGLE_NOTES'));
+  const somma = f => note.reduce((n, x) => n + f(x), 0);
+  const it = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const attese = [
+    `Per ${note.length} Stati ogni unità`,
+    `Altri ${singoli.length} Stati restano`,
+    `l'elenco ha ${it(somma(x => x.nCsv))} unità: ${it(somma(x => x.nUnits))} sono disegnate, ${somma(x => x.unplaced.length)} non lo sono perché la posizione è da verificare e ${somma(x => x.containers.length)} sono unità «contenitore»`,
+  ];
+  for (const frase of attese) {
+    assert.ok(doc.includes(frase), `docs/CONFINI-MAPPA.md non contiene più «${frase}»: i numeri della pagina sono cambiati o il testo è stato modificato`);
+  }
+});
