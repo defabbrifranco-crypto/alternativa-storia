@@ -108,7 +108,12 @@ test('i collegamenti relativi dei documenti portano a file che esistono', () => 
     for (const m of testo.matchAll(/\[[^\]\n]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g)) {
       let dest = m[1];
       if (/^(https?:|mailto:|#)/.test(dest)) continue;
-      if (/^\.\.\/\.\.\/(issues|pull|pulls|actions|wiki|discussions)\b/.test(dest)) continue;   // collegamenti di GitHub verso issue e pull request
+      if (/^\.\.\/\.\.\/(issues|pull|pulls|actions|wiki|discussions)\b/.test(dest)) {
+        // Collegamento di GitHub verso issue e pull request. Da un file nella radice («../../issues/N», come nel README) arriva alla
+        // pagina giusta; da un file in una cartella (docs/, src/…) porta a una pagina che non esiste. Lì il numero si scrive come testo («#N»).
+        assert.strictEqual(dir, '.', `${f}: il collegamento «${m[1]}» funziona solo dai file nella radice; da una cartella scrivi il numero come testo semplice («#N»)`);
+        continue;
+      }
       dest = decodeURIComponent(dest.split('#')[0]);
       if (!dest) continue;
       const risolto = path.posix.normalize(path.posix.join(dir, dest));

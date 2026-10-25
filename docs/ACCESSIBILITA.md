@@ -1,6 +1,6 @@
 # Accessibilità
 
-Dalla versione 26 la pagina si può usare **senza mouse**, con un **lettore di schermo**, con **meno animazioni** e con colori **più leggibili**. Questo documento dice cosa è stato fatto, come si usa, che cosa è stato provato e che cosa **no** (issue [#4](../../issues/4)).
+Dalla versione 26 la pagina si può usare **senza mouse**, con un **lettore di schermo**, con **meno animazioni** e con colori **più leggibili**. Questo documento dice cosa è stato fatto, come si usa, che cosa è stato provato e che cosa **no** (issue #4).
 
 ## Come si usa
 
