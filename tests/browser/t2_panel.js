@@ -60,27 +60,31 @@ const { launch, check, summary } = require('./harness');
   await page.evaluate(() => window.__t.selectProvince('UKR_MAIN'));
   check('Ukraine (kept single) still has the Soviet-republic note', (await txt('#pp-units')).includes('Repubblica sovietica'));
 
-  console.log('— Kuwait, Cyprus, Oman, South Yemen, Syria: only the status of the data sheet');
-  // whole panel text, collapsed notes included: nothing about a protectorate, colony, United Arab Republic or Aden
+  console.log('— status at 31 December 1960 (checked online, docs/STATUS-1960.md): Kuwait, Oman, Syria, Yemen, Cyprus, Bhutan');
+  // the whole panel text, collapsed notes included
   const panelText = () => page.evaluate(() => document.getElementById('provincePanel').textContent);
-  const conflicting = /protettorat|coloni|Repubblica Araba|\bRAU\b|Aden|influenza britannica|mandato/i;
   const cypId = await page.evaluate(() => window.__t.REGION_UNITS.find(u => u[2] === 'CYP')[0]);
-  for (const [label, id, pop] of [['Kuwait', 'KWT_MAIN', '321.000'], ['Oman', 'OMN_MAIN', '552.000'], ['Syria', 'SYR_MAIN', '4.574.000']]) {
+  const btnId = await page.evaluate(() => window.__t.REGION_UNITS.find(u => u[2] === 'BTN')[0]);
+  for (const [label, id, pop, status] of [
+    ['Kuwait', 'KWT_MAIN', '321.000', 'Protettorato britannico (indipendente dal 19 giugno 1961)'],
+    ['Oman', 'OMN_MAIN', '552.000', 'Stato sovrano (sotto forte influenza britannica)'],
+    ['Syria', 'SYR_MAIN', '4.574.000', 'Regione settentrionale della Repubblica Araba Unita (febbraio 1958 - 28 settembre 1961)']]) {
     await page.evaluate(i => window.__t.selectProvince(i), id);
     check(label + ': own population as in the sheet', (await txt('#pp-population')) === pop, await txt('#pp-population'));
-    check(label + ': status of the sheet "Stato sovrano"', (await txt('#pp-popnote')).includes('Status nel 1960: Stato sovrano'), await txt('#pp-popnote'));
-    check(label + ': no unit/historical note of mine', (await txt('#pp-units')) === 'nessuna', await txt('#pp-units'));
-    check(label + ': nothing about protectorate, colony, UAR, Aden anywhere in the panel', !conflicting.test(await panelText()), (await panelText()).match(conflicting));
+    check(label + ': status at 31 December 1960', (await txt('#pp-popnote')).includes('Status al 31 dicembre 1960: ' + status), await txt('#pp-popnote'));
+    check(label + ': no separate unit note (the status already says it)', (await txt('#pp-units')) === 'nessuna', await txt('#pp-units'));
+    check(label + ': the old label "Status nel 1960" is gone', !(await panelText()).includes('Status nel 1960'));
   }
   await page.evaluate(() => window.__t.selectProvince('YEM_MAIN'));
-  check('South Yemen: status of the sheet next to its figure', (await txt('#pp-statepop')).includes('Yemen del Sud (Stato sovrano): 1.000.000'), await txt('#pp-statepop'));
+  check('Yemen: both parts shown with their own status, not summed', (await txt('#pp-statepop')).includes('Yemen (Stato sovrano): 5.168.000') && (await txt('#pp-statepop')).includes('Yemen del Sud (Colonia di Aden e protettorati britannici (indipendenza il 30 novembre 1967)): 1.000.000'), await txt('#pp-statepop'));
   check('Yemen: the only unit note says the map does not tell north from south', (await txt('#pp-units')).includes('non sono distinti sulla mappa'), await txt('#pp-units'));
-  check('Yemen: nothing about protectorate, colony, Aden anywhere in the panel', !conflicting.test(await panelText()), (await panelText()).match(conflicting));
   await page.evaluate(i => window.__t.selectProvince(i), cypId);
-  check('Cyprus (a district): state figure and status of the sheet', (await txt('#pp-statepop')) === 'Cipro: 573.000' && (await txt('#pp-popnote')).includes('Status nel 1960: Stato sovrano'), [await txt('#pp-statepop'), await txt('#pp-popnote')]);
+  check('Cyprus (a district): state figure and status "Stato sovrano"', (await txt('#pp-statepop')) === 'Cipro: 573.000' && (await txt('#pp-popnote')).includes('Status al 31 dicembre 1960: Stato sovrano'), [await txt('#pp-statepop'), await txt('#pp-popnote')]);
   const cypDet = await page.evaluate(() => document.getElementById('pp-detbody').textContent);
-  check('Cyprus: file level kept, my colonial note gone', cypDet.includes('6 distretti') && !cypDet.includes('Estensione dello Stato'), cypDet.slice(0, 300));
-  check('Cyprus: nothing about protectorate, colony anywhere in the panel', !conflicting.test(await panelText()), (await panelText()).match(conflicting));
+  check('Cyprus: file level kept, no colonial note of mine', cypDet.includes('6 distretti') && !cypDet.includes('Estensione dello Stato'), cypDet.slice(0, 300));
+  check('Cyprus: the status of 1 January ("Colonia britannica") is not shown', !(await panelText()).includes('Colonia britannica'), await txt('#pp-popnote'));
+  await page.evaluate(i => window.__t.selectProvince(i), btnId);
+  check('Bhutan (a district): state figure and status with the 1949 treaty', (await txt('#pp-statepop')) === 'Bhutan: 224.000' && (await txt('#pp-popnote')).includes("Status al 31 dicembre 1960: Stato sovrano, con la politica estera guidata dall'India (trattato del 1949)"), [await txt('#pp-statepop'), await txt('#pp-popnote')]);
 
   console.log('— special shapes and inherited notes');
   await page.evaluate(() => window.__t.selectProvince('FRG_11'));

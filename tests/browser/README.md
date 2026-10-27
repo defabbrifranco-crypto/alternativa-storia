@@ -72,8 +72,10 @@ Su GitHub le stesse prove partono da sole a ogni push e a ogni pull request (`.g
 
 ## Attenzione
 
-- `t3_game.js` fissa oggi la regola «per Kuwait, Cipro, Oman e Siria vale lo status della scheda dati, senza
-  note storiche aggiunte». Se si adottano le correzioni di status di `docs/data-notes-population-1960.md`,
-  quei controlli vanno aggiornati insieme ai dati.
+- `t2_panel.js` (scheda del territorio), `t1_basic.js` (colore e alleanza del Kuwait) e `t3_game.js` (alleanza nel testo
+  per l'AI) fissano gli status al **31 dicembre 1960** controllati online (`docs/STATUS-1960.md`). Se si cambia uno
+  status vanno cambiati insieme: `src/data/population_1960.json`, l'elenco `POPULATION_1960_B` della pagina,
+  `docs/STATUS-1960.md` e questi controlli (la prova `tests/population-pagina.test.js` si ferma se dati, pagina e
+  documento non coincidono).
 - Le prove dipendono dai nomi interni della pagina: rinominare una funzione esposta dal gancio richiede di
   aggiornare `harness.js` e le prove che la usano.

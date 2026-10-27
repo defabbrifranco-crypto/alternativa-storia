@@ -9,9 +9,9 @@ const { launch, check, summary } = require('./harness');
   check('game running in fixed mode', await page.evaluate(() => window.__t.getGameMode() === 'fixed' && window.__t.getMapGameStarted()));
   check('game starts on 31 dicembre 1960', (await txt('#yearLabel')) === '31 dicembre 1960' && (await page.evaluate(() => window.__t.getState().year)) === '31 dicembre 1960', await txt('#yearLabel'));
   const allianceCtx = await page.evaluate(() => { const t = window.__t, o = {}; for (const c of ['KWT', 'CYP', 'OMN', 'SYR']) { t.selectCountry(c); o[c] = t.territoryContext(); } t.selectCountry('FRG'); return o; });
-  check('prompt: Kuwait, Cyprus, Oman have alliance "da verificare", no protectorate/colony wording',
-    ['KWT', 'CYP', 'OMN'].every(c => allianceCtx[c].includes('(alleanza: da verificare)') && !/protettorat|coloni|influenza/i.test(allianceCtx[c])), allianceCtx);
-  check('prompt: Syria unchanged (Non allineata), no mention of the United Arab Republic', allianceCtx.SYR.includes('(alleanza: Non allineata)') && !/Repubblica Araba/i.test(allianceCtx.SYR), allianceCtx.SYR);
+  check('prompt: Kuwait is a British protectorate (checked online); Cyprus and Oman keep alliance "da verificare"',
+    allianceCtx.KWT.includes('(alleanza: Protettorato britannico)') && ['CYP', 'OMN'].every(c => allianceCtx[c].includes('(alleanza: da verificare)')), allianceCtx);
+  check('prompt: Syria unchanged (Non allineata)', allianceCtx.SYR.includes('(alleanza: Non allineata)'), allianceCtx.SYR);
   const ctxTxt = await page.evaluate(() => window.__t.territoryContext());
   check('context names the player, alliance and number of territories', ctxTxt.includes('Germania Ovest') && ctxTxt.includes('NATO') && ctxTxt.includes('11 territori') && ctxTxt.includes('Baviera'), ctxTxt);
   const rules = await page.evaluate(() => window.__t.territoryRules('Voglio riunificare la Germania con la RDT'));

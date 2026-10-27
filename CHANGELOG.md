@@ -6,13 +6,26 @@ Le date sono quelle di consegna dei pacchetti di modifiche. Prima della versione
 
 ## [Non rilasciato]
 
+Niente per ora.
+
+## [0.27.0] - 2026-10-26
+
+Data di riferimento e status politici al 31 dicembre 1960, controllati online ([#8](../../issues/8)); pulizia del progetto ([#6](../../issues/6)).
+
 ### Aggiunto
+- `docs/STATUS-1960.md`: che cosa è stato controllato online sugli status politici al 31 dicembre 1960 (il 25 e 26 ottobre 2026, su fonti secondarie), che cosa è cambiato, che cosa non è stato controllato e le fonti.
+- `tests/population-pagina.test.js`: confronta riga per riga status e popolazioni scritti nella pagina con quelli di `src/data/population_1960.json` e controlla che le fonti degli status e `docs/STATUS-1960.md` siano coerenti con i dati. Provato con nove difetti inseriti apposta ([#8](../../issues/8)).
+- Nel file dei dati: `status_sources` in ogni record controllato e, in `meta`, `status_policy`, `status_check` e `status_sources` (descrizione delle fonti); lo schema è aggiornato.
 - `LICENSE` (licenza MIT, titolare: il nome utente GitHub dell'autore) e `ATTRIBUZIONI.md`, che spiega cosa la licenza copre e cosa no (i dati di terzi) e da dove vengono i dati: i contorni degli Stati derivano da un file con gli attributi di Natural Earth (pubblico dominio), le regioni sono celle approssimate calcolate dai punti di un file dell'autore, mentre le fonti dei dati di popolazione e di parte degli elenchi di unità restano da verificare ([#6](../../issues/6)).
 - `docs/CONFINI-MAPPA.md`: come è costruita la mappa (file di partenza, passi, linee tracciate a mano, unità non disegnate) e cosa non va letto come storico ([#3](../../issues/3)).
 - Questo registro (`CHANGELOG.md`) e una **bozza** di `CITATION.cff` (autore: il nome utente GitHub; mancano versione e data di rilascio) ([#6](../../issues/6)).
 - `tests/lint.test.js`: controllo di sintassi e di coerenza, senza dipendenze esterne. Verifica la sintassi dei file `.js` e degli script dentro le pagine, che i file `.json` si leggano, che il codice rimosso non ricompaia, che `package.json`, questo registro e la pagina dichiarino la stessa versione, che i collegamenti relativi dei documenti portino a file esistenti (e che quelli verso issue e pull request stiano solo nei file della radice, dove funzionano), che i numeri sulle unità in `docs/CONFINI-MAPPA.md` coincidano con le note della pagina e che `CITATION.cff` abbia le chiavi obbligatorie. Parte con `node --test`, quindi a ogni push; `npm run lint` lo lancia da solo. Non è ESLint e non giudica lo stile ([#6](../../issues/6)).
 
 ### Modificato
+- **Data di riferimento degli status: 31 dicembre 1960** (prima: 1 gennaio 1960 nei documenti e nel dataset). Il campo `status_1960_01_01` si chiama ora `status_1960_12_31` e `meta.reference_date` è `1960-12-31`.
+- **Status corretti**, dopo il controllo online (`docs/STATUS-1960.md`): Kuwait «Protettorato britannico (indipendente dal 19 giugno 1961)»; Siria «Regione settentrionale della Repubblica Araba Unita (febbraio 1958 - 28 settembre 1961)»; Yemen del Sud «Colonia di Aden e protettorati britannici (indipendenza il 30 novembre 1967)»; Maldive «Stato protetto britannico con autogoverno interno (fino al 1965)». **Precisati**: Oman «Stato sovrano (sotto forte influenza britannica)» (le fonti non concordano) e Bhutan «Stato sovrano, con la politica estera guidata dall'India (trattato del 1949)». **Confermato**: Cipro «Stato sovrano» (indipendente dal 16 agosto 1960); la revisione precedente del dataset, «Colonia britannica», valeva per il 1 gennaio 1960.
+- Pagina (versione 27): la scheda del territorio mostra «Status al 31 dicembre 1960» (prima «Status nel 1960») e, per i casi qui sopra, lo status corretto invece di «Stato sovrano», che era quello del file fornito. L'alleanza del Kuwait, prima «da verificare», ora è «Protettorato britannico», con il colore della famiglia «Colonie e protettorati»; Cipro e Oman restano «da verificare». I testi per l'AI non cambiano, tranne l'alleanza del Kuwait.
+- `docs/data-notes-population-1960.md` riscritto: nuova data, tabella delle revisioni, voci aperte. Prove nel browser (`t1_basic.js`, `t2_panel.js`, `t3_game.js`) e il loro `README.md` aggiornati: la vecchia regola «vale lo status della scheda dati, senza note storiche» è sostituita dagli status verificati.
 - Variante `src/storia-alternativa-prototipo-map-overlay.html` ([#6](../../issues/6)): tolta la funzione `legacyTerritoryRules`, definita e mai chiamata (usava il vecchio campo `cambi_territoriali`); riscritti due commenti che dicevano il contrario di ciò che fa il codice, cioè la nota sulla qualità dei dati e il commento del pulsante «Trasferisci controllo», che cambia solo il controllo e non il proprietario. Il comportamento della pagina non cambia.
 
 ## [0.26.0] - 2026-10-22

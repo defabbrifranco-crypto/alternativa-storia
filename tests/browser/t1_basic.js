@@ -36,7 +36,7 @@ const { launch, check, summary } = require('./harness');
   check('scenario title: 31 dicembre 1960', hd.title === 'Scenario fisso — Europa, 31 dicembre 1960', hd.title);
   check('page title unchanged', hd.pageTitle === 'Storia Alternativa — prototipo', hd.pageTitle);
   check('legend: 4 families + "Alleanza da verificare"', hd.legend.length === 5 && hd.legend[3] === 'Colonie e protettorati' && hd.legend[4] === 'Alleanza da verificare', hd.legend);
-  check('Kuwait/Cyprus/Oman: alliance da verificare, grey; Qatar (protectorate in the sheet) unchanged', hd.colours.join(' ') === '#9a9ea0/da verificare #aeb2b4/da verificare #858b8e/da verificare #b1a680/Protettorato britannico', hd.colours);
+  check('Kuwait: British protectorate (colony-family colour, like Qatar); Cyprus and Oman: alliance da verificare, grey', hd.colours.join(' ') === '#ab9e78/Protettorato britannico #aeb2b4/da verificare #858b8e/da verificare #b1a680/Protettorato britannico', hd.colours);
   await browser.close();
   process.exit(summary() ? 1 : 0);
 })();
