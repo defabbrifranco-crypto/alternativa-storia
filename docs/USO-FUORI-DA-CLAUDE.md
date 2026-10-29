@@ -48,17 +48,17 @@ Questi pulsanti riguardano la **partita in corso**: senza una partita, «Salva p
 
 Quando la pagina non è collegata a un modello, ogni volta che il gioco avrebbe chiesto una risposta all'AI mostra una finestra con due campi. Funziona così:
 
-1. Scrivi la tua azione e premi **Agisci e avanza** (oppure **Chiedi consiglio al Consigliere**, oppure invia un messaggio nella **Diplomazia**).
+1. Scrivi le tue azioni e premi **Invia** (mette le azioni in attesa e basta: non apre nessuna finestra), poi premi **Avanza** (oppure **Chiedi consiglio al Consigliere**, oppure invia un messaggio nella **Diplomazia**). Le due cose sono separate dalla versione 28: vedi `TURNO-E-AZIONI.md`.
 2. Nella finestra premi **Copia il testo**.
 3. Incolla il testo in un assistente AI a tua scelta (per esempio Claude o ChatGPT), meglio in una conversazione nuova.
-4. Copia **tutta** la risposta dell'assistente. Per «Agisci e avanza» è un testo che comincia con `{` e finisce con `}`; per il Consigliere e per la diplomazia è un testo normale.
+4. Copia **tutta** la risposta dell'assistente. Per «Avanza» è un testo che comincia con `{` e finisce con `}` (comprende anche le mosse delle altre nazioni); per il Consigliere e per la diplomazia è un testo normale.
 5. Torna alla pagina, incolla la risposta nel secondo campo e premi **Applica la risposta**.
 
 Cose utili da sapere:
 
 - Se l'assistente scrive frasi prima o dopo il testo, o lo mette in un riquadro di codice, va bene: la pagina lo ripulisce.
 - Se la risposta non si legge, la finestra resta aperta e spiega il problema: puoi incollare di nuovo.
-- **Annulla** (o il tasto Esc) chiude la finestra senza cambiare nulla; il testo dell'azione resta nel campo per riprovare.
+- **Annulla** (o il tasto Esc) chiude la finestra senza cambiare nulla; le azioni restano **in attesa** nell'elenco sotto la casella, così puoi riprovare premendo di nuovo **Avanza**.
 - Le regole sono le stesse di sempre: i cambi di territorio e i segnaposto proposti dall'assistente passano dagli stessi controlli, e quelli non validi vengono ignorati.
 - In **Diplomazia** il testo da copiare contiene tutta la conversazione fin lì, così l'assistente può continuare la scena.
 - Dentro Claude la modalità manuale si può accendere lo stesso con l'interruttore sotto i pulsanti della partita, per esempio per usare un altro assistente. La scelta resta memorizzata nel browser.

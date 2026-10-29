@@ -1,4 +1,4 @@
-const { launch, check, summary } = require('./harness');
+const { launch, check, summary, playTurn } = require('./harness');
 (async () => {
   const store = {};
   const { browser, page, errors } = await launch({ width: 640, height: 1100, mobile: false, store });
@@ -92,8 +92,7 @@ const { launch, check, summary } = require('./harness');
   console.log('— a turn through the interface');
   await page.evaluate(({ A }) => { window.__queue.push({ evento_titolo: 'Svolta a Suhl', narrativa: 'Le truppe occidentali passano il confine.', riepilogo_mondo: 'Suhl è passata alla RFT.', nuovo_anno: 'gennaio 1961', stabilita: 60, economia: 52, esercito: 61, prestigio: 58,
       cambi_territoriali: [{ provincia: A, nuovo_proprietario: 'FRG' }, { provincia: 'XX_99', nuovo_proprietario: 'FRG' }] }); }, geo);
-  await page.fill('#actionInput', 'Avanzo verso la Germania Est');
-  await page.click('#actBtn');
+  await playTurn(page, 'Avanzo verso la Germania Est');
   await page.waitForFunction(() => document.getElementById('thinking').classList.contains('hidden') && document.querySelector('#log .entry-terr'));
   const turn = await page.evaluate(({ A }) => ({ owner: window.__t.provinces[A].owner, ctl: window.__t.provinces[A].controller, terr: [...document.querySelectorAll('#log .entry-terr')].map(e => e.textContent),
       year: document.getElementById('yearLabel').textContent, prompt: window.__prompts[window.__prompts.length - 1], saved: document.getElementById('saveStatus').textContent }), geo);
@@ -122,11 +121,10 @@ const { launch, check, summary } = require('./harness');
   // the last one goes the way every change goes during a game: through the story (the engine's change, checked)
   await page.evaluate(last => window.__queue.push({ evento_titolo: 'La caduta', narrativa: 'Anche l\'ultima provincia cede.', riepilogo_mondo: 'Il paese è caduto.', nuovo_anno: 'marzo 1961',
     stabilita: 10, economia: 10, esercito: 10, prestigio: 10, cambi_territoriali: [{ provincia: last, nuovo_proprietario: 'GDR' }] }), own[0]);
-  await page.fill('#actionInput', 'Resisto fino all\'ultimo');
-  await page.click('#actBtn');
+  await playTurn(page, 'Resisto fino all\'ultimo');
   await page.waitForFunction(() => document.getElementById('thinking').classList.contains('hidden') && document.getElementById('log').textContent.includes('la partita è finita'), null, { timeout: 5000 });
-  const over = await page.evaluate(() => ({ log: document.getElementById('log').textContent, act: document.getElementById('actBtn').disabled }));
-  check('losing the last territory ends the game', over.log.includes('la partita è finita') && over.act === true, over);
+  const over = await page.evaluate(() => ({ log: document.getElementById('log').textContent, send: document.getElementById('sendBtn').disabled, advance: document.getElementById('advanceBtn').disabled }));
+  check('losing the last territory ends the game («Invia» and «Avanza» are off)', over.log.includes('la partita è finita') && over.send === true && over.advance === true, over);
 
   console.log('— new game resets the map');
   await page.click('#newGameBtn');
@@ -137,8 +135,7 @@ const { launch, check, summary } = require('./harness');
   console.log('— free scenario does not send map data');
   await page.fill('#nation', 'Impero Romano'); await page.fill('#startYear', '400 d.C.');
   await page.click('#startBtn');
-  await page.fill('#actionInput', 'Rinforzo il Reno');
-  await page.click('#actBtn');
+  await playTurn(page, 'Rinforzo il Reno');
   await page.waitForFunction(() => document.getElementById('thinking').classList.contains('hidden') && document.querySelectorAll('#log .entry-narr').length >= 1);
   const fp = await page.evaluate(() => window.__prompts[window.__prompts.length - 1]);
   check('free-mode prompt has no territory block and no schema extra', !fp.includes('Territori del giocatore') && !fp.includes('cambi_territoriali') && fp.includes('Impero Romano'), fp.slice(0, 200));

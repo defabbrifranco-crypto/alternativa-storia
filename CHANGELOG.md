@@ -8,6 +8,35 @@ Le date sono quelle di consegna dei pacchetti di modifiche. Prima della versione
 
 Niente per ora.
 
+## [0.28.0] - 2026-10-29
+
+Il turno diviso in due comandi, «Invia» (le azioni) e «Avanza» (il tempo), e le altre nazioni che agiscono a ogni «Avanza». Richiesta dell'utente; guida in `docs/TURNO-E-AZIONI.md`.
+
+### Aggiunto
+- **Casella delle azioni con «Invia».** Nella casella «Cosa fai?» si scrivono una o più azioni, una per riga; «Invia» le mette in un elenco **Azioni in attesa** senza far passare il tempo e senza interpellare il motore. Si possono togliere con «Rimuovi». Al massimo 12 azioni in attesa e 400 caratteri ciascuna: se il limite verrebbe superato nessuna delle righe inviate entra, il testo resta nella casella e un messaggio spiega perché. Ctrl+Invio (Cmd+Invio sul Mac) fa come «Invia»; Invio da solo va a capo. I testi sono mostrati come testo, mai come codice.
+- **«Avanza»**, accanto al salto temporale (1 settimana, 1 mese, 6 mesi, 1 anno): manda al motore le azioni in attesa (numerate, nell'ordine in cui sono state scritte) e fa passare il tempo. Si può premere anche con l'elenco vuoto: il mondo va avanti lo stesso. Se nella casella c'è del testo scritto e **non inviato**, «Avanza» non parte e dice di premere «Invia» (o di cancellare), perché quel testo andrebbe perso.
+- **Le altre nazioni agiscono.** La richiesta al motore dice che nello stesso periodo anche le altre nazioni agiscono liberamente, di propria iniziativa, e chiede di far agire da 3 a 6 nazioni diverse, non solo le superpotenze, riportandone le mosse nel nuovo campo `mosse_altre_nazioni` della risposta. Nello scenario con la mappa la richiesta cita anche **tre nazioni in evidenza**, scelte a rotazione dal numero del turno, senza caso (stessa partita, stessi nomi allo stesso turno); sono escluse la nazione del giocatore, le colonie e le nazioni senza province. Nella cronaca compare il blocco **🌍 Le altre nazioni** (fino a 10 mosse, una frase ciascuna, ripulite e mostrate come testo). I cambi di territorio che ne derivano passano dalle stesse regole di sempre.
+- Nel salvataggio, nella sezione `game`: la coda delle azioni (`pending`) e il numero dei turni fatti (`turn`), e le voci «altre nazioni» della cronaca. `schemaVersion` resta 3: i salvataggi di prima si caricano, con la coda vuota. Quello che si importa è controllato come il resto (azioni ripulite e accorciate, al massimo 12; contatore intero tra 0 e 1 000 000; righe vuote e blocchi rimasti vuoti scartati).
+- Accessibilità dei comandi nuovi: la casella è descritta dalla nota che spiega «Invia» e «Avanza»; l'elenco è ordinato e ha un nome; ogni «Rimuovi» dice quale azione toglie; annunci («Azione aggiunta. In attesa: 1.», «Azione rimossa…», i rifiuti, il blocco di «Avanza»); dopo «Invia» il cursore resta nella casella, dopo «Rimuovi» passa al pulsante seguente o alla casella, dopo la risposta torna su «Avanza».
+- `docs/TURNO-E-AZIONI.md`: come funziona il turno, le regole della coda, le altre nazioni (cosa si chiede, cosa si vede, il limite sui territori non elencati al motore), gli errori, il salvataggio, che cosa è stato provato e che cosa no.
+- `tests/browser/t15_turni.js` (181 controlli): coda, blocchi, richiesta al motore, rotazione delle nazioni in evidenza, risposta con le mosse (anche dati strani), errori e annullamenti, risposte tardive, fine partita, salvataggio e caricamento (anche di salvataggi vecchi e ostili), modalità manuale, telefono in tema chiaro e scuro. Provata con 55 difetti inseriti apposta nella pagina: tutti notati, tranne due modifiche che non cambiavano il comportamento.
+
+### Modificato
+- **Il pulsante «Agisci e avanza» non c'è più**: è sostituito da «Invia» e «Avanza». Il testo per l'AI cambia di conseguenza: «Il tempo avanza di …», gli ordini numerati (o «il giocatore non dà ordini nuovi»), la richiesta alle altre nazioni e lo schema della risposta con `mosse_altre_nazioni`; la narrazione passa da 2-4 a 3-5 frasi e deve comprendere sia gli ordini del giocatore sia le mosse delle altre nazioni.
+- **Errori e annullamenti non fanno perdere le azioni.** Se il motore sbaglia, la rete manca, la risposta non è un oggetto (una lista, un testo, un valore nullo) o la richiesta è annullata, il turno non viene contato, nulla entra nella storia e le azioni restano in attesa («Le tue azioni restano in attesa.»): si riprova premendo di nuovo «Avanza». Prima il testo scritto andava perso. Il messaggio d'errore riceve il punto finale se non l'ha già.
+- Una risposta del motore che arriva dopo che la partita è stata sostituita (con «Nuova partita» o caricando un salvataggio) non tocca la partita nuova: né la coda, né il contatore, né la cronaca.
+- Il Consigliere sa quali azioni sono già in attesa e non le ripete. La modalità manuale mostra la finestra a ogni «Avanza» (e non a «Invia»).
+- Prove già esistenti (`t3_game.js`, `t4_save.js`, `t10_markers.js`–`t14_a11y.js`) adattate al nuovo flusso: l'aiuto `playTurn` di `harness.js` scrive nella casella, preme «Invia» e poi «Avanza». `t14_a11y.js` misura contrasto, dimensione e nomi anche sui comandi nuovi, con azioni in attesa, avviso e blocco delle altre nazioni sullo schermo (147 controlli). Con `t15_turni.js` le prove del browser sono 920.
+- `docs/USO-FUORI-DA-CLAUDE.md` (modalità manuale) e `docs/ACCESSIBILITA.md` aggiornati.
+
+### Non cambia
+- Le copie di riferimento `src/storia-alternativa-prototipo-map-overlay.html`, `src/storia-alternativa-prototipo-v23.html` e `archive/` conservano il vecchio pulsante «Agisci e avanza»: non sono la pagina attuale.
+- Dati, mappa, status e popolazioni: nessuna modifica.
+
+### Da sapere
+- **Nessun turno è stato provato con il modello vero dentro Claude**: nelle prove le risposte sono simulate. Quanto il modello rispetti «da 3 a 6 nazioni» o il formato di `mosse_altre_nazioni`, la plausibilità delle mosse e la lunghezza dell'attesa con una risposta più ricca vanno visti giocando; la pagina tollera risposte diverse (nessun blocco, frasi semplici, dati strani ignorati).
+- Le mosse delle altre nazioni arrivano sulla **mappa** solo per le province che il motore conosce (quelle del giocatore, i confini e gli Stati nominati nelle azioni o nel riepilogo del mondo); per le altre restano racconto, e dal turno dopo gli Stati nominati nel riepilogo risultano elencati. Le tre nazioni in evidenza sono un invito, non un obbligo.
+
 ## [0.27.0] - 2026-10-26
 
 Data di riferimento e status politici al 31 dicembre 1960, controllati online ([#8](../../issues/8)); pulizia del progetto ([#6](../../issues/6)).

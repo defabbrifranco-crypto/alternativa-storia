@@ -67,6 +67,21 @@
   .row { display:flex; gap:8px; align-items:flex-end; }
   .row > div:first-child { flex: 1; }
   .thinking { font-size: 0.85rem; color: var(--muted); margin: 6px 0 0; }
+  /* the player's orders: the field, the list of those waiting, and the time jump that carries them out */
+  .field-note { color: var(--muted); font-size: 0.8rem; line-height: 1.35; margin: -4px 0 8px; }
+  .field-msg { color: var(--ink); font-size: 0.85rem; line-height: 1.35; margin: 0 0 10px; border-left: 3px solid var(--accent); padding-left: 8px; }
+  .queue { margin: 12px 0; }
+  .queue h3 { font-size: 0.85rem; margin: 0 0 6px; }
+  .queue ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .queue li { display: flex; gap: 8px; align-items: flex-start; background: var(--user-msg); border-radius: 8px; padding: 6px 6px 6px 10px; font-size: 0.9rem; line-height: 1.35; }
+  .queue li .q-text { flex: 1; min-width: 0; overflow-wrap: anywhere; padding-top: 3px; }
+  .queue li button { flex: none; }
+  .queue-empty { color: var(--muted); font-size: 0.82rem; line-height: 1.35; margin: 0; }
+  .time-block { border-top: 1px solid var(--border); padding-top: 12px; margin-top: 4px; }
+  .time-block .field-note { margin: 0 0 4px; }
+  .time-block select { margin-bottom: 0; }              /* «Avanza» sits level with the field, not with the space under it */
+  .time-block .row { margin-bottom: 8px; }
+  .entry-others { font-size: .88rem; background: var(--user-msg); border-left: 3px solid var(--muted); border-radius: 6px; padding: 6px 10px; line-height: 1.4; }
   .footnote { font-size: 0.72rem; color: var(--muted); text-align:center; margin-top: 4px; }
   .divider { text-align:center; color: var(--muted); font-size: 0.8rem; margin: 2px 0; }
 
@@ -251,7 +266,7 @@
     <header class="panel" id="appHead">
       <h1 id="appTitle" tabindex="-1"><span aria-hidden="true">🗺️ </span>Storia Alternativa</h1>
       <p class="sub">Prototipo ispirato al funzionamento di Pax Historia: scegli lo scenario fisso della Guerra Fredda o crea un tuo scenario libero.</p>
-      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 27</p>
+      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 28</p>
     </header>
 
     <div class="panel hidden" id="resumeBanner">
@@ -458,18 +473,29 @@
       <div class="panel log" id="log" role="log" aria-label="Cronaca della partita" tabindex="0"></div>
       <div class="panel">
         <label for="actionInput">Cosa fai?</label>
-        <textarea id="actionInput" rows="2" placeholder="es. Mobilita le riserve al confine orientale"></textarea>
-        <div class="row">
-          <div>
-            <label for="jump">Salto temporale</label>
-            <select id="jump">
-              <option value="1 settimana">1 settimana</option>
-              <option value="1 mese" selected>1 mese</option>
-              <option value="6 mesi">6 mesi</option>
-              <option value="1 anno">1 anno</option>
-            </select>
+        <textarea id="actionInput" rows="2" aria-describedby="actionNote" placeholder="es. Mobilita le riserve al confine orientale"></textarea>
+        <p class="field-note" id="actionNote">Puoi scrivere più azioni, una per riga. «Invia» le mette in attesa: il tempo non passa finché non premi «Avanza».</p>
+        <button class="primary" id="sendBtn" type="button">Invia</button>
+        <div class="queue" id="queueBox">
+          <h3 id="queueTitle">Azioni in attesa</h3>
+          <ol id="queueList" aria-labelledby="queueTitle" class="hidden"></ol>
+          <p class="queue-empty" id="queueEmpty">Nessuna azione in attesa. Puoi avanzare anche senza ordini: il tempo passa e le altre nazioni agiscono.</p>
+        </div>
+        <p class="field-msg hidden" id="actionMsg"></p>
+        <div class="time-block">
+          <div class="row">
+            <div>
+              <label for="jump">Salto temporale</label>
+              <select id="jump">
+                <option value="1 settimana">1 settimana</option>
+                <option value="1 mese" selected>1 mese</option>
+                <option value="6 mesi">6 mesi</option>
+                <option value="1 anno">1 anno</option>
+              </select>
+            </div>
+            <button class="primary" id="advanceBtn" type="button" aria-describedby="advanceNote">Avanza</button>
           </div>
-          <button class="primary" id="actBtn">Agisci e avanza</button>
+          <p class="field-note" id="advanceNote">«Avanza» fa passare il tempo scelto: le azioni in attesa vengono eseguite e anche le altre nazioni agiscono.</p>
         </div>
         <button class="ghost" id="advisorBtn"><span aria-hidden="true">🧭 </span>Chiedi consiglio al Consigliere</button>
         <p class="thinking hidden" id="thinking">Il motore storico sta elaborando...</p>
@@ -6014,7 +6040,7 @@ window.MAP_SVG = {
       if (manualPending) manualPending.fail(cancelError());      // only one request on screen
       const dlg = el('manualDialog'), ansEl = el('manualAnswer'), msgEl = el('manualMsg');
       el('manualWhy').textContent = claudeSample ? 'Hai scelto la modalità manuale.' : 'In questa pagina non c\'è un\'intelligenza artificiale collegata.';
-      el('manualWhat').textContent = kind === 'json' ? 'Richiesta: «Agisci e avanza».' : Array.isArray(input) ? 'Richiesta: risposta nel colloquio diplomatico.' : 'Richiesta: consiglio del Consigliere.';
+      el('manualWhat').textContent = kind === 'json' ? 'Richiesta: «Avanza».' : Array.isArray(input) ? 'Richiesta: risposta nel colloquio diplomatico.' : 'Richiesta: consiglio del Consigliere.';
       el('manualPrompt').value = promptText(input);
       ansEl.value = ''; msgEl.textContent = ''; msgEl.classList.remove('err');
       const back = lastFocus;
@@ -6162,6 +6188,8 @@ window.MAP_SVG = {
   function freshState() {
     return {
       nation: '', year: '', premise: '', worldSummary: '', log: [],
+      pending: [],                      // the orders sent and waiting for the time to advance (strings)
+      turn: 0,                          // how many times the time has advanced (it rotates the nations given room in the story)
       stats: { stabilita: 50, economia: 50, esercito: 50, prestigio: 50 },
       diplo: { target: '', history: [], bubbles: [] }
     };
@@ -6171,7 +6199,7 @@ window.MAP_SVG = {
   let gameSession = 0, diplomacySession = 0;
 
   const setupEl = el('setup'), gameEl = el('game'), logEl = el('log'), thinkingEl = el('thinking');
-  const actBtn = el('actBtn'), advisorBtn = el('advisorBtn');
+  const sendBtn = el('sendBtn'), advanceBtn = el('advanceBtn'), advisorBtn = el('advisorBtn');
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -6194,10 +6222,11 @@ window.MAP_SVG = {
   }
 
   // ---- log entries are data (so a game can be saved and restored) ------
-  // k: a = player action, t = turn result, v = advisor, g = map/game notice, x = transient notice (not saved)
+  // k: a = player action, t = turn result, n = what the other nations did, v = advisor, g = map/game notice, x = transient notice (not saved)
   function renderLogEntry(e) {
     if (e.k === 'a') return `<div class="entry-action">✍️ ${escapeHtml(e.text)}</div>`;
     if (e.k === 't') return `<div class="entry-year">${escapeHtml(e.year)}</div>${e.headline ? `<div class="entry-headline">${escapeHtml(e.headline)}</div>` : ''}<div class="entry-narr">${escapeHtml(e.narr)}</div>`;
+    if (e.k === 'n') return `<div class="entry-others">🌍 <b>Le altre nazioni</b><br>${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
     if (e.k === 'v') return `<div class="entry-advisor">🧭 ${escapeHtml(e.text)}</div>`;
     if (e.k === 'g') return `<div class="entry-terr">🗺️ ${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
     return `<div class="entry-narr">${escapeHtml(e.text || '')}</div>`;
@@ -6207,8 +6236,13 @@ window.MAP_SVG = {
     addTo(logEl, renderLogEntry(e));
   }
 
+  // «Invia» and «Avanza» are the two halves of the old «Agisci e avanza»; «Rimuovi» takes an order back out of the queue.
+  function setTurnControls(on) {
+    sendBtn.disabled = !on; advanceBtn.disabled = !on;
+    el('queueList').querySelectorAll('button').forEach(b => { b.disabled = !on; });
+  }
   function setGameButtons(enabled) {
-    actBtn.disabled = !enabled; advisorBtn.disabled = !enabled;
+    setTurnControls(enabled); advisorBtn.disabled = !enabled;
     el('diploStartBtn').disabled = !enabled; el('diploSendBtn').disabled = !enabled;
   }
 
@@ -6315,8 +6349,10 @@ window.MAP_SVG = {
       el('backToMapBtn').classList.add('hidden');
       setupEl.classList.add('hidden');
     }
+    renderQueue();
+    setActionMsg('');
     setGameButtons(!!sample && !gameOver);
-    if (!aiViaClaude()) addLog({ k: 'x', text: 'ℹ️ Modalità manuale: a ogni azione ti mostro un testo da copiare in un assistente AI (per esempio Claude o ChatGPT); incolli qui la sua risposta e la storia prosegue.' }, false);
+    if (!aiViaClaude()) addLog({ k: 'x', text: 'ℹ️ Modalità manuale: a ogni «Avanza» ti mostro un testo da copiare in un assistente AI (per esempio Claude o ChatGPT); incolli qui la sua risposta e la storia prosegue.' }, false);
   }
 
   // Free scenario: the setup screen is replaced by the game screen.
@@ -6519,6 +6555,8 @@ window.MAP_SVG = {
     el('diploInput').value = '';
     el('diploThinking').classList.add('hidden');
     el('actionInput').value = '';
+    setActionMsg('');
+    renderQueue();
     el('tabActions').onclick();
     renderStats();
     setGameButtons(!!sample);
@@ -6554,31 +6592,150 @@ window.MAP_SVG = {
     selectTab((e.key === 'Home' ? true : e.key === 'End' ? false : !onActions) ? 'actions' : 'diplo', true);
   });
 
-  actBtn.onclick = async () => {
-    const actionInput = el('actionInput');
-    const action = actionInput.value.trim();
-    if (!action || !sample || gameOver) return;
+  /* ---- the player's orders, and time ---------------------------------------------------------
+     «Invia» puts what is written in the box into a queue (one order per line, up to MAX_PENDING): nothing happens in
+     the world yet. «Avanza» hands the queue to the engine together with the time jump: the orders are carried out and
+     the other nations act on their own too. The queue is part of the saved game. If the engine fails or the request is
+     cancelled the queue stays as it was, so nothing the player wrote is lost.                                        */
+  const MAX_PENDING = 12, MAX_ACTION_LEN = 400, MAX_OTHER_MOVES = 10;
+  let busySession = -1;                         // the game session whose turn is being worked out (-1: none)
+  const turnBusy = () => busySession === gameSession;
+  const splitActions = text => String(text == null ? '' : text).split(/\r?\n/).map(s => s.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  const cleanAction = s => String(s == null ? '' : s).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_ACTION_LEN);
+  function setActionMsg(text) {
+    const m = el('actionMsg');
+    m.textContent = text || '';
+    m.classList.toggle('hidden', !text);
+    if (text) announce(text);
+  }
+  function renderQueue() {
+    const list = el('queueList'), n = state.pending.length;
+    list.textContent = '';
+    state.pending.forEach((text, i) => {
+      const li = document.createElement('li');
+      const span = document.createElement('span');
+      span.className = 'q-text'; span.textContent = text;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'ghost small'; b.textContent = 'Rimuovi';
+      b.setAttribute('aria-label', `Rimuovi l'azione: ${text.length > 70 ? text.slice(0, 67) + '…' : text}`);
+      b.disabled = turnBusy() || gameOver || !sample;
+      b.onclick = () => removeAction(i);
+      li.append(span, b);
+      list.appendChild(li);
+    });
+    list.classList.toggle('hidden', n === 0);
+    el('queueEmpty').classList.toggle('hidden', n > 0);
+    el('queueTitle').textContent = n ? `Azioni in attesa (${n})` : 'Azioni in attesa';
+  }
+  function sendActions() {
+    if (turnBusy() || gameOver || !gameMode || !sample) return;
+    const input = el('actionInput');
+    const lines = splitActions(input.value);
+    if (!lines.length) { setActionMsg('Scrivi prima cosa fai, poi premi «Invia».'); input.focus(); return; }
+    if (lines.some(l => l.length > MAX_ACTION_LEN)) { setActionMsg(`Un'azione è troppo lunga: al massimo ${MAX_ACTION_LEN} caratteri. Accorciala o dividila in più righe.`); input.focus(); return; }
+    if (state.pending.length + lines.length > MAX_PENDING) {
+      setActionMsg(state.pending.length >= MAX_PENDING
+        ? `Hai già ${MAX_PENDING} azioni in attesa, il massimo. Premi «Avanza» oppure rimuovine qualcuna.`
+        : `Le azioni in attesa possono essere al massimo ${MAX_PENDING}: ne hai ${state.pending.length} e ne stai aggiungendo ${lines.length}. Premi «Avanza», rimuovine qualcuna o invia meno righe.`);
+      input.focus(); return;
+    }
+    state.pending.push(...lines);
+    input.value = '';
+    setActionMsg('');
+    renderQueue();
+    announce(`${lines.length === 1 ? 'Azione aggiunta' : lines.length + ' azioni aggiunte'}. In attesa: ${state.pending.length}.`);
+    input.focus();
+    autoSave();
+  }
+  function removeAction(i) {
+    if (turnBusy() || gameOver || !(i >= 0 && i < state.pending.length)) return;
+    state.pending.splice(i, 1);
+    renderQueue();
+    announce(`Azione rimossa. In attesa: ${state.pending.length}.`);
+    const btns = el('queueList').querySelectorAll('button');
+    const target = btns.length ? btns[Math.min(i, btns.length - 1)] : el('actionInput');
+    try { target.focus({ preventScroll: true }); } catch (e) { target.focus(); }
+    autoSave();
+  }
+  sendBtn.onclick = sendActions;
+  el('actionInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); sendActions(); }
+  });
+  el('actionInput').addEventListener('input', () => { if (!el('actionMsg').classList.contains('hidden')) setActionMsg(''); });
+
+  // The nations the engine is asked to give room to this time, so that the smaller states act too and not only the big
+  // powers. The list rotates with the turn number and uses no randomness: the same game always gives the same list.
+  function spotlightNations(n) {
+    const owners = new Set(Object.keys(provinces).map(id => provinces[id].owner));
+    const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
+    return Object.keys(countries)
+      .filter(c => c !== selectedCountryId && owners.has(c) && !/^colonia/i.test(countries[c].alliance || ''))
+      .map(c => ({ c, h: hash(state.turn + '|' + c) }))
+      .sort((a, b) => a.h - b.h || (a.c < b.c ? -1 : 1))
+      .slice(0, n).map(x => countries[x.c].name);
+  }
+  // What the other nations did, as the engine reports it ([{nazione, mossa}] or plain sentences): checked and shortened
+  // before it is shown. Anything that is not a move is ignored.
+  function otherMoveLines(list) {
+    if (!Array.isArray(list)) return [];
+    const lines = [];
+    for (const m of list.slice(0, MAX_OTHER_MOVES)) {
+      if (typeof m === 'string') { const t = cleanText(m, 300); if (t) lines.push(t); continue; }
+      if (!m || typeof m !== 'object') continue;
+      const who = cleanText(pickKey(m, 'nazione', 'paese', 'stato', 'nome'), 48);
+      const what = cleanText(pickKey(m, 'mossa', 'azione', 'descrizione', 'testo'), 280);
+      if (what) lines.push(who ? `${who}: ${what}` : what);
+    }
+    return lines;
+  }
+  // The text the engine receives when the time advances: the state of the world, the player's orders (if any), the
+  // invitation to the other nations to act freely, and the shape of the answer.
+  function turnPrompt(actions, jump, mapMode) {
+    const s = state.stats;
+    const mapPart = mapMode ? territoryContext() + "\n" + territoryRules(actions.join(' ') + ' ' + (state.worldSummary || '')) + markerRules() : "";
+    const schemaExtra = mapMode ? ', "cambi_territoriali": [{"provincia": "ID", "nuovo_proprietario": "CODICE"}], "cambi_controllo": [{"provincia": "ID", "nuovo_controllore": "CODICE"}], ' + markerSchema : '';
+    const orders = actions.length
+      ? `Nel frattempo il giocatore dà ${actions.length === 1 ? "quest'ordine" : `questi ${actions.length} ordini, uno per riga`}:\n${actions.map((a, i) => `${i + 1}. "${a}"`).join('\n')}\nEsegui ogni ordine con realismo: può riuscire, riuscire solo in parte o fallire, secondo i mezzi del paese e la situazione.`
+      : "Nel frattempo il giocatore non dà ordini nuovi: il suo governo prosegue l'ordinaria amministrazione e il mondo va avanti.";
+    const spot = mapMode ? spotlightNations(3) : [];
+    const others = `Nello stesso periodo anche le altre nazioni agiscono liberamente, di propria iniziativa e non solo in risposta al giocatore: ognuna segue i propri interessi, le proprie alleanze e rivalità, in modo plausibile per la sua situazione e per la storia alternativa formatasi finora (diplomazia, accordi, crisi, riforme, riarmo, aiuti, colpi di stato, conflitti…). Fai agire da 3 a 6 nazioni diverse, non solo le superpotenze${spot.length ? `; dai spazio anche a: ${spot.join(', ')}` : ''}. Le loro mosse contano davvero: se toccano il giocatore o i suoi vicini devono vedersi nella narrazione e nelle statistiche${mapMode ? ', e se cambiano chi possiede o controlla un territorio vanno elencate nei cambi territoriali' : ''}. Riportale in "mosse_altre_nazioni", una frase ciascuna.`;
+    return `Sei il motore di gioco di un sandbox di storia alternativa. Il giocatore guida: ${state.nation}. Data attuale: ${state.year}. Premessa: ${state.premise || "nessuna, segui la storia reale finché il giocatore non la devia"}.
+${mapPart}Stato del mondo finora: ${state.worldSummary || "(inizio partita, nessun evento ancora)"}
+Statistiche attuali (0-100): Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.
+Il tempo avanza di ${jump}. ${orders}
+${others}
+Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto, di tutto ciò che avviene in questo periodo (gli ordini del giocatore e le mosse delle altre nazioni) e aggiorna le statistiche in modo coerente. Rispondi SOLO con un oggetto JSON: {"evento_titolo": "titolo giornalistico breve, max 6 parole", "narrativa": "3-5 frasi in italiano su cosa succede", "mosse_altre_nazioni": [{"nazione": "nome della nazione", "mossa": "una frase su cosa fa"}], "riepilogo_mondo": "1-2 frasi che aggiornano lo stato del mondo per il turno successivo", "nuovo_anno": "l'anno risultante dopo il salto, come testo breve", "stabilita": numero 0-100, "economia": numero 0-100, "esercito": numero 0-100, "prestigio": numero 0-100${schemaExtra}}`;
+  }
+
+  advanceBtn.onclick = async () => {
+    if (turnBusy() || !sample || gameOver || !gameMode) return;
+    const input = el('actionInput');
+    if (input.value.trim()) {                   // written but not sent: it would be lost, so the time does not advance
+      setActionMsg("Nella casella c'è del testo che non hai inviato. Premi «Invia» per metterlo tra le azioni (oppure cancellalo), poi «Avanza».");
+      input.focus();
+      return;
+    }
+    setActionMsg('');
+    const actions = state.pending.slice();
     const jump = el('jump').value;
     const requestSession = gameSession;
-    actBtn.disabled = true;
+    busySession = requestSession;
+    setTurnControls(false);
     thinkingEl.classList.remove('hidden');
     announce('Il motore storico sta elaborando…');
-    addLog({ k: 'a', text: action });
 
     const s = state.stats;
     const mapMode = mapGameStarted;
-    const mapPart = mapMode ? territoryContext() + "\n" + territoryRules(action + ' ' + (state.worldSummary || '')) + markerRules() : "";
-    const schemaExtra = mapMode ? ', "cambi_territoriali": [{"provincia": "ID", "nuovo_proprietario": "CODICE"}], "cambi_controllo": [{"provincia": "ID", "nuovo_controllore": "CODICE"}], ' + markerSchema : '';
-    const prompt = `Sei il motore di gioco di un sandbox di storia alternativa. Il giocatore guida: ${state.nation}. Data attuale: ${state.year}. Premessa: ${state.premise || "nessuna, segui la storia reale finché il giocatore non la devia"}.
-${mapPart}Stato del mondo finora: ${state.worldSummary || "(inizio partita, nessun evento ancora)"}
-Statistiche attuali (0-100): Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.
-Sono passati ${jump}. Il giocatore compie quest'azione: "${action}"
-Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto, e aggiorna le statistiche in modo coerente con l'azione e le sue conseguenze. Rispondi SOLO con un oggetto JSON: {"evento_titolo": "titolo giornalistico breve, max 6 parole", "narrativa": "2-4 frasi in italiano su cosa succede", "riepilogo_mondo": "1-2 frasi che aggiornano lo stato del mondo per il turno successivo", "nuovo_anno": "l'anno risultante dopo il salto, come testo breve", "stabilita": numero 0-100, "economia": numero 0-100, "esercito": numero 0-100, "prestigio": numero 0-100${schemaExtra}}`;
+    const prompt = turnPrompt(actions, jump, mapMode);
 
-    let cancelled = false;
     try {
       const r = await sample.json(prompt, { cache: false });
       if (requestSession !== gameSession) return;               // the game was replaced meanwhile
+      // an answer that is not an object (null, a list, a text) is a failed turn: nothing is changed, the orders stay queued
+      if (!r || typeof r !== 'object' || Array.isArray(r)) throw new Error("la risposta del motore non è nel formato atteso");
+      state.pending = [];                                       // carried out: the orders enter the story
+      state.turn += 1;
+      actions.forEach(a => addLog({ k: 'a', text: a }));
       state.worldSummary = r.riepilogo_mondo || state.worldSummary;
       if (r.nuovo_anno) { state.year = String(r.nuovo_anno); el('yearLabel').textContent = state.year; }
       s.stabilita = clampStat(r.stabilita, s.stabilita);
@@ -6587,19 +6744,25 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
       s.prestigio = clampStat(r.prestigio, s.prestigio);
       renderStats();
       addLog({ k: 't', year: state.year, headline: r.evento_titolo || '', narr: r.narrativa || '(nessuna risposta)' });
+      const moves = otherMoveLines(r.mosse_altre_nazioni);
+      if (moves.length) addLog({ k: 'n', lines: moves });
       if (mapMode) {
         const lines = applyTerritoryChanges(r.cambi_territoriali).concat(applyControlChanges(r.cambi_controllo), applyMarkerChanges(r.segnaposto));
         if (lines.length) addLog({ k: 'g', lines });
         checkGameOver();
       }
     } catch (e) {
-      cancelled = !!(e && e.cancelled);
-      if (requestSession === gameSession) addLog({ k: 'x', text: cancelled ? 'Operazione annullata: nessuna modifica.' : '⚠️ Errore nella generazione: ' + (e.message || String(e)) }, false);
+      const cancelled = !!(e && e.cancelled);
+      const why = String((e && e.message) || e || 'errore sconosciuto');
+      const tail = actions.length ? ' Le tue azioni restano in attesa.' : '';
+      if (requestSession === gameSession) addLog({ k: 'x', text: cancelled ? 'Operazione annullata: nessuna modifica.' + tail : '⚠️ Errore nella generazione: ' + why + (/[.!?…]$/.test(why) ? '' : '.') + tail }, false);
     } finally {
       if (requestSession === gameSession) {
-        if (!cancelled) actionInput.value = '';
+        busySession = -1;
         thinkingEl.classList.add('hidden');
-        actBtn.disabled = gameOver;
+        renderQueue();
+        setTurnControls(!gameOver);
+        restoreFocus(advanceBtn);               // the button was off while the answer was on its way: the cursor goes back to it
         autoSave();
       }
     }
@@ -6612,7 +6775,7 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
     thinkingEl.classList.remove('hidden');
     announce('Il Consigliere sta preparando un consiglio…');
     const s = state.stats;
-    const prompt = `Sei un consigliere storico per chi guida ${state.nation} nell'anno ${state.year}. ${territoryContext()} Stato del mondo: ${state.worldSummary || "inizio partita"}. Statistiche: Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}. Dai un breve consiglio strategico (2-3 frasi) su cosa potrebbe fare ora, in italiano.`;
+    const prompt = `Sei un consigliere storico per chi guida ${state.nation} nell'anno ${state.year}. ${territoryContext()} Stato del mondo: ${state.worldSummary || "inizio partita"}. Statistiche: Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.${state.pending.length ? ` Il giocatore ha già deciso queste azioni per il prossimo periodo (non ripeterle: puoi integrarle o correggerle): ${state.pending.join('; ')}.` : ''} Dai un breve consiglio strategico (2-3 frasi) su cosa potrebbe fare ora, in italiano.`;
     try {
       const res = await sample(prompt, { cache: false });
       if (requestSession !== gameSession) return;
@@ -6716,6 +6879,7 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
         mode: gameMode, over: gameOver,
         nation: state.nation, year: state.year, premise: state.premise, worldSummary: state.worldSummary,
         stats: state.stats,
+        pending: state.pending.slice(0, MAX_PENDING), turn: state.turn,
         log: state.log.slice(-60),
         diplo: {
           target: state.diplo.target,
@@ -6789,10 +6953,13 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
     const str = v => String(v == null ? '' : v);
     const list = v => (Array.isArray(v) ? v : []);
     const out = { mode: g.mode, over: g.over, nation: g.nation, year: g.year, premise: g.premise, worldSummary: g.worldSummary, stats: g.stats };
+    // the orders waiting (saves from before the split of «Agisci e avanza» have none) and the number of times the time advanced
+    out.pending = list(g.pending).filter(a => typeof a === 'string').map(cleanAction).filter(Boolean).slice(0, MAX_PENDING);
+    out.turn = Number.isFinite(Number(g.turn)) ? Math.max(0, Math.min(1000000, Math.floor(Number(g.turn)))) : 0;
     out.log = list(g.log).filter(e => e && typeof e === 'object' && typeof e.k === 'string').slice(-200).map(e =>
       e.k === 't' ? { k: 't', year: str(e.year), headline: str(e.headline), narr: str(e.narr) }
-      : e.k === 'g' ? { k: 'g', lines: list(e.lines).slice(0, 60).map(str) }
-      : { k: e.k, text: str(e.text) });
+      : e.k === 'g' || e.k === 'n' ? { k: e.k, lines: list(e.lines).slice(0, 60).map(str).filter(l => l.trim()) }
+      : { k: e.k, text: str(e.text) }).filter(e => !(e.lines && !e.lines.length));      // a block of lines with no line is not shown
     if (g.diplo && typeof g.diplo === 'object') out.diplo = {
       target: str(g.diplo.target),
       history: list(g.diplo.history).filter(m => m && typeof m === 'object' && typeof m.content === 'string' && (m.role === 'user' || m.role === 'assistant')).slice(-40).map(m => ({ role: m.role, content: m.content })),
@@ -6834,6 +7001,8 @@ Genera una conseguenza narrativa plausibile e coerente con quanto già accaduto,
     state.premise = String(g.premise || ''); state.worldSummary = String(g.worldSummary || '');
     for (const k of ['stabilita', 'economia', 'esercito', 'prestigio']) state.stats[k] = clampStat(g.stats && g.stats[k], 50);
     state.log = Array.isArray(g.log) ? g.log.filter(e => e && typeof e.k === 'string') : [];
+    state.pending = Array.isArray(g.pending) ? g.pending : [];
+    state.turn = Number.isFinite(g.turn) ? g.turn : 0;
     if (g.diplo) state.diplo = {
       target: String(g.diplo.target || ''),
       history: Array.isArray(g.diplo.history) ? g.diplo.history : [],

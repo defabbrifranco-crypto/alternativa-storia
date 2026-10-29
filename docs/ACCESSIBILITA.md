@@ -16,6 +16,7 @@ Dalla versione 26 la pagina si può usare **senza mouse**, con un **lettore di s
 | **0** | torna all'Europa |
 | **Esc** | chiude le finestre (Esporta, Importa, modalità manuale) e l'elenco dei risultati della ricerca; il focus torna al pulsante che le aveva aperte |
 | **← →**, **Home**, **Fine** | tra le schede «Azioni» e «Diplomazia» durante la partita |
+| **Ctrl+Invio** (o **Cmd+Invio**) nella casella «Cosa fai?» | fa come il pulsante «Invia»: mette le azioni in attesa. **Invio** da solo va a capo, così si possono scrivere più azioni, una per riga |
 
 Un cerchio **bianco con bordo scuro** (due strati, così si vede su qualunque colore) mostra a quale territorio è il focus. Un tocco o un clic su un territorio lo seleziona senza disegnare il cerchio.
 
@@ -35,6 +36,7 @@ Tutto ciò che si fa toccando la mappa si può fare anche a parole:
 - Gli **annunci** passano da un'area a parte (`role="status"`): scheda aperta, «Nessun altro territorio in questa direzione», «Il motore storico sta elaborando…», «Il Consigliere sta preparando un consiglio…», «In attesa di risposta…», cessione di sovranità o di controllo dall'Editor. La stessa frase ripetuta due volte di seguito viene annunciata di nuovo.
 - La cronaca della partita e la conversazione diplomatica sono **registri** (`role="log"`): i nuovi paragrafi si leggono da soli; quando si carica un salvataggio il registro si riempie in silenzio, senza leggere tutto il passato.
 - I campi hanno un'etichetta legata (`for`/`id`), le finestre hanno un nome e il focus entra e torna dove deve; quando un pulsante sparisce (per esempio «Nuova partita») il focus passa al titolo della pagina invece di perdersi.
+- **Il turno** (versione 28): la casella «Cosa fai?» è descritta dalla nota che spiega «Invia» e «Avanza» (`aria-describedby`). Le azioni in attesa sono un **elenco ordinato con un nome** («Azioni in attesa») e ogni «Rimuovi» dice quale azione toglie («Rimuovi l'azione: …»). La pagina annuncia: «Azione aggiunta. In attesa: 1.», «3 azioni aggiunte. In attesa: 4.», «Azione rimossa. In attesa: 2.», i rifiuti (casella vuota, troppe azioni, azione troppo lunga) e il blocco di «Avanza» quando nella casella c'è del testo non inviato. Il cursore resta nella casella dopo «Invia», va al «Rimuovi» seguente (o alla casella, se non ne restano) dopo «Rimuovi» e torna su «Avanza» quando il motore ha risposto. «Le altre nazioni» è una voce della cronaca (un registro): si legge da sola quando compare.
 
 ### Colori e movimento
 
@@ -59,7 +61,7 @@ Tutto ciò che si fa toccando la mappa si può fare anche a parole:
 
 ## Che cosa è stato provato e come
 
-La prova è `tests/browser/t14_a11y.js` (143 controlli), più quattro controlli rapidi in `tests/pagina.test.js` e tutte le prove già esistenti (la partita, i salvataggi, l'Editor… non devono peggiorare).
+La prova è `tests/browser/t14_a11y.js` (147 controlli), più quattro controlli rapidi in `tests/pagina.test.js` e tutte le prove già esistenti (la partita, i salvataggi, l'Editor… non devono peggiorare). Dalla versione 28 anche i comandi del turno sono sotto le stesse misure (contrasto nei due temi, dimensione minima, nomi, percorso da tastiera) e `tests/browser/t15_turni.js` controlla annunci e posizione del cursore.
 
 - **L'albero dell'accessibilità di Chromium** (ruoli, nomi e stati: la fonte da cui attingono i lettori di schermo): punti di riferimento, titoli, nome di ogni controllo, nessun id ripetuto, riferimenti ARIA che puntano a qualcosa, schede, registri, finestre.
 - **La tastiera**: ordine di Tab, un solo punto di sosta sulla mappa, direzione delle frecce, Invio e Spazio, più/meno/zero, scorrimento automatico, Esc, dove va il focus dopo ogni cambio di schermata, e una partita intera senza mouse.
@@ -83,7 +85,7 @@ Windows: NVDA (gratuito); Mac e iPhone: VoiceOver (Cmd+F5 sul Mac); Android: Tal
 2. Scorri per titoli (in NVDA il tasto **H**): «Storia Alternativa», «Scenario fisso — Europa, 31 dicembre 1960», «Scenario libero».
 3. Premi **Tab** fino alla mappa (dopo i pulsanti di zoom): deve leggere il nome di un territorio e «pulsante». Con le **frecce** passa ai vicini, con **Invio** si sente «Scheda aperta: …».
 4. Apri **Elenco dei territori per Stato**, apri uno Stato, scegli un territorio: si apre la scheda.
-5. Avvia una partita («Gioca come…»): deve annunciare la fase di attesa e poi trovare la risposta nella cronaca.
+5. Avvia una partita («Gioca come…»): scrivi un'azione e premi «Invia» (deve dire «Azione aggiunta. In attesa: 1.»); poi premi «Avanza»: deve annunciare la fase di attesa e poi trovare nella cronaca l'azione, la narrazione e il blocco «Le altre nazioni».
 6. Apri **Esporta** e chiudi con **Esc**: il focus torna al pulsante.
 7. Scrivi cosa si sente di strano (nomi poco chiari, cose lette due volte, cose non lette) nell'issue #4.
 

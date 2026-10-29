@@ -1,7 +1,7 @@
 // «Gioco» ed «Editor scenario» sono due modalità separate; la legenda fissa spiega proprietario e controllore.
 // Durante la partita il territorio cambia solo per le regole e gli eventi della storia; lo scenario modificato
 // a mano è un salvataggio senza partita, che si conserva in un file e non sovrascrive mai la partita salvata.
-const { launch, check, summary } = require('./harness');
+const { launch, check, summary, playTurn } = require('./harness');
 (async () => {
   // una partita salvata in precedenza: né l'editor né i file di scenario devono sovrascriverla
   const savedGame = { v: 3, schemaVersion: 3, changes: {}, savedAt: '2026-10-01T10:00:00.000Z',
@@ -186,8 +186,7 @@ const { launch, check, summary } = require('./harness');
   // in a game the territory changes through the story (every change is checked by the engine)
   await ev(a => window.__queue.push({ evento_titolo: 'Ticino', narrativa: 'Un plebiscito.', riepilogo_mondo: 'Un cantone passa all\'Italia.', nuovo_anno: 'febbraio 1961',
     stabilita: 50, economia: 50, esercito: 50, prestigio: 50, cambi_territoriali: [{ provincia: a, nuovo_proprietario: 'ITA' }] }), geo.A);
-  await page.fill('#actionInput', 'Chiedo un plebiscito');
-  await page.click('#actBtn');
+  await playTurn(page, 'Chiedo un plebiscito');
   await page.waitForFunction(() => document.getElementById('thinking').classList.contains('hidden') && document.querySelector('#log .entry-terr'));
   check('the story can change the map during a game, and the editor stays off', await ev(a => window.__t.provinces[a].owner === 'ITA' && !window.__t.getEditorMode(), geo.A));
   // a marker can still be removed from its card during a game

@@ -32,6 +32,8 @@ function instrument(html) {
     parseManualJson, promptText, openTransfer, cancelManual, saveVersion, askManual });
   if (typeof editorMode !== 'undefined') Object.assign(window.__t, { getEditorMode: () => editorMode, setEditorMode, updateModeUI, scenarioEdits,
     restoreStartingScenario, transferProvince, renderOccupations });
+  if (typeof turnPrompt !== 'undefined') Object.assign(window.__t, { turnPrompt, spotlightNations, otherMoveLines, splitActions, cleanAction,
+    sendActions, removeAction, renderQueue, setActionMsg, cleanSavedGame, MAX_PENDING, MAX_ACTION_LEN, MAX_OTHER_MOVES, getBusy: () => turnBusy() });
   if (typeof renderTerrList !== 'undefined') Object.assign(window.__t, { renderTerrList, provLabel, provCenter, nextProvince, ensureVisible, setRoving,
     announce, scrollBehavior, getRoving: () => rovingEl });
 })();`;
@@ -118,4 +120,11 @@ function check(name, cond, extra) {
   else { fail++; fails.push(name); console.log('  FAIL ' + name + (extra !== undefined ? '  -> ' + JSON.stringify(extra) : '')); }
 }
 function summary() { console.log(`\n${pass} passed, ${fail} failed`); if (fail) console.log('FAILED:', fails); return fail; }
-module.exports = { launch, check, summary, SRC };
+// Un turno completo nel flusso attuale: «Invia» mette le azioni in attesa (una per riga), «Avanza» fa passare il tempo.
+// Senza testo si preme solo «Avanza». Con tap=true si usa il tocco (telefono) invece del clic.
+async function playTurn(page, text, { tap = false } = {}) {
+  const press = sel => (tap ? page.tap(sel) : page.click(sel));
+  if (text) { await page.fill('#actionInput', text); await press('#sendBtn'); }
+  await press('#advanceBtn');
+}
+module.exports = { launch, check, summary, SRC, playTurn };

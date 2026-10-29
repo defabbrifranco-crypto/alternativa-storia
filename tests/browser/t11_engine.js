@@ -1,5 +1,5 @@
 // Engine robustness (answers that arrive late, UI restored, validated saves) and the split between sovereignty and control.
-const { launch, check, summary } = require('./harness');
+const { launch, check, summary, playTurn } = require('./harness');
 (async () => {
   const store = {};
   const { browser, page, errors } = await launch({ width: 640, height: 1100, mobile: false, store });
@@ -36,10 +36,9 @@ const { launch, check, summary } = require('./harness');
   console.log('— a turn answered after the game was replaced');
   await restart('FRG');
   await defer('__d1'); await queueJson('__d1');
-  await page.fill('#actionInput', 'Mossa destinata a perdersi');
-  await page.click('#actBtn');
+  await playTurn(page, 'Mossa destinata a perdersi');
   await spinnerOn();
-  check('while the answer is on its way the spinner shows and the button is off', await ev(() => document.getElementById('actBtn').disabled));
+  check('while the answer is on its way the spinner shows and the button is off', await ev(() => document.getElementById('advanceBtn').disabled));
   const s0 = await ev(() => window.__t.getGameSession());
   await ev(() => window.__t.resetGame());
   check('a reset makes the pending answers obsolete (new session)', (await ev(() => window.__t.getGameSession())) > s0);
@@ -55,24 +54,22 @@ const { launch, check, summary } = require('./harness');
   console.log('— …and a new game running its own turn');
   await restart('FRG');
   await defer('__d1'); await queueJson('__d1');
-  await page.fill('#actionInput', 'Prima mossa');
-  await page.click('#actBtn');
+  await playTurn(page, 'Prima mossa');
   await spinnerOn();
   await ev(() => { window.__t.resetGame(); window.__t.startFixedScenarioGame('ITA'); });
   await defer('__d2'); await queueJson('__d2');
-  await page.fill('#actionInput', 'Seconda mossa');
-  await page.click('#actBtn');
+  await playTurn(page, 'Seconda mossa');
   await spinnerOn();
   await settle('__d1', late(geo.A));                       // the first game's answer arrives while the second game still waits
   await page.waitForTimeout(200);
-  const mid = await ev(A => ({ spinnerHidden: document.getElementById('thinking').classList.contains('hidden'), actOff: document.getElementById('actBtn').disabled,
+  const mid = await ev(A => ({ spinnerHidden: document.getElementById('thinking').classList.contains('hidden'), actOff: document.getElementById('advanceBtn').disabled,
     owner: window.__t.provinces[A].owner, log: document.getElementById('log').textContent, nation: window.__t.getState().nation, itName: window.__t.countries.ITA.name,
     markers: window.__t.getMarkers().length }), geo.A);
   check('the old answer does not hide the new spinner nor re-enable the new button', !mid.spinnerHidden && mid.actOff, mid);
   check('the old answer does not touch the new game', mid.owner === 'GDR' && !/tardiv/i.test(mid.log) && mid.nation === mid.itName && mid.markers === 0, mid);
   await settle('__d2', { evento_titolo: 'Titolo seconda partita', narrativa: 'Narrativa seconda partita.', riepilogo_mondo: 'Riepilogo.', nuovo_anno: 'febbraio 1961', stabilita: 51, economia: 52, esercito: 53, prestigio: 54, cambi_territoriali: [], cambi_controllo: [], segnaposto: [] });
   await spinnerOff();
-  const fin = await ev(() => ({ year: document.getElementById('yearLabel').textContent, act: document.getElementById('actBtn').disabled, log: document.getElementById('log').textContent, input: document.getElementById('actionInput').value }));
+  const fin = await ev(() => ({ year: document.getElementById('yearLabel').textContent, act: document.getElementById('advanceBtn').disabled, log: document.getElementById('log').textContent, input: document.getElementById('actionInput').value }));
   check('the new game receives its own answer normally', fin.year === 'febbraio 1961' && fin.log.includes('Titolo seconda partita') && fin.act === false && fin.input === '', fin);
 
   console.log('— …and a saved game loaded meanwhile');
@@ -80,8 +77,7 @@ const { launch, check, summary } = require('./harness');
   await ev(A => { window.__t.applyTerritoryChanges([{ provincia: A, nuovo_proprietario: 'FRG' }]); }, geo.A);
   await ev(() => window.__t.saveGame());
   await defer('__d1'); await queueJson('__d1');
-  await page.fill('#actionInput', 'Mossa mentre carico');
-  await page.click('#actBtn');
+  await playTurn(page, 'Mossa mentre carico');
   await spinnerOn();
   const loaded = await ev(() => window.__t.loadGame());
   check('a saved game loads while a turn is pending', loaded === true, loaded);
@@ -89,7 +85,7 @@ const { launch, check, summary } = require('./harness');
   await settle('__d1', late(geo.A2));
   await page.waitForTimeout(200);
   const l3 = await ev(([A, A2]) => ({ a: window.__t.provinces[A].owner, a2: window.__t.provinces[A2].owner, log: document.getElementById('log').textContent,
-    year: window.__t.getState().year, markers: window.__t.getMarkers().length, act: document.getElementById('actBtn').disabled }), [geo.A, geo.A2]);
+    year: window.__t.getState().year, markers: window.__t.getMarkers().length, act: document.getElementById('advanceBtn').disabled }), [geo.A, geo.A2]);
   check('after the load the late answer is dropped: the saved situation stays', l3.a === 'FRG' && l3.a2 === 'GDR' && !/tardiv/i.test(l3.log) && l3.year === '31 dicembre 1960' && l3.markers === 0, l3);
   check('the loaded game can play (button enabled)', l3.act === false, l3);
 
@@ -154,18 +150,18 @@ const { launch, check, summary } = require('./harness');
   console.log('— the turn restores the interface');
   await restart('FRG');
   await ev(() => window.__queue.push(new Error('boom')));
-  await page.fill('#actionInput', 'Mossa che fallisce');
-  await page.click('#actBtn');
+  await playTurn(page, 'Mossa che fallisce');
   await spinnerOff();
-  const er = await ev(() => ({ log: document.getElementById('log').textContent, act: document.getElementById('actBtn').disabled, input: document.getElementById('actionInput').value }));
+  const er = await ev(() => ({ log: document.getElementById('log').textContent, act: document.getElementById('advanceBtn').disabled, send: document.getElementById('sendBtn').disabled,
+    input: document.getElementById('actionInput').value, pending: window.__t.getState().pending.slice(), turn: window.__t.getState().turn }));
   check('a failed turn is reported in the log', er.log.includes('Errore nella generazione: boom'), er);
-  check('a failed turn gives the button back and clears the field', er.act === false && er.input === '', er);
+  check('a failed turn is not counted and says the orders stay in the queue', er.turn === 0 && /Le tue azioni restano in attesa/.test(er.log), er);
+  check('a failed turn gives the buttons back and the order is still queued (nothing the player wrote is lost)', er.act === false && er.send === false && er.input === '' && JSON.stringify(er.pending) === JSON.stringify(['Mossa che fallisce']), er);
   await ev(() => window.__queue.push(null));        // an empty answer from the engine is a failure, not a crash
-  await page.fill('#actionInput', 'Mossa con risposta vuota');
-  await page.click('#actBtn');
+  await playTurn(page, 'Mossa con risposta vuota');
   await page.waitForTimeout(150);
   await spinnerOff();
-  check('after an empty answer the game is still usable', await ev(() => document.getElementById('actBtn').disabled === false));
+  check('after an empty answer the game is still usable', await ev(() => document.getElementById('advanceBtn').disabled === false));
 
   // ------------------------------------------------------------------ saves are checked
   console.log('— saves are validated');
@@ -290,8 +286,7 @@ const { launch, check, summary } = require('./harness');
     stabilita: 60, economia: 52, esercito: 61, prestigio: 58, cambi_territoriali: [{ provincia: A2, nuovo_proprietario: 'FRG' }, { provincia: 'XX_99', nuovo_proprietario: 'FRG' }],
     cambi_controllo: [{ provincia: A, nuovo_controllore: 'FRG' }, { provincia: B, nuovo_controllore: 'FRG' }, { provincia: 'XX_99', nuovo_controllore: 'FRG' }],
     segnaposto: [{ azione: 'aggiungi', tipo: 'truppe', nome: 'Forze di occupazione', provincia: A }] }), geo);
-  await page.fill('#actionInput', 'Avanzo e occupo');
-  await page.click('#actBtn');
+  await playTurn(page, 'Avanzo e occupo');
   await page.waitForFunction(() => document.getElementById('thinking').classList.contains('hidden') && document.querySelector('#log .entry-terr'));
   const turn = await ev(({ A, B, A2 }) => { const P = window.__t.provinces; return { a2: P[A2].owner + '/' + P[A2].controller, a: P[A].owner + '/' + P[A].controller, b: P[B].owner + '/' + P[B].controller,
     terr: document.querySelector('#log .entry-terr').textContent, markers: window.__t.getMarkers().length, note: !document.getElementById('occNote').classList.contains('hidden') }; }, geo);

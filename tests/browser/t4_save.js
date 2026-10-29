@@ -1,4 +1,4 @@
-const { launch, check, summary } = require('./harness');
+const { launch, check, summary, playTurn } = require('./harness');
 (async () => {
   const store = {};
   let { browser, page, errors } = await launch({ width: 640, height: 1100, mobile: false, store });
@@ -20,8 +20,7 @@ const { launch, check, summary } = require('./harness');
   });
   await page.evaluate(() => window.__t.startFixedScenarioGame('ITA'));
   await page.evaluate(g => { window.__queue.push({ evento_titolo: 'Ticino', narrativa: 'Un plebiscito.', riepilogo_mondo: 'Un cantone passa all\'Italia.', nuovo_anno: 'febbraio 1961', stabilita: 50, economia: 50, esercito: 50, prestigio: 50, cambi_territoriali: [{ provincia: g.A, nuovo_proprietario: 'ITA' }] }); }, geo);
-  await page.fill('#actionInput', 'Chiedo un plebiscito');
-  await page.click('#actBtn');
+  await playTurn(page, 'Chiedo un plebiscito');
   await page.waitForFunction(() => document.getElementById('thinking').classList.contains('hidden') && document.querySelector('#log .entry-terr'));
   await page.waitForTimeout(150);
   await page.click('#saveGameBtn');

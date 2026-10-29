@@ -1,5 +1,5 @@
 // Map markers (segnaposto): kinds and symbols, placement, the engine's list, prompt, save / load, interaction.
-const { launch, check, summary } = require('./harness');
+const { launch, check, summary, playTurn } = require('./harness');
 
 (async () => {
   let { browser, page, errors, store } = await launch({ width: 1280, height: 900, mobile: false });
@@ -168,8 +168,7 @@ const { launch, check, summary } = require('./harness');
         { azione: 'aggiungi', tipo: 'ribelli', nome: 'Insorti del Nord', provincia: i.FRG }] });
     return true;
   }, ids);
-  await page.fill('#actionInput', 'Costruisco una centrale nucleare');
-  await page.click('#actBtn');
+  await playTurn(page, 'Costruisco una centrale nucleare');
   await page.waitForFunction(() => document.querySelector('#log .entry-terr'), null, { timeout: 8000 });
   const t1 = await ev(() => {
     const T = window.__t, p = window.__prompts[window.__prompts.length - 1];
@@ -190,9 +189,8 @@ const { launch, check, summary } = require('./harness');
   await page.fill('#nation', 'Impero Romano'); await page.fill('#startYear', '400 d.C.');
   await ev(() => { window.__queue.push({ evento_titolo: 'x', narrativa: 'y', riepilogo_mondo: 'z', nuovo_anno: '401', stabilita: 50, economia: 50, esercito: 50, prestigio: 50, segnaposto: [{ tipo: 'altro', nome: 'Non deve comparire', lat: 41, lon: 12 }] }); });
   await page.click('#startBtn');
-  await page.fill('#actionInput', 'Rinforzo il Reno');
-  await page.click('#actBtn');
-  await page.waitForFunction(() => document.querySelectorAll('#log .entry-narr').length >= 1 && !document.getElementById('actBtn').disabled, null, { timeout: 8000 });
+  await playTurn(page, 'Rinforzo il Reno');
+  await page.waitForFunction(() => document.querySelectorAll('#log .entry-narr').length >= 1 && !document.getElementById('advanceBtn').disabled, null, { timeout: 8000 });
   const free = await ev(() => ({ p: window.__prompts[window.__prompts.length - 1], n: window.__t.getMarkers().length }));
   check('free scenario: the prompt has no marker rules and the answer adds no marker', !free.p.includes('Segnaposto sulla mappa') && !free.p.includes('"segnaposto"') && free.n === 0, free.p.slice(0, 120));
   await ev(() => { window.__t.resetGame(); });

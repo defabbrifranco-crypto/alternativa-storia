@@ -2,7 +2,7 @@
 // esporta / importa, modalità manuale al posto dell'AI. Dentro Claude il comportamento non cambia.
 const fs = require('fs');
 const path = require('path');
-const { launch, check, summary } = require('./harness');
+const { launch, check, summary, playTurn } = require('./harness');
 
 const TURN = (extra = {}) => Object.assign({
   evento_titolo: 'Titolo manuale', narrativa: 'Narrativa manuale.', riepilogo_mondo: 'Riepilogo manuale.', nuovo_anno: 'marzo 1961',
@@ -37,19 +37,18 @@ const SAVE_KEY = 'storia-alternativa:save/state';
   await ev(() => window.__t.startFixedScenarioGame('ITA'));
   check('la partita parte', (await ev(() => window.__t.getGameMode())) === 'fixed');
   check('avviso informativo di modalità manuale nel registro', /Modalità manuale/.test(await log()) && !/non è disponibile/.test(await log()), await log());
-  check('i pulsanti di gioco sono attivi', await ev(() => !document.getElementById('actBtn').disabled && !document.getElementById('advisorBtn').disabled && !document.getElementById('diploStartBtn').disabled));
+  check('i pulsanti di gioco sono attivi', await ev(() => !document.getElementById('sendBtn').disabled && !document.getElementById('advanceBtn').disabled && !document.getElementById('advisorBtn').disabled && !document.getElementById('diploStartBtn').disabled));
   check('il salvataggio automatico è andato nel browser', await ev(k => { const j = localStorage.getItem(k); return !!j && JSON.parse(j).game.nation.length > 0; }, SAVE_KEY));
 
   // ---- il turno in modalità manuale
-  console.log('— A. «Agisci e avanza» in modalità manuale');
-  await page.fill('#actionInput', 'Mobilito le riserve al confine');
-  await page.click('#actBtn');
+  console.log('— A. «Avanza» in modalità manuale');
+  await playTurn(page, 'Mobilito le riserve al confine');
   await page.waitForFunction(() => document.getElementById('manualDialog').open);
   check('si apre la finestra della modalità manuale', await dlgOpen('manualDialog'));
   const prompt1 = await ev(() => document.getElementById('manualPrompt').value);
   check('il testo da copiare è il prompt del motore', /Sei il motore di gioco di un sandbox di storia alternativa/.test(prompt1) && /Il giocatore guida/.test(prompt1) && prompt1.includes('Mobilito le riserve al confine') && /Rispondi SOLO con un oggetto JSON/.test(prompt1), prompt1.slice(0, 120));
   check('il prompt comprende le regole della mappa e dei segnaposto', /cambi_territoriali/.test(prompt1) && /cambi_controllo/.test(prompt1) && /segnaposto/.test(prompt1));
-  check('la finestra dice che cosa sta chiedendo', /Agisci e avanza/.test(await txt('#manualWhat')) && /non c'è un'intelligenza artificiale collegata/.test(await txt('#manualWhy')));
+  check('la finestra dice che cosa sta chiedendo', /Richiesta: «Avanza»/.test(await txt('#manualWhat')) && /non c'è un'intelligenza artificiale collegata/.test(await txt('#manualWhy')));
   check('il campo prompt è in sola lettura, la risposta è vuota', await ev(() => document.getElementById('manualPrompt').readOnly && document.getElementById('manualAnswer').value === ''));
   check('il fuoco va dentro la finestra', await ev(() => document.getElementById('manualDialog').contains(document.activeElement)));
   check('il testo da copiare si legge dall\'inizio', (await ev(() => document.getElementById('manualPrompt').scrollTop)) === 0);
@@ -80,31 +79,31 @@ const SAVE_KEY = 'storia-alternativa:save/state';
   await page.waitForFunction(() => !document.getElementById('manualDialog').open);
   await page.waitForFunction(() => document.getElementById('thinking').classList.contains('hidden'));
   const r1 = await ev(id => ({ year: document.getElementById('yearLabel').textContent, st: document.getElementById('v-stabilita').textContent, eco: document.getElementById('v-economia').textContent,
-    log: document.getElementById('log').textContent, owner: window.__t.provinces[id].owner, markers: window.__t.getMarkers().map(m => m.nome), act: document.getElementById('actBtn').disabled,
+    log: document.getElementById('log').textContent, owner: window.__t.provinces[id].owner, markers: window.__t.getMarkers().map(m => m.nome), act: document.getElementById('advanceBtn').disabled,
     input: document.getElementById('actionInput').value }), near.id);
   check('la finestra si chiude e la storia prosegue', r1.year === 'marzo 1961' && /Titolo manuale/.test(r1.log) && /Narrativa manuale/.test(r1.log), r1);
   check('le statistiche sono aggiornate', r1.st === '61' && r1.eco === '62', r1);
   check('il cambio di territorio passa dalle stesse regole di sempre', r1.owner === 'ITA' && /da .* a Italia|Italia/.test(r1.log), r1);
   check('il segnaposto compare', r1.markers.length === 1 && r1.markers[0] === 'Truppe manuali', r1);
-  check('il campo azione si svuota e il pulsante torna attivo', r1.input === '' && r1.act === false, r1);
-  check('il cursore torna al pulsante da cui si era partiti', await focusIs('actBtn'));
+  check('il campo azione è vuoto, le azioni in attesa sono entrate nella storia e il pulsante torna attivo', r1.input === '' && r1.act === false && /Mobilito le riserve al confine/.test(r1.log) && (await ev(() => window.__t.getState().pending.length === 0 && document.querySelectorAll('#queueList li').length === 0)), r1);
+  check('il cursore torna al pulsante da cui si era partiti', await focusIs('advanceBtn'));
   const saved1 = await ev(k => JSON.parse(localStorage.getItem(k)), SAVE_KEY);
   check('salvataggio automatico dopo il turno (nel browser)', saved1.game.year === 'marzo 1961' && saved1.schemaVersion === 3 && saved1.v === 3 && saved1.markers.length === 1, saved1 && { y: saved1.game && saved1.game.year, sv: saved1.schemaVersion });
 
   console.log('— A. annullare, Esc');
-  await page.fill('#actionInput', 'Mossa che annullo');
-  await page.click('#actBtn');
+  await playTurn(page, 'Mossa che annullo');
   await page.waitForFunction(() => document.getElementById('manualDialog').open);
   await page.fill('#manualAnswer', 'qualcosa scritto a metà');
   await page.click('#manualCancel');
   await page.waitForFunction(() => !document.getElementById('manualDialog').open);
   await page.waitForFunction(() => document.getElementById('thinking').classList.contains('hidden'));
-  const c1 = await ev(() => ({ log: document.getElementById('log').textContent, year: window.__t.getState().year, act: document.getElementById('actBtn').disabled, thinking: document.getElementById('thinking').classList.contains('hidden') }));
+  const c1 = await ev(() => ({ log: document.getElementById('log').textContent, year: window.__t.getState().year, act: document.getElementById('advanceBtn').disabled, thinking: document.getElementById('thinking').classList.contains('hidden') }));
   check('annullando: lo dice, niente cambia, il pulsante è attivo', /Operazione annullata: nessuna modifica/.test(c1.log) && c1.year === 'marzo 1961' && c1.act === false && c1.thinking, c1);
   check('annullando non compare un errore', !/Errore nella generazione/.test(c1.log), c1.log);
-  check('annullando, il testo dell\'azione resta nel campo (si può rimandare)', (await ev(() => document.getElementById('actionInput').value)) === 'Mossa che annullo');
-  check('annullando, il cursore torna al pulsante', await focusIs('actBtn'));
-  await page.click('#actBtn');
+  check('annullando, l\'azione resta in attesa nell\'elenco: non si perde e si può rimandare con «Avanza»', await ev(() => JSON.stringify(window.__t.getState().pending) === JSON.stringify(['Mossa che annullo']) && document.querySelectorAll('#queueList li').length === 1 && document.getElementById('queueList').textContent.includes('Mossa che annullo')));
+  check('annullando, il messaggio dice che le azioni restano in attesa', /Le tue azioni restano in attesa/.test(c1.log), c1.log);
+  check('annullando, il cursore torna al pulsante', await focusIs('advanceBtn'));
+  await page.click('#advanceBtn');
   await page.waitForFunction(() => document.getElementById('manualDialog').open);
   await page.keyboard.press('Escape');
   await page.waitForFunction(() => !document.getElementById('manualDialog').open);
@@ -148,8 +147,7 @@ const SAVE_KEY = 'storia-alternativa:save/state';
   await page.click('#tabActions');
 
   console.log('— A. una partita sostituita mentre la finestra è aperta');
-  await page.fill('#actionInput', 'Mossa destinata a perdersi');
-  await page.click('#actBtn');
+  await playTurn(page, 'Mossa destinata a perdersi');
   await page.waitForFunction(() => document.getElementById('manualDialog').open);
   await ev(() => window.__t.resetGame());
   check('«Nuova partita» chiude la finestra e scarta la richiesta', !(await dlgOpen('manualDialog')) && (await hid('#thinking')) && !/annullata|Errore/.test(await log()), await log());
@@ -158,8 +156,7 @@ const SAVE_KEY = 'storia-alternativa:save/state';
 
   console.log('— A. riprendere dopo aver ricaricato la pagina');
   await ev(() => window.__t.startFixedScenarioGame('ITA'));
-  await page.fill('#actionInput', 'Seconda partita');
-  await page.click('#actBtn');
+  await playTurn(page, 'Seconda partita');
   await page.waitForFunction(() => document.getElementById('manualDialog').open);
   await page.fill('#manualAnswer', JSON.stringify(TURN({ evento_titolo: 'Da ricordare', nuovo_anno: 'giugno 1961' })));
   await page.click('#manualApply');
@@ -266,15 +263,13 @@ const SAVE_KEY = 'storia-alternativa:save/state';
   check('l\'AI è quella di Claude e l\'interruttore è libero e spento', await evd(() => { const t = document.getElementById('manualToggle'); return window.__t.aiViaClaude() === true && !t.checked && !t.disabled; }));
   await evd(() => window.__t.startFixedScenarioGame('FRA'));
   check('nessun avviso di modalità manuale', !/Modalità manuale/.test(await txd('#log')));
-  await pd.fill('#actionInput', 'Prima mossa con l\'AI');
-  await pd.click('#actBtn');
+  await playTurn(pd, 'Prima mossa con l\'AI');
   await pd.waitForFunction(() => window.__prompts.length === 1 && document.getElementById('thinking').classList.contains('hidden'));
   check('la mossa passa dall\'AI di Claude: nessuna finestra', !(await evd(() => document.getElementById('manualDialog').open)) && /Titolo di prova/.test(await txd('#log')));
   check('il salvataggio va nel db di Claude, non nel browser', !!store['save/state'] && (await evd(k => localStorage.getItem(k), SAVE_KEY)) === null && store['save/state'].schemaVersion === 3);
   await pd.click('#manualToggle');
   check('acceso l\'interruttore: l\'AI di Claude non è più usata', (await evd(() => window.__t.aiViaClaude())) === false && (await evd(() => window.__t.getManualForced())) === true);
-  await pd.fill('#actionInput', 'Seconda mossa a mano');
-  await pd.click('#actBtn');
+  await playTurn(pd, 'Seconda mossa a mano');
   await pd.waitForFunction(() => document.getElementById('manualDialog').open);
   check('con l\'interruttore acceso si apre la finestra e l\'AI non viene chiamata', (await evd(() => window.__prompts.length)) === 1 && /Hai scelto la modalità manuale/.test(await txd('#manualWhy')));
   await pd.click('#manualCancel');
@@ -284,8 +279,7 @@ const SAVE_KEY = 'storia-alternativa:save/state';
   await pd.click('#resumeBtn');
   check('ricaricata: la partita si riprende dal db di Claude e l\'interruttore è ancora acceso', (await evd(() => document.getElementById('manualToggle').checked)) && /Titolo di prova/.test(await txd('#log')));
   await pd.click('#manualToggle');
-  await pd.fill('#actionInput', 'Terza mossa con l\'AI');
-  await pd.click('#actBtn');
+  await playTurn(pd, 'Terza mossa con l\'AI');
   // (dopo il ricaricamento l'elenco delle richieste all'AI riparte da zero: una sola, la terza mossa)
   await pd.waitForFunction(() => window.__prompts.length === 1 && document.getElementById('thinking').classList.contains('hidden'));
   check('spento l\'interruttore, torna l\'AI di Claude', (await evd(() => window.__prompts.length)) === 1 && !(await evd(() => document.getElementById('manualDialog').open)));
@@ -368,8 +362,7 @@ const SAVE_KEY = 'storia-alternativa:save/state';
   const G = await launch({ withClaude: false, mobile: true, width: 390, height: 844 });
   const pg = G.page, evg = (fn, arg) => pg.evaluate(fn, arg);
   await evg(() => window.__t.startFixedScenarioGame('ITA'));
-  await pg.fill('#actionInput', 'Prova su telefono');
-  await pg.tap('#actBtn');
+  await playTurn(pg, 'Prova su telefono', { tap: true });
   await pg.waitForFunction(() => document.getElementById('manualDialog').open);
   const ph = await evg(() => {
     const d = document.getElementById('manualDialog').getBoundingClientRect(), vw = window.innerWidth, vh = window.innerHeight;

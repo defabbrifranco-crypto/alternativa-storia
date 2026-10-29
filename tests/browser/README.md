@@ -62,6 +62,7 @@ Su GitHub le stesse prove partono da sole a ogni push e a ogni pull request (`.g
 | `t12_providers.js` | fuori da Claude: salvataggi nel browser, esporta/importa, modalità manuale, `localStorage` bloccato |
 | `t13_editor.js` | modalità «Gioco» ed «Editor scenario», legenda fissa di proprietà e controllo, scenario come file, blocco dell'Editor durante la partita |
 | `t14_a11y.js` | accessibilità: punti di riferimento e titoli, nomi dei controlli, mappa da tastiera, elenco dei territori, annunci, contrasto (due misure indipendenti), dimensione dei comandi, movimento ridotto, alto contrasto, partita intera con la sola tastiera |
+| `t15_turni.js` | il turno diviso in due: «Invia» (coda delle azioni, una per riga, limiti, rimozione, tastiera), «Avanza» (blocco con testo non inviato, richiesta al motore, salti temporali), mosse delle altre nazioni (richiesta, rotazione senza caso, risposta, dati ostili), errori e annullamenti (le azioni restano in attesa), risposte tardive, fine partita, salvataggio e caricamento (anche di salvataggi vecchi e ostili), modalità manuale, telefono |
 
 ## Come funziona `t14_a11y.js`
 

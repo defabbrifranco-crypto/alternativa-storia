@@ -2,7 +2,7 @@
 // frecce, Invio), elenco dei territori per Stato, schede e annunci, contrasto dei colori, focus visibile, movimento ridotto.
 // Il «lettore di schermo» qui è l'albero dell'accessibilità che Chromium calcola (nomi, ruoli, stati): non sostituisce
 // una prova con un lettore vero (NVDA, VoiceOver…), che resta da fare a mano.
-const { launch, check, summary } = require('./harness');
+const { launch, check, summary, playTurn } = require('./harness');
 
 // Misura il contrasto di ogni testo visibile (WCAG 1.4.3: 4,5 su 1; 3 su 1 per il testo grande), segnaposto compresi.
 function scanContrast() {
@@ -453,12 +453,19 @@ function scanTargets() {
   check('Enter starts the game and the focus goes to its heading', !!k4.mode && k4.focus === 'gameTitle', k4);
   const k5 = await tabTo('#actionInput');
   await page.keyboard.type('Mobilito le riserve');
-  const k6 = await tabTo('#actBtn', 8);
-  check('Tab reaches the action field (' + k5 + ' presses) and then «Agisci e avanza»', k5 > 0 && k6 > 0, { k5, k6 });
+  const k6 = await tabTo('#sendBtn', 4);
+  const p0 = await ev(() => window.__prompts.length);
+  await page.keyboard.press('Enter');
+  const k6b = await ev(() => ({ pending: window.__t.getState().pending.slice(), focus: document.activeElement.id, prompts: window.__prompts.length, input: document.getElementById('actionInput').value, said: document.getElementById('a11yStatus').textContent.replace(/ $/, '') }));
+  check('Tab reaches the action field (' + k5 + ' presses) and then «Invia»; Enter puts the order in the queue, asks nothing to the engine and the cursor goes back to the field',
+    k5 > 0 && k6 > 0 && k6b.pending.length === 1 && k6b.pending[0] === 'Mobilito le riserve' && k6b.focus === 'actionInput' && k6b.input === '' && k6b.prompts === p0 && /Azione aggiunta\. In attesa: 1\./.test(k6b.said), { k5, k6, k6b });
+  const k6c = await tabTo('#advanceBtn', 8);
+  check('Tab then reaches «Avanza» (after the queue and the time step)', k6c > 0, k6c);
   await page.keyboard.press('Enter');
   await page.waitForTimeout(500);
-  const k7 = await ev(() => ({ log: document.getElementById('log').textContent, prompts: window.__prompts.length }));
-  check('Enter sends the action: the answer of the engine is in the story', k7.log.includes('Narrativa di prova.') && k7.prompts >= 1, { prompts: k7.prompts, log: k7.log.slice(0, 120) });
+  const k7 = await ev(() => ({ log: document.getElementById('log').textContent, prompts: window.__prompts.length, pending: window.__t.getState().pending.length, focus: document.activeElement.id }));
+  check('Enter on «Avanza» sends the queue: the answer of the engine is in the story, the queue is empty and the cursor is back on the button',
+    k7.log.includes('Narrativa di prova.') && k7.log.includes('Mobilito le riserve') && k7.prompts === p0 + 1 && k7.pending === 0 && k7.focus === 'advanceBtn', { prompts: k7.prompts, pending: k7.pending, focus: k7.focus, log: k7.log.slice(0, 120) });
   const k8 = await tabTo('#advisorBtn', 40);
   await page.keyboard.press('Enter');
   await page.waitForTimeout(500);
@@ -505,8 +512,7 @@ function scanTargets() {
   check('Home goes back to «Azioni»; the other tab leaves the tab order', g3.a === 'tabActions' && g3.sel === 'true' && g3.ti === -1, g3);
   // the engine thinks: announced; its answer lands in the log (a loaded game is not read out entry by entry)
   await ev(() => { window.__d = window.__deferred(); window.__queue.push(window.__d.p); });
-  await page.fill('#actionInput', 'Prova');
-  await page.click('#actBtn');
+  await playTurn(page, 'Prova');
   check('while the engine thinks the page says so', (await status()) === 'Il motore storico sta elaborando…', await status());
   await ev(() => window.__d.res({ evento_titolo: 'Titolo', narrativa: 'Narrativa di prova.', riepilogo_mondo: 'r', nuovo_anno: 'gennaio 1961', stabilita: 55, economia: 55, esercito: 55, prestigio: 55,
     cambi_territoriali: [], cambi_controllo: [{ provincia: Object.keys(window.__t.provinces).find(i => window.__t.provinces[i].owner === 'FRG' && window.__t.provinces[i].neighbors.some(n => window.__t.provinces[n].owner === 'ITA' || window.__t.provinces[n].owner === 'FRG')), nuovo_controllore: 'ITA' }] }));
@@ -516,9 +522,27 @@ function scanTargets() {
   check('loading a game puts the log back without being read aloud entry by entry (aria-live off for a moment, then back to the role\'s own)', loaded.live === 'off' && loaded.entries >= 2, loaded);
   await page.waitForTimeout(500);
   check('…and the live behaviour of the log comes back', (await ev(() => document.getElementById('log').hasAttribute('aria-live'))) === false);
+  // the controls of the turn are on screen for the scans below: orders waiting (with their «Rimuovi»), the notice about
+  // text that was written and not sent, and the block of what the other nations did
+  await ev(() => window.__queue.push({ evento_titolo: 'Titolo', narrativa: 'Narrativa di prova.', mosse_altre_nazioni: [{ nazione: 'Francia', mossa: 'Propone un accordo commerciale.' }, 'Il Regno Unito consulta Washington.'],
+    riepilogo_mondo: 'r', nuovo_anno: 'febbraio 1961', stabilita: 55, economia: 55, esercito: 55, prestigio: 55, cambi_territoriali: [] }));
+  await playTurn(page, '');
+  await page.waitForFunction(() => document.querySelector('#log .entry-others') && document.getElementById('thinking').classList.contains('hidden'));
+  await page.fill('#actionInput', 'Mobilito le riserve\nApro trattative commerciali');
+  await page.click('#sendBtn');
+  await page.fill('#actionInput', 'Una bozza non ancora inviata');
+  await page.click('#advanceBtn');
+  const turnUi = await ev(() => ({ items: document.querySelectorAll('#queueList li').length, rm: document.querySelectorAll('#queueList button').length, msg: !document.getElementById('actionMsg').classList.contains('hidden'), others: !!document.querySelector('#log .entry-others') }));
+  check('the controls of the turn are all on screen for the scans: two orders waiting with their «Rimuovi», the notice, the other nations', turnUi.items === 2 && turnUi.rm === 2 && turnUi.msg && turnUi.others, turnUi);
+  const turnAx = await ax();
+  const axList = turnAx.find(n => role(n) === 'list' && /Azioni in attesa/.test(nameOf(n)));
+  const axRm = turnAx.filter(n => role(n) === 'button' && /^Rimuovi l'azione: /.test(nameOf(n))).map(nameOf);
+  check('for a screen reader the waiting orders are a list with a name, and each «Rimuovi» says which order it takes out', !!axList && axRm.length === 2 && axRm[0] === "Rimuovi l'azione: Mobilito le riserve", { list: axList && nameOf(axList), axRm });
+  const axTxt = turnAx.find(n => role(n) === 'textbox' && nameOf(n) === 'Cosa fai?');
+  check('the action field is a text box named «Cosa fai?» and is described by the note that explains «Invia» and «Avanza»', !!axTxt && /le mette in attesa/.test((axTxt.description && axTxt.description.value) || ''), axTxt && { d: axTxt.description });
   for (const scheme of ['light', 'dark']) {
     await page.emulateMedia({ colorScheme: scheme });
-    await scan(scheme + ', game screen (stats, log, tabs, card)');
+    await scan(scheme + ', game screen (stats, log, tabs, card, orders waiting, other nations)');
     await page.click('#tabDiplo');
     await scan(scheme + ', diplomacy tab');
     await page.click('#tabActions');
