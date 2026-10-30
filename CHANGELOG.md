@@ -6,7 +6,9 @@ Le date sono quelle di consegna dei pacchetti di modifiche. Prima della versione
 
 ## [Non rilasciato]
 
-Niente per ora.
+### Modificato
+- `README.md`, `docs/METODOLOGIA.md` e `docs/FONTI.md`, riscritti dalla pull request #9 con la data del 1 gennaio 1960, sono allineati allo stato attuale: scenario al 31 dicembre 1960, status controllati online (con rinvio a `docs/STATUS-1960.md`), limiti aggiornati (la pagina funziona anche fuori da Claude, ci sono prove automatiche, l'accessibilità e l'Editor scenario sono fatti), sezioni «Licenza» e «Come citare», rinvii a tutte le guide. `docs/README.md` diventa l'indice dei documenti. `docs/STATUS-1960.md` non dice più che quei file sono da allineare.
+- Nessuna modifica alla pagina, ai dati o alle prove.
 
 ## [0.28.0] - 2026-10-29
 
