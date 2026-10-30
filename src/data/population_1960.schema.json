@@ -6,11 +6,23 @@
   "properties": {
     "meta": {
       "type": "object",
-      "required": ["reference_date", "global_warning", "sources"],
+      "required": ["reference_date", "global_warning", "sources", "status_policy", "status_sources"],
       "properties": {
         "reference_date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
         "global_warning": {"type": "string", "minLength": 1},
-        "sources": {"type": "object", "additionalProperties": {"type": "string"}}
+        "verification_policy": {"type": "string"},
+        "status_policy": {"type": "string", "minLength": 1},
+        "status_check": {
+          "type": "object",
+          "required": ["date", "method"],
+          "properties": {
+            "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+            "method": {"type": "string", "minLength": 1},
+            "details": {"type": "string"}
+          }
+        },
+        "sources": {"type": "object", "additionalProperties": {"type": "string"}},
+        "status_sources": {"type": "object", "additionalProperties": {"type": "string"}}
       }
     },
     "records": {
@@ -23,8 +35,9 @@
           "entity": {"type": "string"},
           "map_id": {"type": ["string", "null"]},
           "value": {"type": "integer", "minimum": 1},
-          "status_1960_01_01": {"type": ["string", "null"]},
+          "status_1960_12_31": {"type": ["string", "null"]},
           "status_origin": {"enum": ["file", "revisione", null]},
+          "status_sources": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
           "perimeter": {"type": ["string", "null"]},
           "source_id": {"type": "string"},
           "verified": {"type": "boolean"},

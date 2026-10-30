@@ -1,0 +1,26 @@
+# BOZZA (issue #6). Contiene solo dati certi; da completare a mano:
+#   - version e date-released: aggiungerli alla prima versione pubblicata (release) su GitHub.
+# L'autore è il nome utente GitHub, come scelto dal titolare; si può sostituire in qualsiasi momento con
+# nome e cognome (family-names e given-names) o con il nome di un gruppo (name).
+# La licenza MIT copre il codice e i testi del progetto, non i dati di terzi: vedi ATTRIBUZIONI.md.
+# Il titolo è quello del README. Formato: Citation File Format 1.2.0 (https://citation-file-format.github.io/).
+# Non è stato validato con lo strumento ufficiale (non raggiungibile dall'ambiente in cui è stato scritto):
+# GitHub lo controlla da solo e mostra il pulsante «Cite this repository» se il file è corretto.
+cff-version: 1.2.0
+message: "Se usi questo software, citalo con questi dati."
+title: "Alternativa Storia"
+type: software
+authors:
+  - alias: "defabbrifranco-crypto"
+repository-code: "https://github.com/defabbrifranco-crypto/alternativa-storia"
+license: MIT
+abstract: >-
+  Prototipo di gioco di storia alternativa con mappa interattiva, ambientato
+  nel 1960. Le conseguenze delle azioni sono generate da un modello linguistico:
+  non sono previsioni storiche. I dati storici e territoriali sono provvisori e
+  non ancora verificati su fonti.
+keywords:
+  - storia alternativa
+  - mappa interattiva
+  - prototipo
+  - gioco

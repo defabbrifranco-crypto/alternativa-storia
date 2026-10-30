@@ -648,8 +648,11 @@ window.MAP_SVG = {
     TLS: { name:"Timor Portoghese", capital:"Dili", alliance:"Colonia portoghese", color:"#ae9368", playable:true },
   };
 
-  // NOTE on data quality: capitals and alliance memberships are verified historical
-  // facts for Jan 1960. Population is left null (not verified for this prototype).
+  // NOTE on data quality: nothing below has been checked against sources yet
+  // (docs/FONTI.md: no entry is verified). Capitals and alliance memberships are
+  // entered as historical data for 1 Jan 1960; where the capital is unknown it is
+  // "da verificare". Population figures are inserted as provided in the CSV files
+  // (see the population sections below) and stay null where the files have no row.
   // infrastructure / stability / strategicValue are provisional illustrative
   // ratings for the demo, not historical statistics.
   let provinces = {
@@ -1119,8 +1122,9 @@ window.MAP_SVG = {
       if (gameMode) { checkGameOver(); autoSave(); }
     };
     el('pp-transferBtn').onclick = () => {
-      // A full transfer changes both legal ownership (drives map color,
-      // per spec) and de-facto control together.
+      // This button changes only de-facto control (occupation): the owner, which
+      // drives the map colour, stays as it is. Sovereignty has its own button
+      // (pp-ownerBtn -> changeProvinceOwner), which in turn leaves control alone.
       changeProvinceController(id, sel.value);
       if (gameMode) { checkGameOver(); autoSave(); }
     };
@@ -1526,14 +1530,6 @@ window.MAP_SVG = {
     const owned = getCountryProvinces(selectedCountryId).map(provName);
     const controlled = getControlledProvinces(selectedCountryId).map(provName);
     return `Il giocatore guida ${c.name} (alleanza: ${c.alliance}); possiede legalmente: ${owned.join('; ') || 'nessun territorio'}; controlla sul terreno: ${controlled.join('; ') || 'nessun territorio'}.`;
-  }
-  // Reference lists the model needs to describe a change of sovereignty with valid ids.
-  function legacyTerritoryRules() {
-    const cs = Object.keys(countries).map(c => `${c}=${countries[c].name}`).join(', ');
-    const ps = Object.keys(provinces).map(id => `${id}=${provName(id)} [${provinces[id].owner}]`).join('; ');
-    const existingAnnotations = state.mapAnnotations.slice(-20).map(a => `${a.tipo}:${a.provincia}:${mapAnnotationName(a)}`).join('; ') || 'nessuno';
-    return `Province (ID=nome [proprietario attuale]): ${ps}.\nCodici paesi: ${cs}.\nSe, e solo se, la narrazione descrive un vero passaggio di sovranità su un territorio (conquista, annessione, secessione, cessione, unificazione), elencalo in "cambi_territoriali" con l'ID della provincia e il codice del nuovo proprietario presi dalle liste sopra: al massimo 3 per turno e sempre coerenti con la narrazione. Altrimenti "cambi_territoriali" deve essere un array vuoto.\n` +
-      `Puoi anche proporre al massimo ${MAP_ANNOTATION_TURN_LIMIT} elementi visivi pertinenti alla narrazione in "elementi_mappa"; in assenza di un cambiamento significativo usa []. Usa solo tipo "simbolo", "nota" o "nome" e ancora ogni elemento a un ID provincia valido. Per i simboli scegli icona fra ${Object.keys(MAP_ANNOTATION_GLYPHS).join(', ')}. "etichetta" è breve (massimo 40 caratteri), "nota" massimo 220. Elementi già presenti: ${existingAnnotations}. Non aggiungere doppioni. Le annotazioni non modificano proprietario o controllore.\n`;
   }
 
   function territoryPromptRules() {
