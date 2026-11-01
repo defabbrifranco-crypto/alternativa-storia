@@ -6,7 +6,10 @@ Le date sono quelle di consegna dei pacchetti di modifiche. Prima della versione
 
 ## [Non rilasciato]
 
-Niente per ora.
+### Modificato
+- `README.md`, `docs/METODOLOGIA.md` e `docs/FONTI.md`, riscritti dalla pull request #9 con la data del 1 gennaio 1960, sono allineati allo stato attuale: scenario al 31 dicembre 1960, status controllati online (con rinvio a `docs/STATUS-1960.md`), limiti aggiornati (la pagina funziona anche fuori da Claude, ci sono prove automatiche, l'accessibilità e l'Editor scenario sono fatti), sezioni «Licenza» e «Come citare», rinvii a tutte le guide. `docs/README.md` diventa l'indice dei documenti. `docs/STATUS-1960.md` non dice più che quei file sono da allineare.
+- Il workflow «Prove automatiche» gira su Ubuntu 24.04 (`runs-on: ubuntu-24.04`) invece che su `ubuntu-latest`: il 30 ottobre 2026 il passo che installa il browser di prova è fallito subito, prima di ogni prova, mentre `ubuntu-latest` stava passando a Ubuntu 26 (dal 19 ottobre 2026). Da rivedere quando si aggiorna Playwright.
+- Nessuna modifica alla pagina, ai dati o al codice delle prove.
 
 ## [0.28.0] - 2026-10-29
 
