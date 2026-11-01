@@ -63,6 +63,7 @@ Su GitHub le stesse prove partono da sole a ogni push e a ogni pull request (`.g
 | `t13_editor.js` | modalità «Gioco» ed «Editor scenario», legenda fissa di proprietà e controllo, scenario come file, blocco dell'Editor durante la partita |
 | `t14_a11y.js` | accessibilità: punti di riferimento e titoli, nomi dei controlli, mappa da tastiera, elenco dei territori, annunci, contrasto (due misure indipendenti), dimensione dei comandi, movimento ridotto, alto contrasto, partita intera con la sola tastiera |
 | `t15_turni.js` | il turno diviso in due: «Invia» (coda delle azioni, una per riga, limiti, rimozione, tastiera), «Avanza» (blocco con testo non inviato, richiesta al motore, salti temporali), mosse delle altre nazioni (richiesta, rotazione senza caso, risposta, dati ostili), errori e annullamenti (le azioni restano in attesa), risposte tardive, fine partita, salvataggio e caricamento (anche di salvataggi vecchi e ostili), modalità manuale, telefono |
+| `t16_popolazione.js` | popolazione 1960: la pagina ha la copia identica del file dei dati; **ognuna delle 1020 schede** mostra il valore del file (proprio, dello Stato, dell'ala o i due dello Yemen, mai sommati); nessuna scheda mostra «undefined»; fonte, verifica, status, perimetro, avvertenze e altro valore (Italia, Germania Ovest, Giordania, Malaysia, Cipro, Kuwait, Cina, Bhutan, Pakistan, Yemen, repubbliche sovietiche); fonti dello status come collegamenti sicuri, grandi almeno 24 × 24 px, contrasto in tema chiaro e scuro; guasti messi apposta (fonte non registrata, flag sconosciuto, valore non numerico, blocco dei dati assente o rotto) |
 
 ## Come funziona `t14_a11y.js`
 
@@ -75,8 +76,8 @@ Su GitHub le stesse prove partono da sole a ogni push e a ogni pull request (`.g
 
 - `t2_panel.js` (scheda del territorio), `t1_basic.js` (colore e alleanza del Kuwait) e `t3_game.js` (alleanza nel testo
   per l'AI) fissano gli status al **31 dicembre 1960** controllati online (`docs/STATUS-1960.md`). Se si cambia uno
-  status vanno cambiati insieme: `src/data/population_1960.json`, l'elenco `POPULATION_1960_B` della pagina,
-  `docs/STATUS-1960.md` e questi controlli (la prova `tests/population-pagina.test.js` si ferma se dati, pagina e
-  documento non coincidono).
+  status vanno cambiati insieme: `src/data/population_1960.json` (poi `npm run dati:incorpora`, che ricopia i dati
+  nella pagina), `docs/STATUS-1960.md` e questi controlli (la prova `tests/population-pagina.test.js` si ferma se
+  dati, pagina e documento non coincidono).
 - Le prove dipendono dai nomi interni della pagina: rinominare una funzione esposta dal gancio richiede di
   aggiornare `harness.js` e le prove che la usano.

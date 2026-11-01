@@ -18,7 +18,7 @@ Il turno è spiegato in [`docs/TURNO-E-AZIONI.md`](docs/TURNO-E-AZIONI.md). Con 
 - **La mappa è approssimata.** I contorni degli Stati derivano da un file con gli attributi di Natural Earth; le regioni sono celle calcolate da elenchi di punti, non confini storici; tre linee sono tracciate a mano senza fonte. Vedi [`docs/CONFINI-MAPPA.md`](docs/CONFINI-MAPPA.md) e [`ATTRIBUZIONI.md`](ATTRIBUZIONI.md).
 - **L'AI non è provata dal vivo dalle prove automatiche.** Queste usano risposte simulate: la qualità delle mosse delle altre nazioni e il rispetto del formato dipendono dal modello. Le mosse territoriali delle altre nazioni arrivano sulla mappa solo per le province che il motore conosce.
 - **Accessibilità.** Tastiera, struttura per i lettori di schermo, contrasto e movimento ridotto sono curati e misurati con strumenti, ma la pagina non è mai stata provata con un lettore di schermo vero ([#4](../../issues/4)). Vedi [`docs/ACCESSIBILITA.md`](docs/ACCESSIBILITA.md).
-- **Dataset di popolazione non letto dalla pagina.** `src/data/population_1960.json` esiste, ma la pagina ne tiene una copia scritta dentro; una prova automatica controlla che coincidano ([#8](../../issues/8)).
+- **Repubbliche sovietiche senza dato proprio.** Sulla mappa le 14 repubbliche sovietiche sono Stati separati, ma il file dei dati ha una sola cifra per l'intera URSS: la scheda lo dice e non ne mostra una quota.
 - **Solo Chromium.** La pagina è provata solo con Chromium e non è stata aperta da GitHub Pages.
 
 ## Struttura del repository
@@ -28,6 +28,7 @@ Il turno è spiegato in [`docs/TURNO-E-AZIONI.md`](docs/TURNO-E-AZIONI.md). Con 
 | `src/` | La pagina del gioco (`storia-alternativa-prototipo.html`, un solo file HTML), due copie di riferimento (la versione 23 e la variante «map-overlay») e i dati in `src/data/` |
 | `archive/` | Versione precedente: `storia-alternativa-prototipo.html` |
 | `docs/` | Guide e documenti: vedi l'[indice](docs/README.md) |
+| `scripts/` | Strumenti: `incorpora-popolazione.js` mette nella pagina una copia identica dei dati di popolazione |
 | `tests/` | Prove sui dati e sulla pagina (`node --test`) e prove nel browser (`tests/browser/`) |
 | `index.html` | Reindirizza alla pagina del gioco (per GitHub Pages) |
 | `LICENSE`, `ATTRIBUZIONI.md`, `CHANGELOG.md`, `CITATION.cff` | Licenza, provenienza dei dati, registro delle modifiche, bozza di citazione |
@@ -43,6 +44,8 @@ Prove automatiche (serve Node 20 o più recente):
 - `npm test` le esegue tutte.
 
 GitHub le esegue a ogni push e a ogni pull request (workflow «Prove automatiche»).
+
+**Se cambi i dati di popolazione.** I numeri, le fonti e gli status stanno in un solo posto, `src/data/population_1960.json`. La pagina deve funzionare anche aperta da sola, quindi ne porta dentro una copia identica: dopo ogni modifica al file dei dati lancia `npm run dati:incorpora` (ricopia i dati nella pagina). Se ti dimentichi, `node --test` si ferma e lo dice; `npm run dati:controlla` fa solo il controllo, senza scrivere.
 
 ## Guide e documenti
 
@@ -64,9 +67,8 @@ Il lavoro prosegue per issue. Da fare, in ordine:
 1. Provare un turno con il modello vero dentro Claude e rifinire la richiesta all'AI.
 2. Provare la pagina con un lettore di schermo vero (NVDA, VoiceOver o TalkBack) e riferire l'esito ([#4](../../issues/4)).
 3. Completare con fonti gli status mancanti e sostituire le fonti secondarie dei dati ([#3](../../issues/3)).
-4. Far leggere alla pagina il dataset di popolazione ([#8](../../issues/8)).
-5. ESLint e axe nelle prove automatiche; aggiungere `package-lock.json`.
-6. Rendere la mappa riproducibile (aggiungere gli script di costruzione o indicare dove scaricare i file di partenza).
+4. ESLint e axe nelle prove automatiche; aggiungere `package-lock.json`.
+5. Rendere la mappa riproducibile (aggiungere gli script di costruzione o indicare dove scaricare i file di partenza).
 
 ## Licenza
 

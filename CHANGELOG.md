@@ -6,10 +6,34 @@ Le date sono quelle di consegna dei pacchetti di modifiche. Prima della versione
 
 ## [Non rilasciato]
 
+## [0.29.0] - 2026-11-01
+
+La pagina legge i dati di popolazione dal file `src/data/population_1960.json` e la scheda del territorio mostra fonte, verifica, status, perimetro e avvertenze ([#8](../../issues/8)). Comprende anche le modifiche della pull request #11, già unita: documenti allineati e prove automatiche su Ubuntu 24.04.
+
+### Aggiunto
+- **`scripts/incorpora-popolazione.js`** (`npm run dati:incorpora`): mette nella pagina una copia **identica** del file dei dati, in un blocco `<script type="application/json" id="population-1960-data">` fra i marcatori `DATI-POPOLAZIONE-INIZIO` e `DATI-POPOLAZIONE-FINE`. La pagina deve funzionare anche aperta da sola, quindi non scarica il file: ne porta una copia. `npm run dati:controlla` (`--check`) controlla senza scrivere. Rifiuta un file dei dati che non è JSON o che contiene «</script» o «<!--».
+- **Scheda del territorio, più completa.** Per ogni cifra mostra: la **fonte** (il nome dal registro `meta.sources`, mai «undefined»: un codice non registrato si legge com'è), la **verifica** (`verified`: oggi «non ricontrollato sulla fonte primaria» ovunque), lo **status al 31 dicembre 1960** (con «controllato online su fonti secondarie il 26 ottobre 2026», oppure «come nel file fornito, non ricontrollato», oppure «da verificare» dove il file non ha status), il **perimetro**, le **avvertenze** (i flag, in frasi), l'**altro valore** (`alternative_values`: per Cipro 580.000 con la sua fonte) e la **nota**; in fondo l'**avvertenza generale** (`meta.global_warning`). Le fonti degli status sono collegamenti, chiusi in un elenco a scomparsa («Fonti dello status»): si aprono, in un'altra scheda del browser, solo se li tocchi.
+- Se la pagina non riesce a leggere i dati (blocco assente, rotto o senza `records`), si apre lo stesso: la scheda scrive «I dati di popolazione non sono stati letti (…)», non mostra valori e l'errore va nella console.
+- `tests/browser/t16_popolazione.js` (69 controlli): la copia nella pagina è quella del file; **ognuna delle 1020 schede** mostra il valore del file (proprio, dello Stato, dell'ala del Pakistan o i due dello Yemen, mai sommati né divisi); nessuna scheda mostra «undefined»; fonte, verifica, status, perimetro, avvertenze e altro valore su casi scelti; collegamenti sicuri, grandi almeno 24 × 24 px e con contrasto sufficiente nei due temi; guasti messi apposta. Provata con 21 difetti inseriti nella pagina: tutti notati.
+- `tests/population-pagina.test.js` riscritta (13 prove): la copia nella pagina è identica al file; lo strumento di incorporazione funziona anche quando la copia è sbagliata; nel codice non resta nessun valore di popolazione scritto a mano; ogni flag del file ha una frase; i testi del file hanno gli accenti. Provata con 10 difetti inseriti: tutti notati.
+- `tests/browser/harness.js`: opzione `transform` per aprire la pagina con un guasto messo apposta, e nel gancio di prova i dati di popolazione.
+
 ### Modificato
-- `README.md`, `docs/METODOLOGIA.md` e `docs/FONTI.md`, riscritti dalla pull request #9 con la data del 1 gennaio 1960, sono allineati allo stato attuale: scenario al 31 dicembre 1960, status controllati online (con rinvio a `docs/STATUS-1960.md`), limiti aggiornati (la pagina funziona anche fuori da Claude, ci sono prove automatiche, l'accessibilità e l'Editor scenario sono fatti), sezioni «Licenza» e «Come citare», rinvii a tutte le guide. `docs/README.md` diventa l'indice dei documenti. `docs/STATUS-1960.md` non dice più che quei file sono da allineare.
+- **La pagina non ha più i due elenchi scritti a mano** (`POPULATION_1960` e `POPULATION_1960_B`) né le loro ripetizioni nel codice: ogni scheda è riempita dai record del file. I numeri mostrati **non cambiano**: aprendo la scheda di tutte le 1020 province con la pagina di prima e con quella nuova, il valore proprio, la riga «Popolazione dello Stato / dell'ala», le sue etichette, gli status e le fonti coincidono; cambiano solo tre diciture (Yemen: lo status è passato dalla riga alle note; ala occidentale del Pakistan: da «Pakistan (Stato sovrano)» a «Pakistan occidentale», ala orientale: da «Bangladesh (Pakistan Orientale (non Stato sovrano))» a «Pakistan orientale (futuro Bangladesh)»: sono i nomi corretti del file dei dati).
+- **Testi del file dei dati con gli accenti**: 17 testi li avevano persi («il valore e riferito», «entita», «Citta del Vaticano», «a se», «ne usci»…). Cambiano solo gli accenti: nessun numero, identificativo, status, fonte o flag (verificato con uno script: tolti gli accenti dal testo nuovo si ottiene esattamente il vecchio).
+- Pagina: versione 29. Le prove `t2_panel.js` (nuove diciture) e `t12_providers.js` (il controllo «nessuno script eseguito» ora distingue i due script della pagina dal blocco dei dati, che non è codice) sono adattate.
+- `README.md`, `docs/METODOLOGIA.md` e `docs/FONTI.md`, riscritti dalla pull request #9 con la data del 1 gennaio 1960, sono allineati allo stato attuale: scenario al 31 dicembre 1960, status controllati online (con rinvio a `docs/STATUS-1960.md`), limiti aggiornati (la pagina funziona anche fuori da Claude, ci sono prove automatiche, l'accessibilità e l'Editor scenario sono fatti), sezioni «Licenza» e «Come citare», rinvii a tutte le guide. `docs/README.md` diventa l'indice dei documenti. `docs/STATUS-1960.md`, `docs/data-notes-population-1960.md`, `tests/browser/README.md` e `src/README.md` descrivono la lettura dei dati dal file e dicono che per uno status basta cambiarlo in due posti (file dei dati e documento) e lanciare `npm run dati:incorpora`.
 - Il workflow «Prove automatiche» gira su Ubuntu 24.04 (`runs-on: ubuntu-24.04`) invece che su `ubuntu-latest`: il 30 ottobre 2026 il passo che installa il browser di prova è fallito subito, prima di ogni prova, mentre `ubuntu-latest` stava passando a Ubuntu 26 (dal 19 ottobre 2026). Da rivedere quando si aggiorna Playwright.
-- Nessuna modifica alla pagina, ai dati o al codice delle prove.
+
+### Non cambia
+- Numeri, identificativi, fonti, status, flag e note del file dei dati (a parte gli accenti). Nessun valore è stato ricontrollato (`verified: false` ovunque).
+- `src/storia-alternativa-prototipo-map-overlay.html` (copia di riferimento) conserva i vecchi elenchi di popolazione e `regionalPopulationProvinces`: non è la pagina attuale e nessuno la carica.
+- Salvataggi: `schemaVersion` resta 3; i dati di popolazione non finiscono nei salvataggi.
+
+### Da sapere
+- **Dopo ogni modifica al file dei dati va lanciato `npm run dati:incorpora`**: altrimenti la pagina resta con la copia vecchia e `node --test` si ferma.
+- Le 14 repubbliche sovietiche (Stati separati sulla mappa) non hanno un dato proprio: la scheda lo dice e rinvia al dato dell'intera URSS.
+- I collegamenti alle fonti degli status portano a siti esterni (ONU, Dipartimento di Stato USA, Wikipedia…): non è stato riaperto oggi ogni indirizzo per vedere che risponda.
 
 ## [0.28.0] - 2026-10-29
 

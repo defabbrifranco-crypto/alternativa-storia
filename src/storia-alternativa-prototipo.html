@@ -124,6 +124,13 @@
   .pp-det summary { cursor:pointer; color:var(--ink); }
   .pp-det p { margin:6px 0; line-height:1.4; }
   .pp-note { font-size:0.72rem; color:var(--muted); padding:3px 0 4px; line-height:1.35; }
+  /* what the data file says about the population figure: one short line per fact, the sources of the status one tap away */
+  #pp-popnote div + div, #pp-popnote div + details { margin-top:3px; }
+  #pp-popnote b { color:var(--ink); font-weight:600; }
+  #pp-popnote .pp-pophead { margin-top:8px; color:var(--ink); font-weight:600; }
+  #pp-popnote summary { cursor:pointer; color:var(--ink); padding:5px 0; min-height:24px; box-sizing:border-box; }
+  #pp-popnote ul { margin:2px 0 2px 18px; padding:0; }
+  #pp-popnote a { color:var(--accent); text-decoration:underline; display:inline-block; min-height:24px; padding:3px 0; box-sizing:border-box; }
   .demo-box { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
   .game-actions { display:flex; gap:8px; justify-content:space-between; }
   .game-actions .ghost { margin-top:0; }
@@ -266,7 +273,7 @@
     <header class="panel" id="appHead">
       <h1 id="appTitle" tabindex="-1"><span aria-hidden="true">🗺️ </span>Storia Alternativa</h1>
       <p class="sub">Prototipo ispirato al funzionamento di Pax Historia: scegli lo scenario fisso della Guerra Fredda o crea un tuo scenario libero.</p>
-      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 28</p>
+      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 29</p>
     </header>
 
     <div class="panel hidden" id="resumeBanner">
@@ -2755,6 +2762,140 @@ window.MAP_SVG = {
   fillers: ["2475.8,996.8 2469.5,984.3 2471.0,984.4 2472.7,985.8 2476.0,985.8 2477.9,987.1 2481.2,987.1 2483.6,988.4 2490.0,988.7 2493.2,987.8","1453.4,1007.8 1453.2,1008.7 1453.7,1009.3 1451.6,1009.3 1451.0,1007.3 1449.2,1007.0 1447.5,1007.4 1447.6,1006.8 1448.3,1007.0 1449.1,1006.3 1449.8,1006.3 1449.9,1006.8 1451.0,1007.2 1452.7,1006.9 1452.8,1007.5 1451.9,1007.6 1452.1,1008.0","907.8,714.6 908.8,716.1 908.6,716.8 910.0,718.2 909.2,719.4 906.8,719.2 907.6,718.2 907.0,716.6","726.4,825.1 722.0,826.8 720.4,826.7 719.5,825.5 720.4,825.1 719.4,824.5 720.0,823.0 720.8,821.9 722.6,821.7 726.8,822.6 727.8,823.7"]
 };
 </script>
+<!-- DATI-POPOLAZIONE-INIZIO (copia di src/data/population_1960.json: non modificare a mano, si aggiorna con «node scripts/incorpora-popolazione.js») -->
+<script type="application/json" id="population-1960-data">
+{
+  "meta": {
+    "title": "Popolazione 1960 per entità",
+    "reference_date": "1960-12-31",
+    "global_warning": "Stime storiche retrospettive. Non mescolare entità sovrane e territori senza leggere lo status politico. Serie diverse (Maddison, Statistics and Data, ONU) non vanno sommate o confrontate senza verifica del perimetro.",
+    "verification_policy": "verified=false significa che il valore è riportato così come fornito nei file di origine e non è stato ricontrollato sulla fonte primaria. status_origin=file indica che lo status è quello del CSV; status_origin=revisione indica uno status corretto o precisato in revisione; null indica che il file di origine non forniva alcuno status.",
+    "status_policy": "Gli status politici si leggono al 31 dicembre 1960, data di partenza dello scenario, non a date precedenti o successive. Una data successiva compare solo fra parentesi, come indicazione di ciò che avvenne dopo (per esempio l'indipendenza), mai come status. Un record con status_sources è stato controllato online su quelle fonti; senza status_sources lo status è quello del file e non è stato controllato su una fonte specifica.",
+    "status_check": {
+      "date": "2026-10-26",
+      "method": "Controllo online su fonti secondarie: elenco ONU degli Stati membri, pagine dell'Office of the Historian del Dipartimento di Stato USA, enciclopedie e Wikipedia. Nessuna fonte primaria d'archivio è stata consultata.",
+      "details": "docs/STATUS-1960.md"
+    },
+    "sources": {
+      "MADDISON": "Maddison Project / Maddison Historical Statistics (come indicato nel primo CSV)",
+      "STATISTICS_AND_DATA": "Statistics and Data (serie diversa da Maddison, usata per RFT e RDT)",
+      "UN_VIA_JETPUNK": "ONU retrospettiva tramite JetPunk: fonte secondaria, da sostituire con World Population Prospects",
+      "FILE_B_UNSPECIFIED": "Secondo CSV (fb6262f2.csv): nessuna colonna fonte fornita"
+    },
+    "status_sources": {
+      "UN_MEMBERS": "Nazioni Unite, elenco degli Stati membri con la data di ammissione (PDF, edizione 2025): https://www.un.org/sites/un2.un.org/files/un_member_states_2025.pdf",
+      "OHH_CYPRUS": "US Department of State, Office of the Historian, Cyprus: https://history.state.gov/countries/cyprus",
+      "OHH_KUWAIT": "US Department of State, Office of the Historian, Kuwait: https://history.state.gov/countries/kuwait",
+      "OHH_SYRIA": "US Department of State, Office of the Historian, Syria: https://history.state.gov/countries/syria",
+      "OHH_YEMEN": "US Department of State, Office of the Historian, Yemen: https://history.state.gov/countries/yemen",
+      "OHH_OMAN": "US Department of State, Office of the Historian, Oman: https://history.state.gov/countries/oman",
+      "OHH_BRUNEI": "US Department of State, Office of the Historian, Brunei: https://history.state.gov/countries/brunei",
+      "BRITANNICA_UAR": "Encyclopaedia Britannica, United Arab Republic: https://www.britannica.com/print/article/615447",
+      "COUNTRYSTUDIES_SYRIA": "Country Studies (Library of Congress), Syria, pagina 14: https://countrystudies.us/syria/14.htm",
+      "SORBY_UAR": "Sorby, articolo in PDF pubblicato su sav.sk (usato per la denominazione 'Regione settentrionale' della Siria nella RAU): https://www.sav.sk/journals/uploads/092611431_Sorby.pdf",
+      "WP_CYPRUS": "Wikipedia (inglese), Cyprus: https://en.wikipedia.org/wiki/Cyprus",
+      "WP_ADEN_COLONY": "Wikipedia (inglese), Aden Colony: https://en.wikipedia.org/wiki/Aden_Colony",
+      "WP_ADEN_PROTECTORATE": "Wikipedia (inglese), Aden Protectorate: https://en.wikipedia.org/wiki/Aden_Protectorate",
+      "WP_FESA": "Wikipedia (inglese), Federation of the Emirates of South Arabia: https://en.wikipedia.org/wiki/Federation_of_the_Emirates_of_South_Arabia",
+      "WP_MUSCAT_OMAN": "Wikipedia (inglese), Muscat and Oman: https://en.wikipedia.org/wiki/Muscat_and_Oman",
+      "WP_SAID_BIN_TAIMUR": "Wikipedia (inglese), Said bin Taimur: https://en.wikipedia.org/wiki/Said_bin_Taimur",
+      "WP_KINGDOM_YEMEN": "Wikipedia (inglese), Kingdom of Yemen: https://en.wikipedia.org/wiki/Kingdom_of_Yemen",
+      "WP_UAS": "Wikipedia (inglese), United Arab States: https://en.wikipedia.org/wiki/United_Arab_States",
+      "WP_PERSIAN_GULF_RESIDENCY": "Wikipedia (inglese), Persian Gulf Residency: https://en.wikipedia.org/wiki/Persian_Gulf_Residency",
+      "WP_TRUCIAL_STATES": "Wikipedia (inglese), Trucial States: https://en.wikipedia.org/wiki/Trucial_States",
+      "WP_BHUTAN_INDIA": "Wikipedia (inglese), Bhutan-India relations: https://en.wikipedia.org/wiki/Bhutan%E2%80%93India_relations",
+      "WP_SINGAPORE": "Wikipedia (inglese), State of Singapore: https://en.wikipedia.org/wiki/State_of_Singapore",
+      "WP_MALDIVES": "Wikipedia (inglese), Independence of the Maldives: https://en.wikipedia.org/wiki/Independence_of_the_Maldives",
+      "WP_PAKISTAN": "Wikipedia (inglese), Dominion of Pakistan: https://en.wikipedia.org/wiki/Dominion_of_Pakistan",
+      "WP_MALAYA": "Wikipedia (inglese), Federation of Malaya: https://en.wikipedia.org/wiki/Federation_of_Malaya",
+      "WP_HONG_KONG": "Wikipedia (inglese), British Hong Kong: https://en.wikipedia.org/wiki/British_Hong_Kong",
+      "WP_MACAU": "Wikipedia (inglese), Portuguese Macau: https://en.wikipedia.org/wiki/Portuguese_Macau",
+      "WP_TIMOR": "Wikipedia (inglese), Portuguese Timor: https://en.wikipedia.org/wiki/Portuguese_Timor",
+      "WP_TAIWAN_UN": "Wikipedia (inglese), Taiwan and the United Nations: https://en.wikipedia.org/wiki/Taiwan_and_the_United_Nations"
+    }
+  },
+  "records": [
+    {"id": "urss", "entity": "Unione Sovietica", "map_id": "URSS", "value": 213780000, "status_1960_12_31": null, "status_origin": null, "perimeter": "Intero Stato, inclusa la parte asiatica", "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": "Le repubbliche sovietiche non hanno un dato proprio: il valore è riferito all'intera Unione."},
+    {"id": "frg", "entity": "Repubblica Federale Tedesca", "map_id": "FRG", "value": 56589000, "status_1960_12_31": null, "status_origin": null, "perimeter": "Germania Ovest", "source_id": "STATISTICS_AND_DATA", "verified": false, "alternative_values": [], "flags": ["serie_diversa"], "note": "Serie diversa da Maddison."},
+    {"id": "gbr", "entity": "Regno Unito", "map_id": "GBR", "value": 52372000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "ita", "entity": "Italia", "map_id": "ITA", "value": 50198000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "fra", "entity": "Francia", "map_id": "FRA", "value": 45670000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "esp", "entity": "Spagna", "map_id": "ESP", "value": 30641000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "pol", "entity": "Polonia", "map_id": "POL", "value": 29590000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "tur", "entity": "Turchia", "map_id": "TUR", "value": 28217000, "status_1960_12_31": "Stato transcontinentale", "status_origin": "file", "perimeter": "Intero Stato, inclusa la parte asiatica", "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": "Presente in entrambi i file con lo stesso valore."},
+    {"id": "rou", "entity": "Romania", "map_id": "ROU", "value": 18403000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "yug", "entity": "Jugoslavia", "map_id": "YUG", "value": 18133000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "gdr", "entity": "Repubblica Democratica Tedesca", "map_id": "GDR", "value": 17188000, "status_1960_12_31": null, "status_origin": null, "perimeter": "Germania Est", "source_id": "STATISTICS_AND_DATA", "verified": false, "alternative_values": [], "flags": ["serie_diversa"], "note": "Serie diversa da Maddison."},
+    {"id": "tch", "entity": "Cecoslovacchia", "map_id": "TCH", "value": 13654000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "nld", "entity": "Paesi Bassi", "map_id": "NLD", "value": 11486000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "hun", "entity": "Ungheria", "map_id": "HUN", "value": 9984000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "bel", "entity": "Belgio", "map_id": "BEL", "value": 9119000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "prt", "entity": "Portogallo", "map_id": "PRT", "value": 9037000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "grc", "entity": "Grecia", "map_id": "GRC", "value": 8327000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "bgr", "entity": "Bulgaria", "map_id": "BGR", "value": 7867000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "swe", "entity": "Svezia", "map_id": "SWE", "value": 7480000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "aut", "entity": "Austria", "map_id": "AUT", "value": 7047000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "che", "entity": "Svizzera", "map_id": "CHE", "value": 5362000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "dnk", "entity": "Danimarca", "map_id": "DNK", "value": 4581000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "fin", "entity": "Finlandia", "map_id": "FIN", "value": 4430000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "nor", "entity": "Norvegia", "map_id": "NOR", "value": 3581000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "irl", "entity": "Irlanda", "map_id": "IRL", "value": 2832000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "alb", "entity": "Albania", "map_id": "ALB", "value": 1623000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "MADDISON", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "cyp", "entity": "Cipro", "map_id": "CYP", "value": 573000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["OHH_CYPRUS", "UN_MEMBERS", "WP_CYPRUS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [{"value": 580000, "source_id": "UN_VIA_JETPUNK", "note": "Primo CSV: incluso per convenzione politica"}], "flags": ["valori_discordanti"], "note": "Il secondo CSV indicava 'Stato sovrano': confermato al 31 dicembre 1960. Cipro è indipendente dal 16 agosto 1960 (membro dell'ONU dal 20 settembre 1960); il Regno Unito conserva le basi sovrane di Akrotiri e Dhekelia."},
+    {"id": "lux", "entity": "Lussemburgo", "map_id": "LUX", "value": 313000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "UN_VIA_JETPUNK", "verified": false, "alternative_values": [], "flags": ["fonte_secondaria"], "note": null},
+    {"id": "isl", "entity": "Islanda", "map_id": "ISL", "value": 174000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "UN_VIA_JETPUNK", "verified": false, "alternative_values": [], "flags": ["fonte_secondaria"], "note": null},
+    {"id": "mco", "entity": "Monaco", "map_id": null, "value": 22000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "UN_VIA_JETPUNK", "verified": false, "alternative_values": [], "flags": ["fonte_secondaria"], "note": "Nessuna entità sulla mappa."},
+    {"id": "lie", "entity": "Liechtenstein", "map_id": null, "value": 16000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "UN_VIA_JETPUNK", "verified": false, "alternative_values": [], "flags": ["fonte_secondaria"], "note": "Nessuna entità sulla mappa."},
+    {"id": "smr", "entity": "San Marino", "map_id": null, "value": 15000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "UN_VIA_JETPUNK", "verified": false, "alternative_values": [], "flags": ["fonte_secondaria"], "note": "Nessuna entità sulla mappa."},
+    {"id": "and", "entity": "Andorra", "map_id": null, "value": 9000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "UN_VIA_JETPUNK", "verified": false, "alternative_values": [], "flags": ["fonte_secondaria"], "note": "Nessuna entità sulla mappa."},
+    {"id": "vat", "entity": "Città del Vaticano", "map_id": null, "value": 1000, "status_1960_12_31": null, "status_origin": null, "perimeter": null, "source_id": "UN_VIA_JETPUNK", "verified": false, "alternative_values": [], "flags": ["fonte_secondaria"], "note": "Nessuna entità sulla mappa."},
+    {"id": "chn", "entity": "Cina", "map_id": "CHN", "value": 667070000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "ind", "entity": "India", "map_id": "IND", "value": 450548000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "idn", "entity": "Indonesia", "map_id": "IDN", "value": 87793000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "jpn", "entity": "Giappone", "map_id": "JPN", "value": 93605000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "pak_w", "entity": "Pakistan occidentale", "map_id": "PAK_W", "value": 45928000, "status_1960_12_31": "Ala occidentale del Pakistan (Stato sovrano)", "status_origin": "revisione", "status_sources": ["WP_PAKISTAN", "UN_MEMBERS"], "perimeter": "Solo ala occidentale", "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["etichetta_corretta", "perimetro_parziale"], "note": "Il file indicava 'Pakistan, Stato sovrano' ma il valore copre solo l'ala occidentale. Non confrontare con il Pakistan sovrano nel suo insieme."},
+    {"id": "pak_e", "entity": "Pakistan orientale (futuro Bangladesh)", "map_id": "PAK_E", "value": 50980000, "status_1960_12_31": "Pakistan Orientale (non Stato sovrano)", "status_origin": "file", "status_sources": ["WP_PAKISTAN", "UN_MEMBERS"], "perimeter": "Solo ala orientale", "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["perimetro_parziale"], "note": "Il Pakistan era uno Stato sovrano (membro dell'ONU dal 1947, repubblica islamica dal 23 marzo 1956): l'ala orientale ne faceva parte e non era uno Stato a sé."},
+    {"id": "phl", "entity": "Filippine", "map_id": "PHL", "value": 27210000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "vnn", "entity": "Vietnam del Nord", "map_id": "VNN", "value": 16600000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["cifra_arrotondata"], "note": null},
+    {"id": "vns", "entity": "Vietnam del Sud", "map_id": "VNS", "value": 15000000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["cifra_arrotondata"], "note": null},
+    {"id": "tha", "entity": "Thailandia", "map_id": "THA", "value": 26839000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "irn", "entity": "Iran", "map_id": "IRN", "value": 21907000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "kor", "entity": "Corea del Sud", "map_id": "KOR", "value": 25012000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "prk", "entity": "Corea del Nord", "map_id": "PRK", "value": 11404000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "mmr", "entity": "Birmania (Myanmar)", "map_id": "MMR", "value": 21747000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "irq", "entity": "Iraq", "map_id": "IRQ", "value": 7271000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "afg", "entity": "Afghanistan", "map_id": "AFG", "value": 8622000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "sau", "entity": "Arabia Saudita", "map_id": "SAU", "value": 4087000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "yem_n", "entity": "Yemen", "map_id": "YEM", "value": 5168000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["OHH_YEMEN", "UN_MEMBERS", "WP_KINGDOM_YEMEN", "WP_UAS"], "perimeter": "Yemen settentrionale", "source_id": "FILE_B_UNSPECIFIED", "verified": false, "aggregation": "show_not_sum", "alternative_values": [], "flags": ["entita_multiple_su_una_mappa"], "note": "Condivide map_id YEM con Yemen del Sud: mostrare entrambi i valori, non sommarli. Nel 1960 il Regno dello Yemen era uno Stato sovrano, membro dell'ONU dal 1947; dal 1958 al 1961 era in confederazione con la RAU (Stati Arabi Uniti)."},
+    {"id": "yem_s", "entity": "Yemen del Sud (Aden e protettorati)", "map_id": "YEM", "value": 1000000, "status_1960_12_31": "Colonia di Aden e protettorati britannici (indipendenza il 30 novembre 1967)", "status_origin": "revisione", "status_sources": ["WP_ADEN_COLONY", "WP_ADEN_PROTECTORATE", "WP_FESA", "UN_MEMBERS"], "perimeter": "Yemen meridionale", "source_id": "FILE_B_UNSPECIFIED", "verified": false, "aggregation": "show_not_sum", "alternative_values": [], "flags": ["status_corretto", "cifra_arrotondata", "entita_multiple_su_una_mappa"], "note": "Il file indicava 'Stato sovrano'. Al 31 dicembre 1960 la zona era britannica: Colonia di Aden e protettorati di Aden (dal 1959 alcuni emirati dei protettorati formavano una federazione sotto protezione britannica). Indipendenza il 30 novembre 1967; membro dell'ONU (Yemen Democratico) dal 14 dicembre 1967."},
+    {"id": "syr", "entity": "Siria", "map_id": "SYR", "value": 4574000, "status_1960_12_31": "Regione settentrionale della Repubblica Araba Unita (febbraio 1958 - 28 settembre 1961)", "status_origin": "revisione", "status_sources": ["OHH_SYRIA", "UN_MEMBERS", "BRITANNICA_UAR", "COUNTRYSTUDIES_SYRIA", "SORBY_UAR"], "perimeter": "Regione siriana", "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["status_corretto"], "note": "Il file indicava 'Stato sovrano'. Dal febbraio 1958 la Siria era unita all'Egitto nella Repubblica Araba Unita (RAU), di cui formava la Regione settentrionale; ne uscì il 28 settembre 1961. All'ONU la RAU era un solo membro: la Siria riprese il proprio seggio il 13 ottobre 1961."},
+    {"id": "jor", "entity": "Giordania", "map_id": "JOR", "value": 933000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": "Da verificare (inclusione della Cisgiordania)", "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["perimetro_da_verificare"], "note": null},
+    {"id": "isr", "entity": "Israele", "map_id": "ISR", "value": 2114000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "lbn", "entity": "Libano", "map_id": "LBN", "value": 1900000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["cifra_arrotondata"], "note": null},
+    {"id": "npl", "entity": "Nepal", "map_id": "NPL", "value": 10116000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "lka", "entity": "Sri Lanka (Ceylon)", "map_id": "LKA", "value": 10150000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "mys", "entity": "Malaysia (Federazione della Malaya)", "map_id": "MYS", "value": 8160000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["WP_MALAYA", "UN_MEMBERS"], "perimeter": "Da verificare: Malaya sola o insieme dei futuri territori della Malaysia (1963)", "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["perimetro_da_verificare", "possibile_doppio_conteggio_con_singapore"], "note": "La Malaysia nasce il 16 settembre 1963 da Malaya, Singapore, Sabah e Sarawak."},
+    {"id": "sgp", "entity": "Singapore", "map_id": "SGP", "value": 1651000, "status_1960_12_31": "Stato autonomo britannico", "status_origin": "file", "status_sources": ["WP_SINGAPORE"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "khm", "entity": "Cambogia", "map_id": "KHM", "value": 5728000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "lao", "entity": "Laos", "map_id": "LAO", "value": 2056000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "status_sources": ["UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "mng", "entity": "Mongolia", "map_id": "MNG", "value": 982000, "status_1960_12_31": "Stato sovrano", "status_origin": "file", "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "btn", "entity": "Bhutan", "map_id": "BTN", "value": 224000, "status_1960_12_31": "Stato sovrano, con la politica estera guidata dall'India (trattato del 1949)", "status_origin": "revisione", "status_sources": ["WP_BHUTAN_INDIA", "UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["status_precisato"], "note": "Il file indicava 'Stato sovrano': resta valido, ma con il trattato del 1949 il Bhutan accettava la guida dell'India nelle relazioni esterne. Membro dell'ONU dal 21 settembre 1971."},
+    {"id": "kwt", "entity": "Kuwait", "map_id": "KWT", "value": 321000, "status_1960_12_31": "Protettorato britannico (indipendente dal 19 giugno 1961)", "status_origin": "revisione", "status_sources": ["OHH_KUWAIT", "UN_MEMBERS", "WP_PERSIAN_GULF_RESIDENCY"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["status_corretto"], "note": "Il file indicava 'Stato sovrano'. Fino al 19 giugno 1961 Kuwait era un protettorato britannico; membro dell'ONU dal 14 maggio 1963."},
+    {"id": "qat", "entity": "Qatar", "map_id": "QAT", "value": 48000, "status_1960_12_31": "Protettorato britannico", "status_origin": "file", "status_sources": ["WP_PERSIAN_GULF_RESIDENCY"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "bhr", "entity": "Bahrein", "map_id": "BHR", "value": 162000, "status_1960_12_31": "Protettorato britannico", "status_origin": "file", "status_sources": ["WP_PERSIAN_GULF_RESIDENCY"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "are", "entity": "Emirati della Costa dei Pirati (futuri EAU)", "map_id": "ARE", "value": 90000, "status_1960_12_31": "Protettorati britannici", "status_origin": "file", "status_sources": ["WP_PERSIAN_GULF_RESIDENCY", "WP_TRUCIAL_STATES"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["cifra_arrotondata"], "note": null},
+    {"id": "omn", "entity": "Oman", "map_id": "OMN", "value": 552000, "status_1960_12_31": "Stato sovrano (sotto forte influenza britannica)", "status_origin": "revisione", "status_sources": ["OHH_OMAN", "WP_MUSCAT_OMAN", "WP_SAID_BIN_TAIMUR", "UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["status_precisato"], "note": "Il file indicava 'Stato sovrano': resta valido in senso formale (indipendenza riconosciuta dal Regno Unito nel 1951), ma le fonti non concordano sul resto: alcune descrivono Muscat e Oman come protettorato britannico dal 1891 e con l'aiuto militare del Regno Unito il Sultano represse le rivolte dell'Imam. Membro dell'ONU dal 7 ottobre 1971."},
+    {"id": "brn", "entity": "Brunei", "map_id": "BRN", "value": 83000, "status_1960_12_31": "Protettorato britannico", "status_origin": "file", "status_sources": ["OHH_BRUNEI"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "hkg", "entity": "Hong Kong", "map_id": "HKG", "value": 3076000, "status_1960_12_31": "Territorio britannico", "status_origin": "file", "status_sources": ["WP_HONG_KONG"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "mac", "entity": "Macao", "map_id": "MAC", "value": 169000, "status_1960_12_31": "Territorio portoghese", "status_origin": "file", "status_sources": ["WP_MACAU"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "twn", "entity": "Taiwan (Repubblica di Cina)", "map_id": "TWN", "value": 10920000, "status_1960_12_31": "Stato de facto", "status_origin": "file", "status_sources": ["WP_TAIWAN_UN", "UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": "Nel 1960 la Repubblica di Cina (governo a Taipei) occupava all'ONU il seggio della Cina, di cui era membro originario dal 1945, fino al 25 ottobre 1971; controllava soltanto Taiwan e alcune isole minori."},
+    {"id": "tls", "entity": "Timor portoghese", "map_id": "TLS", "value": 517000, "status_1960_12_31": "Territorio portoghese", "status_origin": "file", "status_sources": ["WP_TIMOR"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": [], "note": null},
+    {"id": "mdv", "entity": "Maldive", "map_id": null, "value": 90000, "status_1960_12_31": "Stato protetto britannico con autogoverno interno (fino al 1965)", "status_origin": "revisione", "status_sources": ["WP_MALDIVES", "UN_MEMBERS"], "perimeter": null, "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["status_corretto", "cifra_arrotondata"], "note": "Il file indicava 'Sultanato indipendente'. Dal 1887 al 26 luglio 1965 le Maldive furono uno Stato protetto britannico: il Regno Unito controllava politica estera e difesa, l'amministrazione interna restava locale. Membro dell'ONU dal 21 settembre 1965. Nessuna entità sulla mappa."},
+    {"id": "pse", "entity": "Palestina (Gaza e Cisgiordania)", "map_id": null, "value": 1200000, "status_1960_12_31": "Territori non sovrani", "status_origin": "file", "perimeter": "Gaza e Cisgiordania", "source_id": "FILE_B_UNSPECIFIED", "verified": false, "alternative_values": [], "flags": ["cifra_arrotondata"], "note": "Nessuna entità sulla mappa. Possibile sovrapposizione col perimetro della Giordania."}
+  ]
+}
+</script>
+<!-- DATI-POPOLAZIONE-FINE -->
 <script>
 (async function(){
   const el = id => document.getElementById(id);
@@ -2852,7 +2993,8 @@ window.MAP_SVG = {
   // NOTE on data quality: capitals and alliance labels are this prototype's own simplified labels, not
   // verified data; where one could not be checked it reads "da verificare" (Kuwait is labelled after its
   // political status, checked online; Cyprus and Oman stay "da verificare"). Population comes from the files
-  // provided by the user, as given; political status is read at 31 December 1960 and was checked online, see
+  // provided by the user, as given, through src/data/population_1960.json (read below, see "Population, 1960");
+  // political status is read at 31 December 1960 and was checked online, see
   // docs/STATUS-1960.md. infrastructure / stability / strategicValue are provisional illustrative ratings
   // for the demo, not historical statistics.
   // Start date: 31 December 1960, the date the divisions in the region files refer to.
@@ -4175,7 +4317,7 @@ window.MAP_SVG = {
   // What the files say about each state (level of subdivision, units left out and why)
   const COUNTRY_NOTES = {"ALB":{"level":"26 rrethe (distretti), creati con la riforma del luglio 1958 e allora costituenti il livello territoriale principale sotto lo Stato.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":26,"nUnits":26},"AUT":{"level":"9 Bundesländer (Stati federati), elencati dalla Costituzione federale.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":9,"nUnits":9},"BEL":{"level":"9 province. Le tre regioni politiche non esistevano ancora; il Brabante sarebbe stato scisso soltanto il 1º gennaio 1995.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":9,"nUnits":9},"BGR":{"level":"30 okrăzi (circondari/province), secondo la riforma del 1959. Due unità urbane, Plovdiv-città e Varna-città, sarebbero state soppresse nel 1961; al 31 dicembre 1960 vanno quindi ancora contate.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":30,"nUnits":30},"CYP":{"level":"6 distretti (eparchies), mantenuti al momento dell'indipendenza del 16 agosto 1960.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":6,"nUnits":6},"TCH":{"level":"10 kraje più Praga quale unità territoriale separata. La legge del 9 aprile 1960 istituì espressamente i dieci kraje; Bratislava non divenne unità separata di pari livello fino al 1970.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":11,"nUnits":11},"DNK":{"level":"contee (amter) e città con funzioni di contea. Le fonti statistiche distinguono il sistema anteriore alla riforma del 1970, quando circa 25 unità esercitavano funzioni di contea; Copenaghen e Frederiksberg avevano competenze sia municipali sia di contea.","extra":[["Avvertenza","Aabenraa e Sønderborg erano amministrativamente associate sotto un unico governatore dal 1932; alcune statistiche le presentano quindi come Aabenraa-Sønderborg Amt. È questa oscillazione istituzionale, non un semplice errore di conteggio, a spiegare perché le fonti parlino alternativamente di 24 o 25 unità."]],"csvNote":"Il file CSV ha 22 unità; il testo ne elenca 25 (København come contea, København città e Frederiksberg separate; Aabenraa e Sønderborg separate). Nel CSV Aabenraa-Sønderborg è un'unica unità e Copenaghen una sola.","unplaced":[],"containers":[],"nCsv":22,"nUnits":22},"FIN":{"level":"12 läänit (province). Il 1º marzo 1960 furono create Finlandia Centrale e Carelia Settentrionale, perciò entrambe appartengono alla fotografia di fine anno.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":12,"nUnits":12},"FRA":{"level":"21 circonscriptions d'action régionale nella Francia metropolitana, create il 2 giugno 1960 come circoscrizioni comuni dell'amministrazione statale. Non erano ancora collettività territoriali elettive: chiamarle semplicemente «regioni» senza questa riserva sarebbe anacronistico.","extra":[["Territorio statale non metropolitano","Algeria era giuridicamente dipartimentalizzata e nel 1960 comprendeva 15 dipartimenti: Alger; Batna; Bône; Constantine; Médéa; Mostaganem; Oran; Orléansville; Sétif; Tiaret; Tizi-Ouzou; Tlemcen; Saïda; Oasis; Saoura. A questi si aggiungevano i dipartimenti d'oltremare Guyane, Guadeloupe, Martinique e Réunion."]],"csvNote":"","unplaced":[],"containers":[],"nCsv":21,"nUnits":21},"GDR":{"level":"14 Bezirke. Berlino Est svolgeva di fatto funzioni analoghe, ma nel 1960 non era ancora formalmente conteggiata come quindicesimo Bezirk; questo avvenne amministrativamente dal 1961 e costituzionalmente nel 1968.","extra":[["Unità speciale","Berlino Est, capitale rivendicata dalla RDT e amministrata separatamente."]],"csvNote":"Berlino Est è una forma disegnata a mano (non un confine reale).","unplaced":[],"containers":[],"nCsv":15,"nUnits":15},"FRG":{"level":"10 Länder. Il Saarland era entrato nella RFT il 1º gennaio 1957; Berlino Ovest era strettamente integrata ma, per riserva alleata, non era giuridicamente un Land federale pieno.","extra":[["Unità speciale associata","Berlino Ovest, da indicare separatamente e non da sommare ai dieci Länder come se avesse identico status costituzionale."]],"csvNote":"Berlino Ovest è una forma disegnata a mano (non un confine reale); Amburgo e Brema sono cerchi convenzionali.","unplaced":[],"containers":[],"nCsv":11,"nUnits":11},"GRC":{"level":"49 nomoi (prefetture) più il territorio autonomo del Monte Athos. Grevena e Pireo non vanno inseriti: furono istituiti come prefetture soltanto nel 1964.","extra":[["Territorio autonomo","Monte Athos (Agion Oros), comunità monastica autogovernata e non prefettura."]],"csvNote":"Il testo cita anche il territorio autonomo del Monte Athos, che non è nel file CSV.","unplaced":[],"containers":[],"nCsv":49,"nUnits":49},"HUN":{"level":"19 megyék (contee) più Budapest, città capitale di pari livello. La struttura fondamentale a 19 contee era stata fissata dalla riforma del 1950.","extra":[["Nomenclatura storica","Győr-Sopron divenne poi Győr-Moson-Sopron; Csongrád divenne Csongrád-Csanád; Komárom divenne Komárom-Esztergom; Szabolcs-Szatmár divenne Szabolcs-Szatmár-Bereg; Szolnok divenne Jász-Nagykun-Szolnok."]],"csvNote":"","unplaced":[],"containers":[],"nCsv":20,"nUnits":20},"IRL":{"level":"27 contee amministrative e 4 county boroughs, che nel sistema irlandese erano unità di livello equivalente. Tipperary era divisa in North Riding e South Riding.","extra":[],"csvNote":"Il testo cita anche quattro county boroughs (Cork, Dublin, Limerick, Waterford) che non sono nel file CSV.","unplaced":[],"containers":[],"nCsv":27,"nUnits":27},"ISL":{"level":"l'Islanda del 1960 non aveva una «regione» elettiva uniforme paragonabile a un Land. La ripartizione amministrativa storica comprendeva sýslur (contee) e città indipendenti; ai fini statistico-territoriali il paese venne portato a otto landsvæði intorno al 1960.","extra":[["Riserva metodologica","queste otto aree non devono essere spacciate per autonomie regionali. L'amministrazione periferica effettiva continuava a poggiare sulle contee e sulle città indipendenti."]],"csvNote":"Il file CSV elenca 23 sýslur; il testo descrive invece otto aree statistiche (landsvæði). Qui si usano le 23 unità del CSV.","unplaced":[],"containers":[],"nCsv":23,"nUnits":23},"ITA":{"level":"19 regioni costituzionali, perché nel 1960 Abruzzi e Molise formavano ancora un'unica regione; il Molise divenne regione distinta nel 1963. Le regioni ordinarie, benché previste dalla Costituzione, non ebbero organi eletti e piena operatività fino al 1970; nel 1960 l'amministrazione territoriale ordinaria funzionava soprattutto attraverso le province.","extra":[["Precisazione indispensabile","Sicilia, Sardegna, Valle d'Aosta e Trentino-Alto Adige disponevano già di statuto speciale operativo; il Friuli-Venezia Giulia, pur previsto come regione speciale, ottenne lo statuto nel 1963. Per un elenco dell'amministrazione concretamente esercitata nel 1960, le province restano quindi un livello non eliminabile dall'analisi."]],"csvNote":"","unplaced":[],"containers":[],"nCsv":19,"nUnits":19},"YUG":{"level":"6 repubbliche costitutive; entro la Serbia esistevano inoltre la Provincia autonoma di Voivodina e il Distretto autonomo di Kosovo e Metohija.","extra":[["Autonomie interne alla Serbia","Vojvodina; Kosovo e Metohija. È corretto segnalarle, ma non contarle come repubbliche federate pari alle sei: nel 1960 il Kosovo era ancora formalmente un distretto autonomo e solo in seguito acquisì rango provinciale."]],"csvNote":"Vojvodina e Kosovo sono autonomie interne alla Serbia: le sei repubbliche usano i confini del file di mappa (moderni, non quelli del 1960); il Kosovo ha il contorno moderno del file di mappa, mentre il confine tra Serbia centrale e Vojvodina è approssimato.","unplaced":[],"containers":[],"nCsv":8,"nUnits":8},"LUX":{"level":"3 distretti, massima divisione territoriale dal 1843 al 2015; nel 1960 erano articolati in 12 cantoni.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":3,"nUnits":3},"NOR":{"level":"20 fylker (contee), contando Bergen come contea autonoma fino alla fusione con Hordaland del 1º gennaio 1972.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":20,"nUnits":20},"NLD":{"level":"11 province. Flevoland non esisteva ancora come provincia: fu istituita il 1º gennaio 1986.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":11,"nUnits":11},"POL":{"level":"17 województwa (voivodati) più 5 città separate di livello voivodale. Koszalin, Opole e Zielona Góra erano stati creati nel 1950; Cracovia, Poznań e Breslavia furono rese città separate nel 1957.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":22,"nUnits":22},"PRT":{"level":"nel Portogallo continentale, 18 distretti erano le principali circoscrizioni amministrative; le province storiche istituite nel 1936 erano soprattutto aggregazioni regionali e furono abolite dopo il 1974. Azzorre e Madera non erano ancora regioni autonome, ma erano ripartite in distretti.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":22,"nUnits":22},"GBR":{"level":"sistema non uniforme. Nel 1960 non esistevano «regioni» britanniche di primo livello: Inghilterra e Galles erano amministrati tramite administrative counties e county boroughs; Scozia tramite counties of cities e contee; Irlanda del Nord tramite contee amministrative e county boroughs. Le contee amministrative inglesi e gallesi costituivano divisioni di primo livello e furono abolite soltanto nel 1974.","extra":[["Nota fiscale","Inghilterra, Galles, Scozia e Irlanda del Nord non erano «regioni amministrative» parallele nel senso continentale, ma paesi costitutivi con ordinamenti locali differenti. Perciò l'elenco corretto deve scendere alle unità che esercitavano davvero l'amministrazione territoriale, invece di fermarsi ai quattro nomi."]],"csvNote":"Il file CSV contiene solo le quattro nazioni costitutive; il testo osserva che l'elenco corretto scenderebbe fino alle contee e ai county boroughs, per i quali non ci sono coordinate nei file forniti.","unplaced":[],"containers":[],"nCsv":4,"nUnits":4},"ROU":{"level":"16 regiuni risultanti dalla riforma entrata in vigore il 24 dicembre 1960. Il sistema, di matrice sovietica, articolava le regioni in raioane.","extra":[],"csvNote":"Il testo elenca 16 regiuni; il file CSV ne ha 16 più due città (Costanza-città e Bucarest-città).","unplaced":[],"containers":[],"nCsv":18,"nUnits":18},"ESP":{"level":"50 province, divisione rimasta sostanzialmente invariata dal 1833. Le comunità autonome non esistevano: furono create gradualmente dal 1979 al 1983.","extra":[["Possedimenti e province africane","nel diritto franchista alcuni territori africani erano provincializzati o amministrati come province, tra cui Ifni e Sahara Spagnolo; non sono però inclusi nell'elenco territoriale europeo."]],"csvNote":"","unplaced":[],"containers":[],"nCsv":50,"nUnits":50},"SWE":{"level":"25 unità equiparate a län: 24 contee più la città di Stoccolma separata. Stoccolma-città fu unita alla contea di Stoccolma soltanto nel gennaio 1968.","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":25,"nUnits":25},"CHE":{"level":"22 cantoni secondo il conteggio costituzionale storico, comprendente 6 semicantoni. Il Giura non esisteva ancora come cantone: si separò da Berna ed entrò nella Confederazione nel 1979.","extra":[["Nota sul numero","l'elenco contiene 25 nomi territoriali perché Obvaldo/Nidvaldo, Basilea Città/Basilea Campagna e i due Appenzello erano sei semicantoni, conteggiati complessivamente come tre cantoni nel computo tradizionale di 22."]],"csvNote":"","unplaced":[],"containers":[],"nCsv":25,"nUnits":25},"TUR":{"level":"67 iller (province). Nevşehir era stata creata nel 1957; la fonte storica identifica precisamente 67 province per il periodo.","extra":[["Nota geografica","sono riportate tutte le province dello Stato, non soltanto Edirne, Kırklareli e la parte europea di İstanbul; il criterio scelto riguarda infatti lo Stato sovrano con territorio europeo, non il ritaglio delle sole unità poste a ovest degli Stretti."]],"csvNote":"","unplaced":["Maraş","Urfa"],"containers":[],"nCsv":67,"nUnits":65},"URSS":{"level":"15 Repubbliche socialiste sovietiche dell'Unione. Dal 1956, dopo il declassamento della RSS Carelo-Finlandese a repubblica autonoma della RSFSR, il numero rimase 15 fino alla dissoluzione.","extra":[["Nota geografica","l'elenco comprende anche le repubbliche interamente asiatiche perché erano suddivisioni di primo livello dell'unico Stato sovrano URSS. Limitarsi alle sole repubbliche europee mutilerebbe l'ordinamento federale richiesto."]],"csvNote":"Nel CSV la parte europea della RSFSR è un'unica unità; le altre repubbliche sovietiche restano Stati separati sulla mappa.","unplaced":["Territorio dell’Altaj","RSSA Buriata"],"containers":["RSS Kazaka","RSS Kirghisa","RSS Tagika","RSS Turkmena","RSS Uzbeka","RSS Ucraina","RSS Bielorussia","RSS Moldavia","RSS Estonia","RSS Lettonia","RSS Lituania","RSS Georgia","RSS Armenia","RSS Azerbaigian"],"nCsv":36,"nUnits":20},"AFG":{"level":"","extra":[],"csvNote":"","unplaced":["Qataghan","Provincia Orientale","Provincia Meridionale"],"containers":[],"nCsv":14,"nUnits":11},"BTN":{"level":"","extra":[],"csvNote":"","unplaced":["Bumthang/Byakar","Dukye"],"containers":[],"nCsv":9,"nUnits":7},"MMR":{"level":"","extra":[],"csvNote":"","unplaced":["Magwe","Meiktila"],"containers":[],"nCsv":14,"nUnits":12},"KHM":{"level":"","extra":[],"csvNote":"","unplaced":["Kampong Speu"],"containers":[],"nCsv":15,"nUnits":14},"CHN":{"level":"","extra":[],"csvNote":"","unplaced":["Taiwan (rivendicata)"],"containers":[],"nCsv":29,"nUnits":28},"PRK":{"level":"","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":13,"nUnits":13},"KOR":{"level":"","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":10,"nUnits":10},"PHL":{"level":"","extra":[],"csvNote":"","unplaced":["Agusan"],"containers":[],"nCsv":55,"nUnits":54},"JPN":{"level":"","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":46,"nUnits":46},"JOR":{"level":"","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":8,"nUnits":8},"IND":{"level":"","extra":[],"csvNote":"","unplaced":["Jammu e Kashmir","Isole Andamane e Nicobare","Isole Laccadive, Minicoy e Amindivi"],"containers":[],"nCsv":21,"nUnits":18},"IDN":{"level":"","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":21,"nUnits":21},"IRQ":{"level":"","extra":[],"csvNote":"","unplaced":["Amara","Diwaniya","Hilla","Kut"],"containers":[],"nCsv":14,"nUnits":10},"MYS":{"level":"","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":11,"nUnits":11},"MNG":{"level":"","extra":[],"csvNote":"","unplaced":[],"containers":[],"nCsv":19,"nUnits":19},"PAK":{"level":"","extra":[],"csvNote":"Nel CSV «Pakistan Occidentale» e «Pakistan Orientale» sono le due province che contengono le divisioni: sulla mappa si usano le divisioni.","unplaced":["Kalat","Karachi-Bela","Khairpur","Dacca"],"containers":["Pakistan Occidentale","Pakistan Orientale"],"nCsv":18,"nUnits":12},"TWN":{"level":"","extra":[],"csvNote":"Provincia di Taiwan e Provincia del Fujian sono contenitori delle altre unità: non disegnati.","unplaced":["Provincia di Taiwan","Provincia del Fujian (Kinmen e Matsu)","Lienchiang"],"containers":[],"nCsv":21,"nUnits":18},"THA":{"level":"","extra":[],"csvNote":"","unplaced":["Phra Nakhon","Thon Buri"],"containers":[],"nCsv":71,"nUnits":69}};
   const SINGLE_NOTES = {"IRN":{"nCsv":10,"nFlag":4,"why":"quattro unità su dieci hanno posizione da verificare"},"SAU":{"nCsv":6,"nFlag":2,"why":"due unità su sei (Najd, Hejaz) hanno posizione da verificare"},"ISR":{"nCsv":6,"nFlag":3,"why":"tre unità su sei hanno posizione da verificare"},"LAO":{"nCsv":15,"nFlag":9,"why":"nove unità su quindici hanno posizione da verificare"},"LBN":{"nCsv":5,"nFlag":3,"why":"tre unità su cinque hanno posizione da verificare"},"LKA":{"nCsv":9,"nFlag":9,"why":"tutte le nove unità hanno posizione da verificare"},"NPL":{"nCsv":32,"nFlag":18,"why":"diciotto unità su trentadue hanno posizione da verificare"},"OMN":{"nCsv":7,"nFlag":4,"why":"quattro unità su sette hanno posizione da verificare"},"VNN":{"nCsv":25,"nFlag":8,"why":"otto unità su venticinque hanno posizione da verificare"},"VNS":{"nCsv":36,"nFlag":20,"why":"venti unità su trentasei hanno posizione da verificare"},"YEM":{"nCsv":7,"nFlag":1,"why":"le unità del file coprono solo il nord, mentre il contorno sulla mappa è quello dell'intero Yemen attuale"}};
-  // Pakistan: the population file gives one figure per wing (codes PAK_W, PAK_E). The CSV lists the divisions
+  // Pakistan: the population data gives one figure per wing (map_id PAK_W, PAK_E). The CSV lists the divisions
   // of each wing in two alphabetical runs (3-14 west, 15-18 east); a division shows its wing's figure as such.
   const WING_UNITS = { PAK_W: [], PAK_E: [] };
   REGION_UNITS.forEach(u => { if (u[2] === 'PAK') (u[5] <= 14 ? WING_UNITS.PAK_W : WING_UNITS.PAK_E).push(u[0]); });
@@ -4248,138 +4390,50 @@ window.MAP_SVG = {
     return e[1] === '*' ? REGION_UNITS.filter(u => u[2] === e[0]).map(u => u[0]) : e[1];
   }
 
-  // ---- Population, 1960, by state -------------------------------------
-  // Inserted as provided (popolazione_stati_europei_1960.csv): same numbers, sources and notes.
-  // code = id on the map; null = state that has no entity on this map (kept for later).
-  const POPULATION_1960 = [
-    { stato: "Unione Sovietica", code: "URSS", n: 213780000, fonte: "Maddison", nota: "Intero Stato, inclusa la parte asiatica" },
-    { stato: "Repubblica Federale Tedesca", code: "FRG", n: 56589000, fonte: "Statistics and Data", nota: "Germania Ovest; serie diversa da Maddison" },
-    { stato: "Regno Unito", code: "GBR", n: 52372000, fonte: "Maddison", nota: "" },
-    { stato: "Italia", code: "ITA", n: 50198000, fonte: "Maddison", nota: "" },
-    { stato: "Francia", code: "FRA", n: 45670000, fonte: "Maddison", nota: "" },
-    { stato: "Spagna", code: "ESP", n: 30641000, fonte: "Maddison", nota: "" },
-    { stato: "Polonia", code: "POL", n: 29590000, fonte: "Maddison", nota: "" },
-    { stato: "Turchia", code: "TUR", n: 28217000, fonte: "Maddison", nota: "Intero Stato, inclusa la parte asiatica" },
-    { stato: "Romania", code: "ROU", n: 18403000, fonte: "Maddison", nota: "" },
-    { stato: "Jugoslavia", code: "YUG", n: 18133000, fonte: "Maddison", nota: "" },
-    { stato: "Repubblica Democratica Tedesca", code: "GDR", n: 17188000, fonte: "Statistics and Data", nota: "Germania Est; serie diversa da Maddison" },
-    { stato: "Cecoslovacchia", code: "TCH", n: 13654000, fonte: "Maddison", nota: "" },
-    { stato: "Paesi Bassi", code: "NLD", n: 11486000, fonte: "Maddison", nota: "" },
-    { stato: "Ungheria", code: "HUN", n: 9984000, fonte: "Maddison", nota: "" },
-    { stato: "Belgio", code: "BEL", n: 9119000, fonte: "Maddison", nota: "" },
-    { stato: "Portogallo", code: "PRT", n: 9037000, fonte: "Maddison", nota: "" },
-    { stato: "Grecia", code: "GRC", n: 8327000, fonte: "Maddison", nota: "" },
-    { stato: "Bulgaria", code: "BGR", n: 7867000, fonte: "Maddison", nota: "" },
-    { stato: "Svezia", code: "SWE", n: 7480000, fonte: "Maddison", nota: "" },
-    { stato: "Austria", code: "AUT", n: 7047000, fonte: "Maddison", nota: "" },
-    { stato: "Svizzera", code: "CHE", n: 5362000, fonte: "Maddison", nota: "" },
-    { stato: "Danimarca", code: "DNK", n: 4581000, fonte: "Maddison", nota: "" },
-    { stato: "Finlandia", code: "FIN", n: 4430000, fonte: "Maddison", nota: "" },
-    { stato: "Norvegia", code: "NOR", n: 3581000, fonte: "Maddison", nota: "" },
-    { stato: "Irlanda", code: "IRL", n: 2832000, fonte: "Maddison", nota: "" },
-    { stato: "Albania", code: "ALB", n: 1623000, fonte: "Maddison", nota: "" },
-    { stato: "Cipro", code: "CYP", n: 580000, fonte: "ONU retrospettiva tramite JetPunk", nota: "Incluso per convenzione politica" },
-    { stato: "Lussemburgo", code: "LUX", n: 313000, fonte: "ONU retrospettiva tramite JetPunk", nota: "" },
-    { stato: "Islanda", code: "ISL", n: 174000, fonte: "ONU retrospettiva tramite JetPunk", nota: "" },
-    { stato: "Monaco", code: null, n: 22000, fonte: "ONU retrospettiva tramite JetPunk", nota: "" },
-    { stato: "Liechtenstein", code: null, n: 16000, fonte: "ONU retrospettiva tramite JetPunk", nota: "" },
-    { stato: "San Marino", code: null, n: 15000, fonte: "ONU retrospettiva tramite JetPunk", nota: "" },
-    { stato: "Andorra", code: null, n: 9000, fonte: "ONU retrospettiva tramite JetPunk", nota: "" },
-    { stato: "Città del Vaticano", code: null, n: 1000, fonte: "ONU retrospettiva tramite JetPunk", nota: "" },
-  ];
-  POPULATION_1960.forEach(r => {
-    if (r.code && countries[r.code]) Object.assign(countries[r.code], { population: r.n, populationSource: r.fonte, populationNote: r.nota || null });
-  });
-  // No row in either file for these: in 1960 they were part of the USSR, whose figure covers the whole Union.
-  ['UKR', 'BLR', 'MDA', 'EST', 'LVA', 'LTU', 'GEO', 'ARM', 'AZE', 'KAZ', 'UZB', 'TKM', 'TJK', 'KGZ'].forEach(c => {
-    countries[c].population = null;
-    countries[c].populationSource = null;
-    countries[c].populationNote = "Nessun dato nei file forniti: nel 1960 faceva parte dell'URSS, il cui dato è riferito all'intero Stato";
-  });
-  // ---- Population, 1960, second file (fb6262f2.csv): same numbers and notes as provided ----
-  // Political status: read at 31 December 1960 and checked online on 25-26 Oct 2026 (docs/STATUS-1960.md). Where the file said
-  // something different, the corrected status is shown: Kuwait, Syria, South Yemen, Maldives (corrected); Oman, Bhutan (made precise).
-  // The same words are in src/data/population_1960.json (field status_1960_12_31): tests/population-pagina.test.js keeps the two equal.
-  // code = a state id, a province id (the two wings of Pakistan) or null for entities that are not on this map.
-  // Where a state also appears in the first file, the newer figure is shown and the older one is kept in the note.
-  const POPULATION_1960_B = [
-    { entita: "Cina", status: "Stato sovrano", code: "CHN", n: 667070000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "India", status: "Stato sovrano", code: "IND", n: 450548000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Indonesia", status: "Stato sovrano", code: "IDN", n: 87793000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Giappone", status: "Stato sovrano", code: "JPN", n: 93605000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Pakistan", status: "Stato sovrano", code: "PAK_W", n: 45928000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Bangladesh", status: "Pakistan Orientale (non Stato sovrano)", code: "PAK_E", n: 50980000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Filippine", status: "Stato sovrano", code: "PHL", n: 27210000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Vietnam del Nord", status: "Stato sovrano", code: "VNN", n: 16600000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Vietnam del Sud", status: "Stato sovrano", code: "VNS", n: 15000000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Thailandia", status: "Stato sovrano", code: "THA", n: 26839000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Turchia", status: "Stato transcontinentale", code: "TUR", n: 28217000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Iran", status: "Stato sovrano", code: "IRN", n: 21907000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Corea del Sud", status: "Stato sovrano", code: "KOR", n: 25012000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Corea del Nord", status: "Stato sovrano", code: "PRK", n: 11404000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Birmania (Myanmar)", status: "Stato sovrano", code: "MMR", n: 21747000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Iraq", status: "Stato sovrano", code: "IRQ", n: 7271000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Afghanistan", status: "Stato sovrano", code: "AFG", n: 8622000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Arabia Saudita", status: "Stato sovrano", code: "SAU", n: 4087000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Yemen", status: "Stato sovrano", code: "YEM", n: 5168000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico.", part: true },
-    { entita: "Yemen del Sud", status: "Colonia di Aden e protettorati britannici (indipendenza il 30 novembre 1967)", code: "YEM", n: 1000000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico.", part: true },
-    { entita: "Siria", status: "Regione settentrionale della Repubblica Araba Unita (febbraio 1958 - 28 settembre 1961)", code: "SYR", n: 4574000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Giordania", status: "Stato sovrano", code: "JOR", n: 933000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Israele", status: "Stato sovrano", code: "ISR", n: 2114000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Libano", status: "Stato sovrano", code: "LBN", n: 1900000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Nepal", status: "Stato sovrano", code: "NPL", n: 10116000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Sri Lanka (Ceylon)", status: "Stato sovrano", code: "LKA", n: 10150000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Malaysia (Federazione della Malaya)", status: "Stato sovrano", code: "MYS", n: 8160000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Singapore", status: "Stato autonomo britannico", code: "SGP", n: 1651000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Cambogia", status: "Stato sovrano", code: "KHM", n: 5728000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Laos", status: "Stato sovrano", code: "LAO", n: 2056000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Mongolia", status: "Stato sovrano", code: "MNG", n: 982000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Bhutan", status: "Stato sovrano, con la politica estera guidata dall'India (trattato del 1949)", code: "BTN", n: 224000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Kuwait", status: "Protettorato britannico (indipendente dal 19 giugno 1961)", code: "KWT", n: 321000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Qatar", status: "Protettorato britannico", code: "QAT", n: 48000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Bahrein", status: "Protettorato britannico", code: "BHR", n: 162000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Emirati della Costa dei Pirati (futuri EAU)", status: "Protettorati britannici", code: "ARE", n: 90000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Oman", status: "Stato sovrano (sotto forte influenza britannica)", code: "OMN", n: 552000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Cipro", status: "Stato sovrano", code: "CYP", n: 573000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico.", prevNote: "Il file precedente indicava 580.000 (fonte: ONU retrospettiva tramite JetPunk; nota: Incluso per convenzione politica)" },
-    { entita: "Brunei", status: "Protettorato britannico", code: "BRN", n: 83000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Hong Kong", status: "Territorio britannico", code: "HKG", n: 3076000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Macao", status: "Territorio portoghese", code: "MAC", n: 169000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Taiwan (Repubblica di Cina)", status: "Stato de facto", code: "TWN", n: 10920000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Timor portoghese", status: "Territorio portoghese", code: "TLS", n: 517000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Maldive", status: "Stato protetto britannico con autogoverno interno (fino al 1965)", code: null, n: 90000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Palestina/Gaza e Cisgiordania", status: "Territori non sovrani", code: null, n: 1200000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-  ];
-  POPULATION_1960_B.forEach(r => {
-    if (!r.code) return;
-    if (WING_UNITS[r.code]) {                       // a wing of Pakistan: shown on each of its divisions, as the wing's figure
-      WING_UNITS[r.code].forEach(pid => { provinces[pid].popGroup = { entita: r.entita, status: r.status, n: r.n, nota: r.nota }; });
-      return;
-    }
-    if (provinces[r.code]) {
-      Object.assign(provinces[r.code], { population: r.n, populationStatus: r.status, populationNote: r.nota });
-      return;
-    }
-    const c = countries[r.code];
-    if (!c) return;
-    if (r.part) {                                   // several file entities share one entity on the map: show, never add
-      (c.populationParts = c.populationParts || []).push({ entita: r.entita, status: r.status, n: r.n });
-      if (c.population === undefined) c.population = null;
-      c.populationNote = r.nota;
-    } else if (r.prevNote) {                        // the first file said something different
-      c.population = r.n; c.populationStatus = r.status; c.populationSource = null;
-      c.populationNote = [r.nota, r.prevNote].filter(Boolean).join(' · ');
+  // ---- Population, 1960: read from the data file ------------------------------------------------------------------
+  // src/data/population_1960.json is the one place where figures, sources, perimeters and statuses are written. The page carries
+  // an identical copy of it in <script type="application/json" id="population-1960-data"> (put there by
+  // scripts/incorpora-popolazione.js; tests/population-pagina.test.js stops if the copy and the file differ). Nothing about
+  // population is written by hand in this code: every card is filled from that copy.
+  // A record is tied to the map by its map_id: a state, a wing of Pakistan (PAK_W / PAK_E: shown on each division of the wing,
+  // as the wing's figure) or null (an entity that is not drawn on this map: kept in the data for later).
+  // Figures are never added up: two records on one entity (Yemen, aggregation "show_not_sum") are both shown, and a state's
+  // figure is never split among its provinces.
+  const fmtPop = n => (Number.isFinite(n) ? String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.') : 'da verificare');
+  let POP = { meta: {}, records: [] };
+  let popLoadError = null;                       // why the data could not be read (told on the cards), or null
+  try {
+    const node = el('population-1960-data');
+    if (!node) throw new Error('nella pagina manca il blocco dei dati');
+    POP = JSON.parse(node.textContent);
+    if (!POP || !Array.isArray(POP.records)) throw new Error("nel file dei dati manca l'elenco «records»");
+    POP.meta = POP.meta || {};
+  } catch (e) {
+    POP = { meta: {}, records: [] };
+    popLoadError = e.message;
+    console.error('Dati di popolazione non letti: ' + e.message);
+  }
+  const popByMap = {};                           // map_id -> its records, in the order of the file
+  POP.records.forEach(r => { if (r && r.map_id) (popByMap[r.map_id] = popByMap[r.map_id] || []).push(r); });
+  const popUnplaced = [];                        // records whose map_id is no entity of this map (a test keeps this list empty)
+  for (const mapId in popByMap) {
+    const list = popByMap[mapId];
+    if (WING_UNITS[mapId]) {                     // a wing of Pakistan: every division of it shows the wing's figure, as the wing's
+      WING_UNITS[mapId].forEach(pid => { provinces[pid].popGroup = list[0]; });
+    } else if (countries[mapId]) {
+      countries[mapId].populationRecords = list;
+      countries[mapId].population = list.length === 1 ? list[0].value : null;   // several records on one entity (Yemen): never one figure, never a sum
     } else {
-      c.population = r.n; c.populationStatus = r.status;
-      c.populationNote = [c.populationNote, r.nota].filter(Boolean).join(' · ');
-    }
-  });
-  // Every other state on the map has no row in either file.
-  for (const c in countries) {
-    if (countries[c].population === undefined) {
-      countries[c].population = null; countries[c].populationSource = null;
-      countries[c].populationNote = "Nessun dato nei file forniti";
+      popUnplaced.push(...list);
     }
   }
+  if (popUnplaced.length) console.warn('Dati di popolazione senza posto sulla mappa: ' + popUnplaced.map(r => r.id).join(', '));
+  // Every other state on the map has no record in the data. The Soviet republics are separate states on this map, but in 1960 they
+  // belonged to the USSR, whose figure covers the whole Union: the card says so instead of showing a share.
+  for (const c in countries) {
+    if (!countries[c].populationRecords) { countries[c].populationRecords = []; countries[c].population = null; }
+  }
+  const POP_SOVIET_STATES = ['UKR', 'BLR', 'MDA', 'EST', 'LVA', 'LTU', 'GEO', 'ARM', 'AZE', 'KAZ', 'UZB', 'TKM', 'TJK', 'KGZ'];
   // A state with a single province: that province is the whole state, so it carries the figure too.
   for (const c in countries) {
     const ids = Object.keys(provinces).filter(id => provinces[id].owner === c);
@@ -5349,6 +5403,112 @@ window.MAP_SVG = {
     return out;
   }
 
+  // ---- The population part of the territory card ------------------------------------------------------------------
+  // What each flag of the data file means, in words for the reader. A flag missing from this list is shown by its code
+  // (never hidden, never "undefined"); tests/population-pagina.test.js stops if the data uses a flag that is missing here.
+  const POP_FLAG_TEXT = {
+    serie_diversa: 'serie statistica diversa dalle altre: non confrontarla né sommarla senza verificare il perimetro',
+    valori_discordanti: 'i file di origine danno valori diversi (vedi «Altro valore»)',
+    fonte_secondaria: 'fonte secondaria, da sostituire con una fonte primaria',
+    etichetta_corretta: "l'etichetta del file era imprecisa ed è stata corretta",
+    perimetro_parziale: 'il valore copre solo una parte dello Stato',
+    cifra_arrotondata: 'cifra arrotondata, non una misura precisa',
+    entita_multiple_su_una_mappa: "più entità del file stanno su un'unica entità della mappa: i valori si mostrano, non si sommano",
+    status_corretto: 'lo status del file era sbagliato per il 31 dicembre 1960 ed è stato corretto',
+    status_precisato: 'lo status del file resta valido ma è stato precisato',
+    perimetro_da_verificare: 'perimetro da verificare',
+    possibile_doppio_conteggio_con_singapore: 'possibile doppio conteggio con Singapore',
+  };
+  const POP_MONTHS = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+  const popDate = iso => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m && POP_MONTHS[Number(m[2]) - 1] ? Number(m[3]) + ' ' + POP_MONTHS[Number(m[2]) - 1] + ' ' + m[1] : ''; };
+  const popHas = (o, k) => !!o && Object.prototype.hasOwnProperty.call(o, k);
+  // the name of a source from the register of the data file; an id that is not in the register is shown as it is
+  const popSource = id => (popHas(POP.meta.sources, id) ? POP.meta.sources[id] : (id || 'non indicata'));
+  // "Description: https://address" -> its two parts (the address is null when there is none)
+  const popLink = text => { const m = /^(.*?):?\s*(https:\/\/\S+)$/.exec(text || ''); return m ? { text: m[1] || m[2], url: m[2] } : { text: text || '', url: null }; };
+
+  // Everything the data file says about the figure(s) shown on a card, as lines [{ label, text, head, sources }] in reading order.
+  function popCardLines(recs, opts) {
+    const o = opts || {};
+    if (popLoadError) return [{ text: 'I dati di popolazione non sono stati letti (' + popLoadError + ').' }];
+    if (!recs.length) return [{ text: o.noData || 'Nessun dato nei file forniti.' }];
+    const out = [];
+    if (o.wing) out.push({ text: "Dato dell'intera ala, non della singola divisione." });
+    const checked = popDate(POP.meta.status_check && POP.meta.status_check.date);
+    recs.forEach(r => {
+      if (recs.length > 1) out.push({ head: true, text: r.entity });
+      out.push({ label: 'Fonte:', text: popSource(r.source_id) });
+      out.push({ label: 'Verifica:', text: r.verified ? 'ricontrollato sulla fonte primaria' : 'non ricontrollato sulla fonte primaria: il valore è riportato come nei file forniti' });
+      const st = r.status_1960_12_31;
+      const online = Array.isArray(r.status_sources) && r.status_sources.length > 0;
+      out.push({ label: 'Status al 31 dicembre 1960:',
+        text: st == null ? 'da verificare (nessuno status nei file forniti)'
+          : st + (online ? ' (controllato online su fonti secondarie' + (checked ? ' il ' + checked : '') + ')' : ' (come nel file fornito, non ricontrollato)'),
+        sources: online ? r.status_sources : null });
+      if (r.perimeter) out.push({ label: 'Perimetro:', text: r.perimeter });
+      if (Array.isArray(r.flags) && r.flags.length) out.push({ label: 'Avvertenze:', text: r.flags.map(f => (popHas(POP_FLAG_TEXT, f) ? POP_FLAG_TEXT[f] : f)).join('; ') });
+      (r.alternative_values || []).forEach(a => {
+        out.push({ label: 'Altro valore:', text: fmtPop(a.value) + ' (fonte: ' + popSource(a.source_id) + ')' + (a.note ? '. ' + a.note : '') });
+      });
+      if (r.note) out.push({ label: 'Nota:', text: r.note });
+    });
+    if (POP.meta.global_warning) out.push({ label: 'Avvertenza generale:', text: POP.meta.global_warning });
+    return out;
+  }
+  function popAppend(box, tag, text, label) {
+    const d = document.createElement(tag);
+    if (label) { const b = document.createElement('b'); b.textContent = label; d.appendChild(b); d.appendChild(document.createTextNode(' ')); }
+    d.appendChild(document.createTextNode(text));
+    box.appendChild(d);
+    return d;
+  }
+  function renderPopLines(box, lines) {
+    box.textContent = '';
+    lines.forEach(l => {
+      if (l.head) { popAppend(box, 'div', l.text).className = 'pp-pophead'; return; }
+      popAppend(box, 'div', l.text, l.label);
+      if (l.sources && l.sources.length) {            // the sources the status was checked on, one tap away
+        const det = document.createElement('details');
+        const sum = document.createElement('summary');
+        sum.textContent = l.sources.length === 1 ? 'Fonte dello status' : 'Fonti dello status (' + l.sources.length + ')';
+        det.appendChild(sum);
+        const ul = document.createElement('ul');
+        l.sources.forEach(id => {
+          const s = popLink(popHas(POP.meta.status_sources, id) ? POP.meta.status_sources[id] : id);
+          const li = document.createElement('li');
+          if (s.url) {
+            const a = document.createElement('a');
+            a.href = s.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = s.text;
+            li.appendChild(a);
+          } else li.textContent = s.text;
+          ul.appendChild(li);
+        });
+        det.appendChild(ul);
+        box.appendChild(det);
+      }
+    });
+  }
+  // The population rows of the card of a province. Its own figure comes first (only a state made of one province has one); then
+  // the figure of the state it belonged to on 31 Dec 1960 (or of the Pakistani wing), with everything the data says about it.
+  function fillPopulationCard(p, homeId) {
+    const homeC = countries[homeId];
+    const own = p.population != null;
+    const wing = !own && p.popGroup ? p.popGroup : null;
+    const recs = wing ? [wing] : ((homeC && homeC.populationRecords) || []);
+    const stateFigure = !own && !wing && recs.length > 0;
+    el('pp-population').textContent = own ? fmtPop(p.population) : 'da verificare';
+    el('pp-statepop-row').classList.toggle('hidden', !(wing || stateFigure));
+    el('pp-statepop-label').textContent = wing ? "Popolazione dell'ala" : 'Popolazione dello Stato';
+    el('pp-statepop').textContent = wing ? wing.entity + ': ' + fmtPop(wing.value)
+      : !stateFigure ? ''
+      : recs.length > 1 ? recs.map(r => r.entity + ': ' + fmtPop(r.value)).join(' · ')    // several records on one entity: shown side by side, never added
+      : homeC.name + ': ' + fmtPop(recs[0].value);
+    const lines = popCardLines(recs, { wing: !!wing,
+      noData: POP_SOVIET_STATES.includes(homeId) ? "Nessun dato proprio nei file forniti: nel 1960 faceva parte dell'URSS, il cui dato è riferito all'intero Stato." : '' });
+    renderPopLines(el('pp-popnote'), lines);
+    el('pp-popnote').classList.toggle('hidden', !lines.length);
+  }
+
   function openProvincePanel(id) {
     const p = provinces[id];
     if (!p) return;
@@ -5361,33 +5521,10 @@ window.MAP_SVG = {
     el('pp-type-row').classList.toggle('hidden', !R);
     if (R) el('pp-type').textContent = R.type;
     el('pp-capital').textContent = p.capital || 'da verificare';
-    // Population: the province's own figure if it has one (a state made of a single province);
-    // otherwise only the figure of the state it belonged to on 31 Dec 1960 (or, for the divisions of Pakistan,
-    // of the wing they belong to), with source and note. The units of a state never get a share of its total.
-    const fmtPop = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    const homeC = countries[initialTerritory[id] ? initialTerritory[id].owner : p.owner];
-    el('pp-population').textContent = (p.population === null || p.population === undefined) ? 'da verificare' : fmtPop(p.population);
-    const parts = homeC && homeC.populationParts;
-    const group = p.population == null ? p.popGroup : null;
-    const stateFigure = !group && p.population == null && homeC && (homeC.population != null || (parts && parts.length));
-    el('pp-statepop-row').classList.toggle('hidden', !(group || stateFigure));
-    el('pp-statepop-label').textContent = group ? "Popolazione dell'ala" : 'Popolazione dello Stato';
-    if (group) el('pp-statepop').textContent = group.entita + ' (' + group.status + '): ' + fmtPop(group.n);
-    else if (stateFigure) el('pp-statepop').textContent = (parts && parts.length)
-      ? parts.map(x => x.entita + ' (' + x.status + '): ' + fmtPop(x.n)).join(' · ')
-      : homeC.name + ': ' + fmtPop(homeC.population);
-    // source, political status and note of the figure shown: the province's own, otherwise its state's
-    let popInfo;
-    if (group) {
-      popInfo = ['Status al 31 dicembre 1960: ' + group.status, group.nota, "Dato dell'intera ala, non della singola divisione"].filter(Boolean).join(' · ');
-    } else {
-      const src = (p.populationStatus || p.populationNote || p.populationSource) ? p : homeC;
-      popInfo = src ? [src.populationSource ? 'Fonte: ' + src.populationSource : '',
-                       src.populationStatus ? 'Status al 31 dicembre 1960: ' + src.populationStatus : '',
-                       src.populationNote || ''].filter(Boolean).join(' · ') : '';
-    }
-    el('pp-popnote').textContent = popInfo;
-    el('pp-popnote').classList.toggle('hidden', !popInfo);
+    // Population: the province's own figure if it has one (a state made of a single province); otherwise only the figure of the
+    // state it belonged to on 31 Dec 1960 (or, for the divisions of Pakistan, of the wing they belong to), never a share of it.
+    // Source, verification, status, perimeter and warnings of that figure come from the data file (see fillPopulationCard).
+    fillPopulationCard(p, initialTerritory[id] ? initialTerritory[id].owner : p.owner);
     el('pp-infra').textContent = p.infrastructure + ' / 100 (provvisorio)';
     el('pp-stability').textContent = p.stability + ' / 100 (provvisorio)';
     el('pp-strategic').textContent = p.strategicValue + ' / 100 (provvisorio)';

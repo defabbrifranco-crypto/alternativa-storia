@@ -10,7 +10,7 @@ Dalla versione 24 la pagina funziona **dentro Claude e anche fuori**: da GitHub 
 | Risposte della storia, del Consigliere e della diplomazia | le scrive il modello di Claude | **le scrivi tu**, con un assistente AI a tua scelta (*modalità manuale*) |
 | Copia di sicurezza | «Esporta» | «Esporta» |
 
-La pagina non contatta nessun server e non carica nulla da internet: le partite restano sul tuo dispositivo. Un controllo automatico (`tests/pagina.test.js`) verifica che sia così.
+La pagina non contatta nessun server e non carica nulla da internet: le partite restano sul tuo dispositivo. Un controllo automatico (`tests/pagina.test.js`) verifica che sia così. Nella scheda di un territorio le fonti degli status sono collegamenti a siti esterni (ONU, Dipartimento di Stato USA, Wikipedia…): si aprono, in un'altra scheda del browser, solo se li tocchi.
 
 ## Aprire il gioco
 

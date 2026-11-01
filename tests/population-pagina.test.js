@@ -1,25 +1,129 @@
-// Il file dei dati (src/data/population_1960.json) e la pagina (src/storia-alternativa-prototipo.html) devono dire
-// la stessa cosa su popolazione e status politici (issue #8). La pagina tiene i suoi dati scritti dentro di sé
-// (così funziona anche aperta da sola), quindi i due elenchi vanno confrontati: se uno cambia e l'altro no,
-// questa prova si ferma e dice quale riga è diversa.
+// La pagina legge i dati di popolazione dal file src/data/population_1960.json (issue #8).
+//
+// La pagina deve funzionare anche aperta da sola, quindi porta con sé una copia IDENTICA del file, scritta da
+// scripts/incorpora-popolazione.js dentro un blocco <script type="application/json"> fra due marcatori. Qui si controlla che:
+//   - la copia nella pagina sia uguale al file (se si cambia il file e ci si dimentica di aggiornare la pagina, questa prova si ferma);
+//   - nella pagina non resti nessun elenco di numeri scritto a mano (i vecchi blocchi POPULATION_1960 e POPULATION_1960_B);
+//   - lo strumento di incorporazione funzioni davvero, anche quando la copia è sbagliata;
+//   - status, fonti e documenti dicano la stessa cosa del file.
+// Le prove nel browser (ogni scheda mostra il valore del file) stanno in tests/browser/t16_popolazione.js.
 // Esegui con: node --test
 const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
+const { spawnSync } = require('node:child_process');
+const incorpora = require('../scripts/incorpora-popolazione.js');
 
 const root = path.join(__dirname, '..');
-const data = JSON.parse(fs.readFileSync(path.join(root, 'src', 'data', 'population_1960.json'), 'utf8'));
+const FILE_DATI = path.join(root, 'src', 'data', 'population_1960.json');
+const FILE_PAGINA = path.join(root, 'src', 'storia-alternativa-prototipo.html');
+const SCRIPT = path.join(root, 'scripts', 'incorpora-popolazione.js');
+const testoDati = fs.readFileSync(FILE_DATI, 'utf8');
+const data = JSON.parse(testoDati);
 const schema = JSON.parse(fs.readFileSync(path.join(root, 'src', 'data', 'population_1960.schema.json'), 'utf8'));
-const html = fs.readFileSync(path.join(root, 'src', 'storia-alternativa-prototipo.html'), 'utf8');
-
+const html = fs.readFileSync(FILE_PAGINA, 'utf8');
 const STATUS = 'status_1960_12_31';
 
-// Legge un elenco scritto nella pagina come codice («const NOME = [ ... ];»). Le virgolette sono rispettate,
-// quindi parentesi quadre dentro un testo non confondono la ricerca della fine dell'elenco.
-function leggiElenco(nome) {
-  const marca = `const ${nome} = [`;
+// Esegue lo strumento di incorporazione su una pagina e un file dei dati scelti (variabili INCORPORA_*).
+function lanciaStrumento(pagina, dati, ...argomenti) {
+  return spawnSync(process.execPath, [SCRIPT, ...argomenti], { encoding: 'utf8', env: { ...process.env, INCORPORA_PAGINA: pagina, INCORPORA_DATI: dati } });
+}
+function cartellaTemporanea() { return fs.mkdtempSync(path.join(os.tmpdir(), 'incorpora-')); }
+
+// ---- la copia nella pagina ---------------------------------------------------------------------------------------
+
+test('la pagina ha una copia dei dati fra i due marcatori, identica al file (parola per parola)', () => {
+  const { da, a } = incorpora.trovaBlocco(html);
+  assert.strictEqual(html.slice(da, a), incorpora.bloccoAtteso(testoDati),
+    'La copia dei dati nella pagina è diversa da src/data/population_1960.json.\nPer aggiornarla: node scripts/incorpora-popolazione.js');
+  const dentro = /<script type="application\/json" id="population-1960-data">([\s\S]*?)<\/script>/.exec(html.slice(da, a));
+  assert.ok(dentro, 'dentro i marcatori manca il blocco <script type="application/json" id="population-1960-data">');
+  assert.deepStrictEqual(JSON.parse(dentro[1]), data, 'il JSON letto dalla pagina non coincide con il file');
+});
+
+test('nella pagina c\'è un solo blocco dei dati, e il file dei dati non contiene nulla che lo chiuderebbe', () => {
+  assert.strictEqual(html.split('\n<script type="application/json" id="population-1960-data">\n').length - 1, 1, 'nella pagina ci deve essere un solo blocco dei dati');
+  assert.ok(html.includes("el('population-1960-data')"), 'il codice della pagina non legge il blocco dei dati');
+  assert.ok(!/<\/script/i.test(testoDati), 'il file dei dati contiene «</script»');
+  assert.ok(!testoDati.includes('<!--'), 'il file dei dati contiene «<!--»');
+});
+
+test('lo strumento di incorporazione: --check riconosce una copia giusta e una sbagliata, e senza --check la ripara', () => {
+  const dir = cartellaTemporanea();
+  try {
+    const pagina = path.join(dir, 'pagina.html'), dati = path.join(dir, 'dati.json');
+    fs.copyFileSync(FILE_PAGINA, pagina);
+    fs.copyFileSync(FILE_DATI, dati);
+    let r = lanciaStrumento(pagina, dati, '--check');
+    assert.strictEqual(r.status, 0, 'la copia vera dovrebbe risultare giusta:\n' + r.stderr + r.stdout);
+    // un solo numero cambiato nel file dei dati: la pagina è rimasta indietro
+    fs.writeFileSync(dati, testoDati.replace('"value": 50198000', '"value": 50198001'));
+    assert.notStrictEqual(testoDati, fs.readFileSync(dati, 'utf8'), 'la prova non è riuscita a cambiare il file di prova');
+    r = lanciaStrumento(pagina, dati, '--check');
+    assert.strictEqual(r.status, 1, 'una copia in ritardo sul file deve far fallire il controllo');
+    assert.match(r.stderr, /node scripts\/incorpora-popolazione\.js/, 'il messaggio deve dire come rimediare');
+    assert.strictEqual(fs.readFileSync(pagina, 'utf8'), fs.readFileSync(FILE_PAGINA, 'utf8'), '--check non deve scrivere nulla');
+    // senza --check la pagina viene aggiornata, e poi il controllo passa
+    r = lanciaStrumento(pagina, dati);
+    assert.strictEqual(r.status, 0, r.stderr);
+    assert.ok(fs.readFileSync(pagina, 'utf8').includes('"value": 50198001'), 'la pagina non è stata aggiornata');
+    assert.strictEqual(lanciaStrumento(pagina, dati, '--check').status, 0, 'dopo l\'aggiornamento il controllo deve passare');
+    // tutto ciò che sta fuori dai marcatori resta com\'era
+    const prima = html, dopo = fs.readFileSync(pagina, 'utf8');
+    const a1 = incorpora.trovaBlocco(prima), a2 = incorpora.trovaBlocco(dopo);
+    assert.strictEqual(prima.slice(0, a1.da), dopo.slice(0, a2.da), 'il testo prima dei marcatori è cambiato');
+    assert.strictEqual(prima.slice(a1.a), dopo.slice(a2.a), 'il testo dopo i marcatori è cambiato');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('lo strumento di incorporazione si rifiuta di lavorare con dati che non possono stare in una pagina o con marcatori mancanti', () => {
+  const dir = cartellaTemporanea();
+  try {
+    const pagina = path.join(dir, 'pagina.html'), dati = path.join(dir, 'dati.json');
+    fs.copyFileSync(FILE_PAGINA, pagina);
+    fs.writeFileSync(dati, testoDati.replace('"title": "Popolazione 1960 per entità"', '"title": "</script><b>"'));
+    let r = lanciaStrumento(pagina, dati);
+    assert.strictEqual(r.status, 1, 'dati con «</script» devono essere rifiutati');
+    assert.match(r.stderr, /<\/script/);
+    fs.writeFileSync(dati, '{ non è json');
+    r = lanciaStrumento(pagina, dati);
+    assert.strictEqual(r.status, 1, 'un file dei dati che non è JSON deve essere rifiutato');
+    fs.writeFileSync(dati, testoDati);
+    fs.writeFileSync(pagina, '<html><body>nessun marcatore</body></html>');
+    r = lanciaStrumento(pagina, dati);
+    assert.strictEqual(r.status, 1, 'una pagina senza marcatori deve essere rifiutata');
+    assert.match(r.stderr, /DATI-POPOLAZIONE-INIZIO/);
+    assert.strictEqual(fs.readFileSync(pagina, 'utf8'), '<html><body>nessun marcatore</body></html>', 'la pagina non deve essere toccata');
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+// ---- niente più dati scritti a mano nella pagina --------------------------------------------------------------------
+
+test('nella pagina non restano i vecchi elenchi di popolazione scritti a mano', () => {
+  for (const nome of ['POPULATION_1960', 'POPULATION_1960_B', 'regionalPopulationProvinces', 'populationSource', 'populationParts', 'populationStatus']) {
+    assert.ok(!html.includes(nome), `la pagina contiene ancora «${nome}»`);
+  }
+});
+
+test('nel codice della pagina (fuori dal blocco dei dati) non compare nessun valore di popolazione del file', () => {
+  const { da, a } = incorpora.trovaBlocco(html);
+  const fuori = html.slice(0, da) + html.slice(a);
+  // Numeri tondi che nel codice compaiono per un altro motivo (non sono popolazioni): ogni eccezione dice quale.
+  const ALTRO_USO = { 1000000: 'limite massimo del numero di turni di una partita salvata' };
+  const grandi = [...data.records.map(r => r.value), ...data.records.flatMap(r => r.alternative_values.map(x => x.value))].filter(v => v >= 100000 && !(v in ALTRO_USO));
+  assert.ok(grandi.length > 30, 'la prova sta guardando pochi valori');
+  for (const v of new Set(grandi)) {
+    assert.ok(!new RegExp(`(^|[^\\d.])${v}([^\\d.]|$)`).test(fuori), `il numero ${v} è scritto a mano nel codice della pagina: deve stare solo nel file dei dati`);
+  }
+});
+
+// ---- le avvertenze (flag) hanno una frase ---------------------------------------------------------------------------
+
+function leggiOggetto(nome) {
+  const marca = `const ${nome} = {`;
   const inizio = html.indexOf(marca);
   assert.ok(inizio >= 0, `nella pagina manca «${marca}»`);
   const i = inizio + marca.length - 1;
@@ -28,23 +132,37 @@ function leggiElenco(nome) {
     const c = html[j];
     if (virgolette) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === virgolette) virgolette = null; continue; }
     if (c === '"' || c === "'" || c === '`') { virgolette = c; continue; }
-    if (c === '[') profondita++;
-    else if (c === ']' && --profondita === 0) { j++; break; }
+    if (c === '{') profondita++;
+    else if (c === '}' && --profondita === 0) { j++; break; }
   }
   return vm.runInNewContext('(' + html.slice(i, j) + ')');
 }
-const righeA = leggiElenco('POPULATION_1960');     // primo file: Stati europei, senza status
-const righeB = leggiElenco('POPULATION_1960_B');   // secondo file: Asia e altri, con lo status
-const senzaAccenti = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-const chiave = (codice, n) => `${codice || 'nessuna entità sulla mappa'}|${n}`;
 
-// Nella pagina l'ala occidentale del Pakistan ha il nome dell'ala in «entita» e lo status in «status»; nel file dei dati
-// il nome dell'ala sta dentro lo status. Il confronto è comunque esatto: «Ala occidentale del Pakistan (<status della pagina>)».
-const STATUS_CON_NOME_DELL_ALA = { PAK_W: s => `Ala occidentale del Pakistan (${s})` };
+test('ogni avvertenza (flag) usata dal file ha una frase per chi legge nella pagina', () => {
+  const frasi = leggiOggetto('POP_FLAG_TEXT');
+  const usati = new Set(data.records.flatMap(r => r.flags));
+  assert.ok(usati.size >= 8, 'la prova sta guardando pochi flag');
+  for (const f of usati) assert.ok(Object.prototype.hasOwnProperty.call(frasi, f) && frasi[f].length > 10, `il flag «${f}» non ha una frase in POP_FLAG_TEXT nella pagina: verrebbe mostrato col suo codice`);
+});
 
-test('i due elenchi della pagina non sono vuoti (la prova sta guardando nel posto giusto)', () => {
-  assert.ok(righeA.length >= 30, `trovate ${righeA.length} righe nel primo elenco`);
-  assert.ok(righeB.length >= 40, `trovate ${righeB.length} righe nel secondo elenco`);
+// ---- il file dei dati --------------------------------------------------------------------------------------------
+
+test('l\'avvertenza generale sta in meta.global_warning e non è ripetuta nei record', () => {
+  assert.ok(data.meta.global_warning && data.meta.global_warning.length > 40, 'manca meta.global_warning');
+  const chiave = data.meta.global_warning.slice(0, 40);
+  for (const r of data.records) assert.ok(!JSON.stringify(r).includes(chiave), `${r.id}: ripete l'avvertenza generale`);
+});
+
+test('i testi del file dei dati sono in italiano con gli accenti (la pagina li mostra così come sono)', () => {
+  // Errori tipici di un testo scritto «senza accenti»: la «e» al posto di «è», «entita» al posto di «entità», eccetera.
+  const sbagliati = [/ e (?:riferito|riportato|indipendente|stato|stata|quello)\b/, /\bentita\b/i, /\bcitta\b/i, /\bcosi\b/, /\bcio che\b/, /\ba se\b/, /\bne usci\b/];
+  const testi = [];
+  (function raccogli(x, p) {
+    if (typeof x === 'string') testi.push([p, x]);
+    else if (Array.isArray(x)) x.forEach((y, i) => raccogli(y, `${p}[${i}]`));
+    else if (x && typeof x === 'object') for (const k of Object.keys(x)) if (k !== 'flags') raccogli(x[k], p ? `${p}.${k}` : k);   // i flag sono codici, non frasi
+  })(data, '');
+  for (const [p, t] of testi) for (const re of sbagliati) assert.ok(!re.test(t), `${p}: il testo sembra scritto senza accenti («${(re.exec(t) || [''])[0]}»): «${t.slice(0, 90)}…»`);
 });
 
 test('il file dei dati è riferito al 31 dicembre 1960 e il campo dello status porta quella data', () => {
@@ -77,44 +195,6 @@ test('le fonti degli status: ogni fonte citata è descritta, ogni fonte descritt
   }
 });
 
-test('gli status scritti nella pagina sono quelli del file dei dati, riga per riga', () => {
-  const perChiave = new Map();
-  for (const r of data.records) {
-    const k = chiave(r.map_id, r.value);
-    assert.ok(!perChiave.has(k), `due record con lo stesso codice e lo stesso valore: ${k}`);
-    perChiave.set(k, r);
-  }
-  const viste = new Set();
-  for (const riga of righeB) {
-    const k = chiave(riga.code, riga.n);
-    const r = perChiave.get(k);
-    assert.ok(r, `pagina: «${riga.entita}» (${k}) non ha un record corrispondente nel file dei dati`);
-    viste.add(r.id);
-    const atteso = STATUS_CON_NOME_DELL_ALA[riga.code] ? STATUS_CON_NOME_DELL_ALA[riga.code](riga.status) : riga.status;
-    assert.strictEqual(r[STATUS], atteso, `«${riga.entita}»: la pagina dice «${riga.status}», il file dei dati dice «${r[STATUS]}»`);
-  }
-  for (const r of data.records) {
-    if (r[STATUS] !== null) assert.ok(viste.has(r.id), `${r.id} (${r.entity}) ha uno status nel file dei dati ma non compare nella pagina`);
-  }
-});
-
-test('le popolazioni scritte nella pagina sono quelle del file dei dati (valore principale o alternativo, per Cipro)', () => {
-  const perChiave = new Map(data.records.map(r => [chiave(r.map_id, r.value), r]));
-  for (const riga of righeB) {
-    const r = perChiave.get(chiave(riga.code, riga.n));
-    assert.ok(r, `secondo elenco: «${riga.entita}» ha un valore (${riga.n}) che il file dei dati non ha`);
-  }
-  for (const riga of righeA) {
-    const candidati = riga.code
-      ? data.records.filter(r => r.map_id === riga.code)
-      : data.records.filter(r => senzaAccenti(r.entity) === senzaAccenti(riga.stato));
-    assert.strictEqual(candidati.length, 1, `primo elenco: «${riga.stato}» corrisponde a ${candidati.length} record del file dei dati`);
-    const r = candidati[0];
-    const valori = [r.value, ...r.alternative_values.map(a => a.value)];
-    assert.ok(valori.includes(riga.n), `primo elenco: «${riga.stato}» vale ${riga.n} nella pagina e ${valori.join(' o ')} nel file dei dati`);
-  }
-});
-
 test('docs/STATUS-1960.md riporta ogni status rivisto e ogni collegamento alle fonti degli status', () => {
   const doc = fs.readFileSync(path.join(root, 'docs', 'STATUS-1960.md'), 'utf8');
   for (const r of data.records) {
@@ -126,7 +206,7 @@ test('docs/STATUS-1960.md riporta ogni status rivisto e ogni collegamento alle f
   }
 });
 
-test('la pagina scrive «Status al 31 dicembre 1960», non la vecchia etichetta «Status nel 1960»', () => {
-  assert.ok(html.includes("'Status al 31 dicembre 1960: '"), 'manca l\'etichetta «Status al 31 dicembre 1960» nella scheda del territorio');
+test('la scheda del territorio scrive «Status al 31 dicembre 1960», non la vecchia etichetta «Status nel 1960»', () => {
+  assert.ok(html.includes("label: 'Status al 31 dicembre 1960:'"), 'manca l\'etichetta «Status al 31 dicembre 1960» nella scheda del territorio');
   assert.ok(!html.includes('Status nel 1960'), 'nella pagina resta la vecchia etichetta «Status nel 1960»');
 });

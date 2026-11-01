@@ -21,6 +21,8 @@ function instrument(html) {
     getState: () => state, getMapGameStarted: () => mapGameStarted, getGameMode: () => gameMode, getSelectedProvince: () => selectedProvinceId,
     legacyTargets, LEGACY, MAX_CHANGES, REGION_UNITS, searchTerritories, focusCountry, stateBounds, mainProvinceOf, foldName,
     setView: (x, y, s) => { scale = s; tx = VBW / 2 - s * x; ty = 1029 - s * y; updateTransform(); updateLabels(); } };
+  if (typeof POP !== 'undefined') Object.assign(window.__t, { POP, popUnplaced, popCardLines, fillPopulationCard, POP_FLAG_TEXT, POP_SOVIET_STATES, fmtPop,
+    getPopLoadError: () => popLoadError });
   if (typeof markers !== 'undefined') Object.assign(window.__t, {
     getMarkers: () => markers, getSelectedMarkerId: () => selectedMarkerId, getLastClusters: () => lastClusters, getMarkerSeq: () => markerSeq,
     MARKER_TYPES, MARKER_ORDER, MARKER_ALIASES, MAX_MARKERS, MAX_MARKER_OPS, addMarker, removeMarker, clearMarkers, applyMarkerChanges, selectMarker,
@@ -44,8 +46,9 @@ let launches = 0;
 // Opzioni: withClaude=false prova la pagina senza window.claude (come su GitHub Pages); blockStorage=true fa lanciare
 // un errore a localStorage; seedLocal precarica chiavi di localStorage (una sola volta); serve=true apre la pagina
 // da un piccolo server http locale invece che da file://. withDownloads=false toglie a Claude la capacità «downloads».
+// transform(html) cambia il testo della pagina prima di aprirla (per provare un guasto messo apposta: il file su disco non cambia).
 async function launch({ width = 390, height = 844, store = {}, withSample = true, withDb = true, withClaude = true, withDownloads = true,
-  blockStorage = false, seedLocal = null, serve = false, mobile = true, colorScheme = 'light' } = {}) {
+  blockStorage = false, seedLocal = null, serve = false, mobile = true, colorScheme = 'light', transform = null } = {}) {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 2, hasTouch: mobile, isMobile: mobile, colorScheme });
   const page = await ctx.newPage();
@@ -94,7 +97,7 @@ async function launch({ width = 390, height = 844, store = {}, withSample = true
     } };
     if (withClaude) window.claude = { use: async (name) => (name === 'db' ? (withDb ? db : null) : name === 'sample' ? (withSample ? sample : null) : name === 'downloads' ? (withDownloads ? downloads : null) : null) };
   }, { withSample, withDb, withClaude, withDownloads, blockStorage, seedLocal });
-  const html = instrument(fs.readFileSync(SRC, 'utf8'));
+  const html = instrument(transform ? transform(fs.readFileSync(SRC, 'utf8')) : fs.readFileSync(SRC, 'utf8'));
   const tmp = path.join(TMP_DIR, 'pagina-' + (++launches) + '.html');
   fs.writeFileSync(tmp, html);
   let server = null;
