@@ -8,7 +8,7 @@ Le date sono quelle di consegna dei pacchetti di modifiche. Prima della versione
 
 ## [0.29.0] - 2026-11-01
 
-La pagina legge i dati di popolazione dal file `src/data/population_1960.json` e la scheda del territorio mostra fonte, verifica, status, perimetro e avvertenze ([#8](../../issues/8)). Contiene anche l'allineamento dei documenti e la correzione del workflow della pull request #11.
+La pagina legge i dati di popolazione dal file `src/data/population_1960.json` e la scheda del territorio mostra fonte, verifica, status, perimetro e avvertenze ([#8](../../issues/8)). Comprende anche le modifiche della pull request #11, già unita: documenti allineati e prove automatiche su Ubuntu 24.04.
 
 ### Aggiunto
 - **`scripts/incorpora-popolazione.js`** (`npm run dati:incorpora`): mette nella pagina una copia **identica** del file dei dati, in un blocco `<script type="application/json" id="population-1960-data">` fra i marcatori `DATI-POPOLAZIONE-INIZIO` e `DATI-POPOLAZIONE-FINE`. La pagina deve funzionare anche aperta da sola, quindi non scarica il file: ne porta una copia. `npm run dati:controlla` (`--check`) controlla senza scrivere. Rifiuta un file dei dati che non è JSON o che contiene «</script» o «<!--».
