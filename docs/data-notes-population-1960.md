@@ -1,6 +1,6 @@
 # Note sui dati: popolazione 1960
 
-File dati: `src/data/population_1960.json` (schema in `src/data/population_1960.schema.json`, test in `tests/population.test.js` e `tests/population-pagina.test.js`).
+File dati: `src/data/population_1960.json` (schema in `src/data/population_1960.schema.json`, test in `tests/population.test.js`, `tests/population-pagina.test.js` e `tests/browser/t16_popolazione.js`).
 
 ## Principi
 
@@ -42,4 +42,31 @@ I flag nuovi: `status_corretto` (lo status del file era sbagliato per la data), 
 
 ## Integrazione nel codice
 
-La pagina `src/storia-alternativa-prototipo.html` non carica questo JSON: contiene copie scritte dentro, negli elenchi `POPULATION_1960` e `POPULATION_1960_B`. La prova `tests/population-pagina.test.js` verifica che le due versioni dicano la stessa cosa (popolazioni e status, riga per riga). La patch di `src/storia-alternativa-prototipo-map-overlay.html` che sostituisce i blocchi `POPULATION_1960`, `POPULATION_1960_B` e `regionalPopulationProvinces` con il caricamento di questo JSON non è ancora applicata.
+La pagina `src/storia-alternativa-prototipo.html` **legge questo file**. Deve funzionare anche aperta da sola (da file, da GitHub Pages, dentro Claude), quindi non lo scarica: ne porta dentro una **copia identica**, in un blocco `<script type="application/json" id="population-1960-data">` fra i marcatori `DATI-POPOLAZIONE-INIZIO` e `DATI-POPOLAZIONE-FINE`. Nel codice non ci sono più elenchi di numeri scritti a mano (`POPULATION_1960` e `POPULATION_1960_B` sono spariti con la versione 29).
+
+- **Dopo ogni modifica al file dei dati**: `npm run dati:incorpora` (cioè `node scripts/incorpora-popolazione.js`) ricopia i dati nella pagina. `npm run dati:controlla` controlla soltanto, senza scrivere.
+- **Se ci si dimentica**: `node --test` si ferma («La copia dei dati nella pagina è diversa da src/data/population_1960.json») e dice come rimediare; lo stesso fa GitHub.
+- Lo strumento rifiuta un file dei dati che non è JSON o che contiene «</script» o «<!--» (non potrebbe stare dentro la pagina).
+- Se il blocco manca o è rotto, la pagina si apre lo stesso: la scheda scrive «I dati di popolazione non sono stati letti (…)», nessun valore è mostrato e l'errore va nella console del browser.
+
+### Legame fra i record e la mappa
+
+- `map_id` è il codice di uno Stato sulla mappa: la cifra compare nelle schede delle sue province. Con **una sola provincia** (per esempio il Kuwait) la cifra è anche quella della provincia («Popolazione (1960)»); con più province la cifra resta quella dello Stato («Popolazione dello Stato»), mai divisa in quote.
+- `PAK_W` e `PAK_E` sono le due ali del Pakistan: ogni divisione dell'ala mostra la cifra dell'ala («Popolazione dell'ala») e dice che non è la sua. Il Pakistan nel suo insieme non ha una cifra.
+- `map_id: null`: entità che non sono sulla mappa (Monaco, Liechtenstein, San Marino, Andorra, Città del Vaticano, Maldive, Palestina). Restano nel file, la pagina non le mostra.
+- Due record con lo stesso `map_id` (Yemen) hanno `aggregation: show_not_sum`: la scheda mostra i due valori affiancati e le righe di ciascuno, mai la somma.
+- Le **14 repubbliche sovietiche** (Ucraina, Bielorussia, Moldavia, Estonia, Lettonia, Lituania, Georgia, Armenia, Azerbaigian, Kazakistan, Uzbekistan, Turkmenistan, Tagikistan, Kirghizistan) sono Stati separati sulla mappa ma non hanno un record: la scheda dice che nel 1960 facevano parte dell'URSS, il cui dato è riferito all'intero Stato.
+
+### Che cosa mostra la scheda per ogni cifra
+
+Fonte (il nome dal registro `meta.sources`; se un `source_id` non è nel registro, il codice stesso: mai «undefined»), verifica (`verified`), status al 31 dicembre 1960 (con «controllato online su fonti secondarie» e la data, oppure «come nel file fornito, non ricontrollato», oppure «da verificare» se il file non ha status; le fonti dello status sono collegamenti, chiusi in un elenco a scomparsa), perimetro, avvertenze (i `flags`, in frasi: sono scritte nella pagina, in `POP_FLAG_TEXT`; un flag nuovo nel file senza frase fa fermare `node --test`), altro valore (`alternative_values`, per esempio i 580.000 di Cipro), nota, e in fondo l'avvertenza generale (`meta.global_warning`, scritta una volta sola nel file).
+
+I collegamenti alle fonti degli status si aprono solo se li tocchi, in un'altra scheda del browser: la pagina non contatta nessun sito da sola.
+
+### Testi del file
+
+I testi che la scheda mostra (note, perimetri, nomi) sono in italiano con gli accenti. Con la versione 29 sono stati corretti 17 testi che li avevano persi («e» al posto di «è», «entita», «Citta del Vaticano», «a se»…): cambiano solo gli accenti, nessun numero, identificativo, status, fonte o flag. `tests/population-pagina.test.js` si ferma se ricompaiono errori di questo tipo.
+
+### Prove
+
+`tests/population.test.js` (il file dei dati), `tests/population-pagina.test.js` (la copia nella pagina, lo strumento, i documenti) e `tests/browser/t16_popolazione.js` (ogni scheda di ogni provincia mostra il valore del file; guasti messi apposta).

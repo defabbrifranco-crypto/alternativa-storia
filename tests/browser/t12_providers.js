@@ -400,10 +400,10 @@ const SAVE_KEY = 'storia-alternativa:save/state';
     markers: [{ id: 'S1', tipo: 'truppe', nome: X, nota: X, provincia: null, x: 1000, y: 800, stato: 'ITA', anno: X, origine: 'motore' }] };
   const r1h = await importText(evil);
   check('un salvataggio con HTML e script nei testi viene importato', r1h.status === 'Salvataggio importato.' && !r1h.open, r1h);
-  const sec = await evH(() => ({ xss: window.__xss, scripts: document.querySelectorAll('script').length, imgs: document.querySelectorAll('img[src="x"]').length, b: !!document.getElementById('xss-b'),
+  const sec = await evH(() => ({ xss: window.__xss, scripts: document.querySelectorAll('script:not([type="application/json"])').length, dataBlocks: document.querySelectorAll('script[type="application/json"]').length, imgs: document.querySelectorAll('img[src="x"]').length, b: !!document.getElementById('xss-b'),
     log: document.getElementById('log').textContent, diplo: document.getElementById('diploLog').textContent, label: document.getElementById('diploTargetLabel').textContent,
     year: document.getElementById('yearLabel').textContent, markers: window.__t.getMarkers().length }));
-  check('nessuno script eseguito, nessun elemento inserito', sec.xss === undefined && sec.scripts === 2 && sec.imgs === 0 && sec.b === false, sec);
+  check('nessuno script eseguito, nessun elemento inserito (i due script della pagina e il solo blocco dei dati di popolazione, che non è codice)', sec.xss === undefined && sec.scripts === 2 && sec.dataBlocks === 1 && sec.imgs === 0 && sec.b === false, sec);
   check('i testi compaiono come testo, parola per parola', sec.log.includes('<img src=x onerror=') && sec.diplo.includes('<img src=x onerror=') && sec.label.includes('<img src=x') && sec.year.includes('<img src=x'), sec);
   check('anche il segnaposto è importato, con il nome come testo', sec.markers === 1, sec);
   check('nessun errore della pagina con il salvataggio ostile', H.errors.length === 0, H.errors);

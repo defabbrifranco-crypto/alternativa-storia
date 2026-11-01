@@ -61,5 +61,5 @@ Ogni record controllato elenca le proprie fonti in `status_sources`; le descrizi
 
 ## Come si tengono allineati i dati
 
-- `tests/population-pagina.test.js` confronta, riga per riga, status e popolazioni scritti nella pagina con quelli del file dei dati, controlla che ogni fonte citata sia descritta e che questo documento riporti ogni status rivisto e ogni collegamento alle fonti.
-- Se si cambia uno status, va cambiato in **tre** posti: `src/data/population_1960.json`, l'elenco `POPULATION_1960_B` della pagina e questo documento. La prova si ferma se uno dei tre resta indietro.
+- `tests/population-pagina.test.js` controlla che la copia dei dati nella pagina sia identica al file, che ogni fonte citata sia descritta e che questo documento riporti ogni status rivisto e ogni collegamento alle fonti.
+- Se si cambia uno status, va cambiato in **due** posti: `src/data/population_1960.json` (poi `npm run dati:incorpora` ricopia i dati nella pagina) e questo documento. La prova si ferma se uno dei due resta indietro. Dalla versione 29 la pagina legge gli status dal file: non ci sono più elenchi da tenere allineati a mano.
