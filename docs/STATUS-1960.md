@@ -45,7 +45,7 @@ Qui il file non era sbagliato, ma diceva meno di quello che serve per giocare.
 
 ## Altre differenze note
 
-- Nella pagina l'ala occidentale del Pakistan si chiama «Pakistan» e l'ala orientale «Bangladesh», come nel secondo file; nel file dei dati si chiamano «Pakistan occidentale» e «Pakistan orientale (futuro Bangladesh)». Gli status coincidono (la prova automatica confronta «Ala occidentale del Pakistan (…)» con quello della pagina). I nomi non sono stati unificati: non è un controllo di status.
+- **Nomi delle due ali del Pakistan.** Fino alla versione 28 la pagina chiamava l'ala occidentale «Pakistan» e l'ala orientale «Bangladesh», come nel secondo file, mentre il file dei dati dice «Pakistan occidentale» e «Pakistan orientale (futuro Bangladesh)». Dalla versione 29 la pagina legge nomi e status dal file dei dati: i nomi sono quelli del file e non c'è più uno status scritto a mano da confrontare.
 - **Documenti allineati.** `README.md`, `docs/FONTI.md` e `docs/METODOLOGIA.md` dicevano «1 gennaio 1960» e che un'indipendenza avvenuta dopo quella data «non vale». Dopo l'unione della pull request #9, che li aveva riscritti, sono stati allineati al 31 dicembre 1960 (30 ottobre 2026); il campo dello status è `status_1960_12_31`. La variante `src/storia-alternativa-prototipo-map-overlay.html` e la cartella `archive/` conservano invece la data e gli status vecchi: sono copie di riferimento e non sono state toccate.
 
 ## Fonti
