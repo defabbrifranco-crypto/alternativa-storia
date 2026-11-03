@@ -4,7 +4,7 @@
 
 La licenza [MIT](LICENSE) copre **il codice del gioco e i testi scritti per il progetto** (pagine, script, prove, documenti). Il titolare indicato è il nome utente GitHub dell'autore.
 
-La licenza **non cambia le condizioni dei dati di terzi** che il progetto contiene: i contorni degli Stati, gli elenchi delle unità regionali e i dati di popolazione. Qui sotto, per ciascuno, è scritto cosa si sa e cosa resta da verificare. I contorni sono scritti dentro i file `.html` di `src/` e `archive/`, accanto al codice.
+La licenza **non cambia le condizioni dei dati di terzi** che il progetto contiene: i contorni degli Stati, gli elenchi delle unità regionali e i dati di popolazione. Qui sotto, per ciascuno, è scritto cosa si sa e cosa resta da verificare. I contorni sono scritti dentro i file `.html` di `src/` e `archive/`, accanto al codice. Se serva una licenza separata per i dati è valutato in [`docs/LICENZA-DATI.md`](docs/LICENZA-DATI.md) (nessuna decisione presa).
 
 ## Confini della mappa
 
@@ -32,7 +32,7 @@ Come la mappa è costruita è spiegato in [`docs/CONFINI-MAPPA.md`](docs/CONFINI
 - ONU retrospettiva tramite JetPunk (fonte secondaria, da sostituire con le World Population Prospects dell'ONU);
 - il secondo CSV non indica nessuna fonte.
 
-Le condizioni d'uso di queste fonti non sono state verificate. Vedi anche [`docs/data-notes-population-1960.md`](docs/data-notes-population-1960.md).
+Le condizioni d'uso dei file effettivamente usati **non sono accertate**. Per la versione 2023 del Maddison Project Database la pagina del database dichiara la licenza Creative Commons Attribuzione 4.0, ma non si sa quale versione abbia usato l'autore; per i dati dell'ONU la licenza dichiarata (CC BY 3.0 IGO) è scritta nella pubblicazione «Summary of Results», non nelle pagine dell'ONU che si sono potute leggere per i file di dati; per le altre due fonti non è stato letto nulla. Pagine lette (2 novembre 2026), dettagli e opzioni sono in [`docs/LICENZA-DATI.md`](docs/LICENZA-DATI.md). Vedi anche [`docs/data-notes-population-1960.md`](docs/data-notes-population-1960.md).
 
 ## Come citare il progetto
 

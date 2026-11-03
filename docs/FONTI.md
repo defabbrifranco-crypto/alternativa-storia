@@ -1,6 +1,6 @@
 # Registro delle fonti
 
-Data di consultazione delle pagine web citate: **15 ottobre 2026** (valori di popolazione e primi status) e **25–26 ottobre 2026** (controllo degli status al 31 dicembre 1960, con le fonti elencate in [`STATUS-1960.md`](STATUS-1960.md)). Copertura: popolazione 1960 e status politici di 37 record su 77. Il resto dei dati del prototipo non è ancora schedato (per la mappa vedi [`CONFINI-MAPPA.md`](CONFINI-MAPPA.md), per i dati di terzi [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md)).
+Data di consultazione delle pagine web citate: **15 ottobre 2026** (valori di popolazione e primi status) e **25–26 ottobre 2026** (controllo degli status al 31 dicembre 1960, con le fonti elencate in [`STATUS-1960.md`](STATUS-1960.md)). Copertura: popolazione 1960 e status politici di 37 record su 77. Gli altri dati della pagina (Stati, capitali, alleanze, unità regionali, valutazioni, note) sono **elencati** in [`DATI-INCORPORATI.md`](DATI-INCORPORATI.md), ma nessuno ha una fonte: sono etichette del prototipo o testi dei file dell'autore, da verificare. Per la mappa vedi [`CONFINI-MAPPA.md`](CONFINI-MAPPA.md), per i dati di terzi [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md), per le condizioni d'uso delle fonti dei numeri [`LICENZA-DATI.md`](LICENZA-DATI.md).
 
 ## Fonti dei valori di popolazione
 
@@ -46,4 +46,5 @@ Vietnam del Nord (16.600.000), Vietnam del Sud (15.000.000), Yemen del Sud (1.00
 - Reperire la fonte del secondo CSV.
 - Compilare con fonte i 32 status mancanti (record europei), controllare Cina, Coree, Vietnam, Mongolia e Palestina e confermare l'Oman su fonti primarie.
 - Confrontare con la fonte il perimetro dell'ala occidentale del Pakistan (`PAK_W`).
-- Schedare i dati territoriali della pagina diversi dalla popolazione (la costruzione della mappa è in [`CONFINI-MAPPA.md`](CONFINI-MAPPA.md)).
+- Controllare con una fonte, una per una, capitali, alleanze e note degli Stati della pagina: l'elenco, con il livello di ciascuno, è in [`DATI-INCORPORATI.md`](DATI-INCORPORATI.md); la costruzione della mappa è in [`CONFINI-MAPPA.md`](CONFINI-MAPPA.md).
+- Chiarire le condizioni d'uso delle fonti dei numeri (sono accertate per nessuna delle quattro): [`LICENZA-DATI.md`](LICENZA-DATI.md).

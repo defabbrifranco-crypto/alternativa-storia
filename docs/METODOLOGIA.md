@@ -1,6 +1,6 @@
 # Metodologia
 
-Questo documento descrive i criteri con cui sono trattati i dati storici del prototipo. **Copertura attuale: parziale.** Sono documentati i dati di popolazione, gli status politici al 31 dicembre 1960 (controllati online su fonti secondarie: vedi [`STATUS-1960.md`](STATUS-1960.md)) e la costruzione della mappa ([`CONFINI-MAPPA.md`](CONFINI-MAPPA.md)). Gli altri dati incorporati nell'HTML non sono ancora censiti (vedi "Lacune").
+Questo documento descrive i criteri con cui sono trattati i dati storici del prototipo. **Copertura attuale: parziale.** Sono documentati i dati di popolazione, gli status politici al 31 dicembre 1960 (controllati online su fonti secondarie: vedi [`STATUS-1960.md`](STATUS-1960.md)) e la costruzione della mappa ([`CONFINI-MAPPA.md`](CONFINI-MAPPA.md)). Gli altri dati incorporati nell'HTML sono **elencati** in [`DATI-INCORPORATI.md`](DATI-INCORPORATI.md), ma nessuno è verificato (vedi "Lacune").
 
 ## Data di riferimento
 
@@ -47,7 +47,7 @@ Quando lo status di un CSV di origine è incompatibile con la data di riferiment
 ## Lacune e parti documentate solo in parte
 
 - **Confini e geometrie della mappa**: i criteri sono in [`CONFINI-MAPPA.md`](CONFINI-MAPPA.md). Restano da chiarire le tre linee tracciate a mano senza fonte, le unità non disegnate e le condizioni degli elenchi di unità (vedi [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md)).
-- **Dati territoriali diversi dalla popolazione**: capitali, «alleanze» e colori della pagina sono etichette semplificate del prototipo, non dati verificati.
+- **Dati territoriali diversi dalla popolazione**: capitali, «alleanze» e colori della pagina sono etichette semplificate del prototipo, non dati verificati. L'elenco completo, con i numeri e con il punto del gioco in cui ciascun dato si vede, è in [`DATI-INCORPORATI.md`](DATI-INCORPORATI.md).
 - **Regole di territorio e di diplomazia incorporate nell'HTML**: descritte solo in parte ([`TURNO-E-AZIONI.md`](TURNO-E-AZIONI.md), [`EDITOR-SCENARIO.md`](EDITOR-SCENARIO.md)).
 - **Status**: 32 record europei senza status; Cina, Coree, Vietnam, Mongolia e Palestina hanno lo status del file, non controllato su una fonte specifica; per l'Oman le fonti non concordano; nessuno status è stato controllato su fonti primarie.
 

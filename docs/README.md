@@ -7,7 +7,7 @@ Guide e documentazione del progetto. Per una panoramica vedi il [README](../READ
 | Documento | Di cosa parla |
 |---|---|
 | [`TURNO-E-AZIONI.md`](TURNO-E-AZIONI.md) | Il turno: la casella delle azioni con «Invia», il pulsante «Avanza» e le altre nazioni che agiscono |
-| [`EDITOR-SCENARIO.md`](EDITOR-SCENARIO.md) | Modalità Gioco ed Editor scenario; lo scenario come file |
+| [`EDITOR-SCENARIO.md`](EDITOR-SCENARIO.md) | Modalità Gioco ed Editor scenario; lo scenario come file; verifica dei dati di partenza (Siria, Cipro, repubbliche sovietiche) |
 | [`USO-FUORI-DA-CLAUDE.md`](USO-FUORI-DA-CLAUDE.md) | Salvataggi nel browser, esportazione e importazione, modalità manuale |
 | [`ACCESSIBILITA.md`](ACCESSIBILITA.md) | Uso con la sola tastiera e con un lettore di schermo; procedura di prova a mano |
 
@@ -19,6 +19,8 @@ Guide e documentazione del progetto. Per una panoramica vedi il [README](../READ
 | [`FONTI.md`](FONTI.md) | Registro delle fonti |
 | [`STATUS-1960.md`](STATUS-1960.md) | Status politici al 31 dicembre 1960: che cosa è stato controllato, che cosa è cambiato, che cosa no |
 | [`CONFINI-MAPPA.md`](CONFINI-MAPPA.md) | Provenienza e costruzione dei confini della mappa |
+| [`DATI-INCORPORATI.md`](DATI-INCORPORATI.md) | Inventario dei dati della pagina oltre alla popolazione (Stati, capitali, alleanze, unità, valutazioni, note): quanti sono, da dove vengono, che livello hanno |
+| [`LICENZA-DATI.md`](LICENZA-DATI.md) | Valutazione di una licenza separata per i dati: che cosa si sa delle fonti, le opzioni, che cosa serve per decidere (nessuna decisione presa) |
 | [`data-notes-population-1960.md`](data-notes-population-1960.md) | Note sul file dei dati di popolazione e sulle revisioni di status |
 
 ## Nella radice del repository
