@@ -6,6 +6,30 @@ Le date sono quelle di consegna dei pacchetti di modifiche. Prima della versione
 
 ## [Non rilasciato]
 
+Solo documenti, strumenti e prove: la pagina non cambia (resta la versione 29) e nessun dato viene modificato. Lavoro sulle issue [#3](../../issues/3) (fonti e stato di verifica dei dati) e [#2](../../issues/2) (dati di partenza). Non le chiude. Il 3 novembre 2026 l'autore ha deciso due cose: le repubbliche sovietiche restano Stati separati e giocabili (opzione A) e i dati non hanno una licenza separata, resta la sola MIT (opzione A).
+
+### Aggiunto
+- **`docs/DATI-INCORPORATI.md`**: inventario di tutti i dati che la pagina porta con sé oltre alla popolazione (Stati, capitali, alleanze, colori, unità regionali, valutazioni provvisorie, note, province confinanti, vecchi identificativi, testi e valori di gioco). Per ognuno dice dove sta nel codice, quanti sono, da dove viene, che livello ha (nessuno è verificato) e dove si vede nel gioco; poi i difetti noti e le cose da fare. Le tabelle (contatori, alleanze, Stati, Stati non suddivisi, valutazioni, note) sono **generate** dalla pagina.
+- **`scripts/censimento-dati.js`** (`npm run censimento`; `npm run censimento:controlla` controlla senza scrivere): legge la pagina senza eseguirla e riscrive le tabelle generate del documento fra i marcatori `CENSIMENTO … INIZIO/FINE`. Si ferma, senza toccare il documento, se un marcatore manca, è doppio o è sconosciuto, o se la pagina non ha più una tabella che legge.
+- **`tests/dati-incorporati.test.js`** (10 prove, con `node --test`): le tabelle del documento coincidono con la pagina; lo strumento aggiorna un documento rimasto indietro e si ferma davanti ai guasti; ogni tabella di dati della pagina è nominata nel documento e il documento non nomina codici che non esistono più; i dati sono coerenti fra loro (campi, colori tutti diversi, proprietari esistenti, valutazioni da 0 a 100, note e conteggi, province confinanti reciproche, vecchi identificativi); le valutazioni provvisorie compaiono solo nella scheda; l'indice dei documenti elenca ogni documento di `docs/` e i documenti nuovi sono collegati. Provata con 27 difetti messi apposta nella pagina e nei documenti: tutti notati.
+- **`docs/LICENZA-DATI.md`**: valutazione se serva una licenza separata per i dati, con la decisione dell'autore (non è un parere legale). Dice che cosa copre oggi la MIT, che cosa si sa delle fonti dei numeri (pagine lette il 2 novembre 2026: Maddison Project Database 2023, ONU, Creative Commons), che cosa non si sa, quattro opzioni (A restare con la sola MIT, B CC BY 4.0 per i testi e le annotazioni originali, C CC0, D rimandare finché le fonti non sono chiare), le tre risposte che servirebbero per riaprire la questione e la **decisione dell'autore del 3 novembre 2026: A, restare con la sola MIT** (nessun file di licenza cambia).
+- **«Verifica dei dati di partenza»** in `docs/EDITOR-SCENARIO.md`: l'ultimo punto della #2. Siria/RAU e Cipro sono coerenti; le repubbliche sovietiche sono Stati separati e non suddivisioni dell'URSS, e la cifra di popolazione dell'URSS è quella dell'intera Unione mentre il territorio sulla mappa è la sola RSFSR. Due opzioni (A lasciare com'è; B farne suddivisioni dell'URSS) e la **decisione dell'autore del 3 novembre 2026: A, lasciare com'è**.
+
+### Modificato
+- `README.md`, `docs/README.md`, `docs/FONTI.md`, `docs/METODOLOGIA.md` e `ATTRIBUZIONI.md` rinviano ai documenti nuovi. Le frasi «non ancora censiti» e «non ancora schedati» diventano «elencati, ma non verificati»; la frase di `ATTRIBUZIONI.md` «le condizioni d'uso non sono state verificate» dice ora che cosa si è letto e che cosa no. Il README spiega quando lanciare `npm run censimento`.
+- `docs/STATUS-1960.md`: i nomi delle due ali del Pakistan dopo la versione 29 (la pagina legge i nomi dal file dei dati: «Pakistan occidentale» e «Pakistan orientale (futuro Bangladesh)»).
+- `package.json`: due comandi nuovi; la versione non cambia (0.29.0).
+- Le due decisioni dell'autore del 3 novembre 2026 sono registrate in `docs/LICENZA-DATI.md`, `docs/EDITOR-SCENARIO.md`, `docs/DATI-INCORPORATI.md`, `docs/README.md`, `README.md` («Limiti», «Guide e documenti», «Sviluppo», «Licenza») e `ATTRIBUZIONI.md`. Nessuna modifica a codice, dati o licenze.
+
+### Non cambia
+- La pagina, i dati di popolazione e di territorio, i salvataggi e le prove nel browser. `LICENSE` e `CITATION.cff`: per i dati si resta con la sola MIT (decisione dell'autore), quindi nessun file di licenza cambia.
+
+### Da sapere
+- **Difetti trovati e non corretti** (qui la pagina non cambia): la nota sull'estensione dell'URSS unisce due frasi senza punto («… da verificare Comprende l'exclave di Kaliningrad…»); la riga «Unità presenti» della scheda mostra le note storiche delle province, non unità militari, quindi l'etichetta è fuorviante. Sono elencati in `docs/DATI-INCORPORATI.md` («Difetti noti nei testi»).
+- **Capitali e alleanze** sono scritte dal prototipo e non hanno una fonte; la scheda non le segna come non verificate (solo le valutazioni portano «(provvisorio)»). Portarle in un file di dati, come la popolazione, permetterebbe di schedarle una per una: proposta in `docs/DATI-INCORPORATI.md`, non fatta.
+- I fatti sulle licenze (Maddison, ONU, Creative Commons) sono stati letti online il 2 novembre 2026 e non sono un parere legale. La licenza dei file di dati scaricabili dell'ONU non si è potuta confermare sulle pagine dell'ONU.
+- Le copie di riferimento `src/storia-alternativa-prototipo-map-overlay.html` e `src/storia-alternativa-prototipo-v23.html` non sono incluse nell'inventario: non sono la pagina attuale.
+
 ## [0.29.0] - 2026-11-01
 
 La pagina legge i dati di popolazione dal file `src/data/population_1960.json` e la scheda del territorio mostra fonte, verifica, status, perimetro e avvertenze ([#8](../../issues/8)). Comprende anche le modifiche della pull request #11, già unita: documenti allineati e prove automatiche su Ubuntu 24.04.

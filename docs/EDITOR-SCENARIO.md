@@ -50,7 +50,41 @@ La legenda sotto i pulsanti lo ricorda sempre:
 - «Salva partita» salva solo con una partita in corso; `transferLoad` non scrive nello slot di salvataggio quando importa uno scenario.
 - Le prove sono in `tests/browser/t13_editor.js`.
 
+## Verifica dei dati di partenza
+
+L'ultimo punto della #2 chiedeva di verificare la coerenza dei dati di partenza in tre casi: Siria e Repubblica Araba Unita (RAU), Cipro, repubbliche sovietiche come suddivisioni dell'URSS. La #2 parla del 1° gennaio 1960; lo scenario è fissato al **31 dicembre 1960** ([`METODOLOGIA.md`](METODOLOGIA.md)) e la verifica vale per quella data. Controllo del **2 novembre 2026** sulla pagina (versione 29), sul file dei dati di popolazione e sulle fonti già schedate in [`STATUS-1960.md`](STATUS-1960.md); non è stata consultata nessuna fonte primaria d'archivio.
+
+**In breve.** Siria e Cipro sono coerenti. Per le repubbliche sovietiche la pagina fa una scelta **diversa da quella proposta dalla #2**: il 3 novembre 2026 l'autore ha deciso di lasciarla così (opzione A).
+
+### Siria e Repubblica Araba Unita: coerente
+
+- **Dati.** Il record della Siria dice «Regione settentrionale della Repubblica Araba Unita (febbraio 1958 - 28 settembre 1961)»; il file fornito diceva «Stato sovrano» ed è stato corretto (status controllato online su fonti secondarie il 25 e 26 ottobre 2026, con cinque fonti: [`STATUS-1960.md`](STATUS-1960.md)). La nota ricorda che all'ONU la RAU era un solo membro e che la Siria riprese il proprio seggio il 13 ottobre 1961.
+- **Pagina.** La scheda della Siria mostra quello status, il perimetro («Regione siriana») e la nota.
+- **Limiti da conoscere.** L'Egitto non è sulla mappa (copre Europa e Asia), quindi la RAU non compare come Stato unico: la Siria è uno Stato giocabile a sé, con l'etichetta di alleanza «Non allineata», scritta dal prototipo e non verificata. Lo status si vede solo nella scheda: **non è mandato all'AI**, che riceve il nome dello Stato, l'alleanza e l'elenco dei territori. Chi gioca come Siria parte quindi come se guidasse uno Stato indipendente.
+
+### Cipro: coerente
+
+- **Dati.** Al 31 dicembre 1960 Cipro è uno Stato sovrano: indipendente dal 16 agosto 1960, membro dell'ONU dal 20 settembre 1960 (tre fonti secondarie). Al 1° gennaio 1960 non era ancora indipendente, quindi per Cipro la data dello scenario conta: la scheda mostra lo status del 31 dicembre.
+- **Pagina.** Sei distretti; nei dati della pagina la capitale è Nicosia e l'alleanza è «da verificare» (la pagina stessa la segna come dubbia). I due valori di popolazione discordanti (573.000 e 580.000) sono mostrati come tali. Le basi britanniche di Akrotiri e Dhekelia sono citate nella nota del file dei dati e non sono sulla mappa.
+- Niente da correggere.
+
+### Repubbliche sovietiche: non come proposto dalla #2; l'autore ha deciso di lasciarle così
+
+- **Come sono oggi.** Le 14 repubbliche (Ucraina, Bielorussia, Moldavia, Estonia, Lettonia, Lituania, Georgia, Armenia, Azerbaigian, Kazakistan, Uzbekistan, Turkmenistan, Tagikistan, Kirghizistan) sono **Stati separati e giocabili**, con l'etichetta «Patto di Varsavia» e la nota «Repubblica sovietica, non uno stato sovrano nel 1960 — da verificare per usi storici precisi». «URSS» sulla mappa è la sola Russia (RSFSR) entro i confini attuali, con 20 unità. Esiste **un solo valore di popolazione**, riferito all'intera Unione («Intero Stato, inclusa la parte asiatica»); le repubbliche non ne hanno uno proprio e la scheda lo dice.
+- **Che cosa non torna.**
+  1. La #2 le vorrebbe suddivisioni dell'URSS; la pagina le tratta come Stati.
+  2. Il territorio dello Stato «URSS» sulla mappa è la sola RSFSR, ma la cifra della sua scheda è quella dell'intera Unione: la scheda ne scrive il perimetro e la nota, ma i due non coincidono.
+  3. Fra le tre nazioni in evidenza che la richiesta all'AI cita a ogni «Avanza» ([`TURNO-E-AZIONI.md`](TURNO-E-AZIONI.md)) può capitare anche una repubblica sovietica, trattata come un paese a sé.
+  4. «Non uno stato sovrano» è una semplificazione: Ucraina e Bielorussia risultano fra i membri fondatori dell'ONU, con un seggio distinto da quello dell'URSS (ratifica depositata il 24 ottobre 1945; elenco letto il 2 novembre 2026 sulla [pagina dei membri fondatori](https://research.un.org/en/unmembers/founders) della Biblioteca Dag Hammarskjöld). Le altre dodici repubbliche non sono in quell'elenco.
+- **Opzioni.**
+  - **A. Lasciare com'è** (scelta dell'autore il 3 novembre 2026). Nessun lavoro e nessun rischio per i salvataggi; le schede e le note già dicono che non sono Stati sovrani e che non hanno un dato proprio. Resta il disallineamento fra il territorio dell'URSS e la sua cifra, descritto qui.
+  - **B. Farne suddivisioni dell'URSS**, come nella #2. Un solo Stato «URSS» con 15 unità: la cifra di popolazione tornerebbe coerente con il territorio. È una modifica grande: schede, regole di gioco («Gioca come Ucraina» sparirebbe), salvataggi esistenti da convertire, note e prove nel browser. Va fatta in una versione a parte, con le prove.
+- **Decisione dell'autore (3 novembre 2026): A, lasciare com'è.** Le repubbliche restano Stati separati e giocabili; non cambiano né la pagina né i dati, e il disallineamento fra il territorio dell'URSS e la sua cifra resta, descritto qui. La B si può riprendere in una versione a parte.
+
+### Che cosa non è stato fatto
+
+Nessuna modifica al codice, ai dati o alle prove: questa è solo la verifica. Gli status sono quelli di [`STATUS-1960.md`](STATUS-1960.md), controllati su fonti secondarie; nessuno è stato confrontato con fonti primarie.
+
 ## Ancora da fare
 
-- Verificare che i dati di partenza siano coerenti (Siria/RAU, Cipro, repubbliche sovietiche come suddivisioni dell'URSS): dipende dalle decisioni sullo status dei territori, non dal codice.
 - Salvare gli scenari anche nella memoria del browser (oggi solo come file).
