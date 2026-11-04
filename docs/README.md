@@ -20,7 +20,7 @@ Guide e documentazione del progetto. Per una panoramica vedi il [README](../READ
 | [`STATUS-1960.md`](STATUS-1960.md) | Status politici al 31 dicembre 1960: che cosa è stato controllato, che cosa è cambiato, che cosa no |
 | [`CONFINI-MAPPA.md`](CONFINI-MAPPA.md) | Provenienza e costruzione dei confini della mappa |
 | [`DATI-INCORPORATI.md`](DATI-INCORPORATI.md) | Inventario dei dati della pagina oltre alla popolazione (Stati, capitali, alleanze, unità, valutazioni, note): quanti sono, da dove vengono, che livello hanno |
-| [`LICENZA-DATI.md`](LICENZA-DATI.md) | Valutazione di una licenza separata per i dati: che cosa si sa delle fonti, le opzioni, che cosa serve per decidere (nessuna decisione presa) |
+| [`LICENZA-DATI.md`](LICENZA-DATI.md) | Una licenza separata per i dati? Che cosa si sa delle fonti, le opzioni e la decisione dell'autore (resta la sola MIT) |
 | [`data-notes-population-1960.md`](data-notes-population-1960.md) | Note sul file dei dati di popolazione e sulle revisioni di status |
 
 ## Nella radice del repository

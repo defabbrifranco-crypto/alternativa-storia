@@ -312,7 +312,7 @@ I testi di `COUNTRY_NOTES` contengono molte affermazioni storiche precise (date 
 
 ## Le repubbliche sovietiche
 
-Sulla mappa le 14 repubbliche sovietiche (Ucraina, Bielorussia, Moldavia, Estonia, Lettonia, Lituania, Georgia, Armenia, Azerbaigian, Kazakistan, Uzbekistan, Turkmenistan, Tagikistan, Kirghizistan) sono **Stati separati e giocabili**, con l'alleanza «Patto di Varsavia» e una nota «Repubblica sovietica, non uno stato sovrano nel 1960 — da verificare per usi storici precisi»; «URSS» è la sola Russia (RSFSR). Non hanno un dato di popolazione proprio. Se vadano trattate come suddivisioni dell'URSS è una scelta di progetto: vedi «Verifica dei dati di partenza» in [`EDITOR-SCENARIO.md`](EDITOR-SCENARIO.md).
+Sulla mappa le 14 repubbliche sovietiche (Ucraina, Bielorussia, Moldavia, Estonia, Lettonia, Lituania, Georgia, Armenia, Azerbaigian, Kazakistan, Uzbekistan, Turkmenistan, Tagikistan, Kirghizistan) sono **Stati separati e giocabili**, con l'alleanza «Patto di Varsavia» e una nota «Repubblica sovietica, non uno stato sovrano nel 1960 — da verificare per usi storici precisi»; «URSS» è la sola Russia (RSFSR). Non hanno un dato di popolazione proprio. Trattarle come suddivisioni dell'URSS era l'alternativa: il 3 novembre 2026 l'autore ha deciso di lasciarle Stati separati (vedi «Verifica dei dati di partenza» in [`EDITOR-SCENARIO.md`](EDITOR-SCENARIO.md)).
 
 ## Difetti noti nei testi
 
@@ -327,7 +327,6 @@ Non corretti qui (questo documento non cambia la pagina):
 2. **Segnare nella scheda anche capitale e alleanza come non verificate**: oggi lo sono solo le valutazioni, con «(provvisorio)».
 3. **Controllare le date scritte nelle note** (per esempio la Crimea nel 1954, la Cisgiordania nel 1950) e i testi di `COUNTRY_NOTES`.
 4. Correggere i due difetti di testo qui sopra.
-5. Decidere come trattare le repubbliche sovietiche ([`EDITOR-SCENARIO.md`](EDITOR-SCENARIO.md)).
 
 ## Come si tiene aggiornato
 

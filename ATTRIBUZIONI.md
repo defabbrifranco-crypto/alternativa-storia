@@ -4,7 +4,7 @@
 
 La licenza [MIT](LICENSE) copre **il codice del gioco e i testi scritti per il progetto** (pagine, script, prove, documenti). Il titolare indicato è il nome utente GitHub dell'autore.
 
-La licenza **non cambia le condizioni dei dati di terzi** che il progetto contiene: i contorni degli Stati, gli elenchi delle unità regionali e i dati di popolazione. Qui sotto, per ciascuno, è scritto cosa si sa e cosa resta da verificare. I contorni sono scritti dentro i file `.html` di `src/` e `archive/`, accanto al codice. Se serva una licenza separata per i dati è valutato in [`docs/LICENZA-DATI.md`](docs/LICENZA-DATI.md) (nessuna decisione presa).
+La licenza **non cambia le condizioni dei dati di terzi** che il progetto contiene: i contorni degli Stati, gli elenchi delle unità regionali e i dati di popolazione. Qui sotto, per ciascuno, è scritto cosa si sa e cosa resta da verificare. I contorni sono scritti dentro i file `.html` di `src/` e `archive/`, accanto al codice. Una licenza separata per i dati è stata valutata in [`docs/LICENZA-DATI.md`](docs/LICENZA-DATI.md): il 3 novembre 2026 l'autore ha scelto di restare con la sola MIT.
 
 ## Confini della mappa
 

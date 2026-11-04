@@ -18,7 +18,7 @@ Il turno è spiegato in [`docs/TURNO-E-AZIONI.md`](docs/TURNO-E-AZIONI.md). Con 
 - **La mappa è approssimata.** I contorni degli Stati derivano da un file con gli attributi di Natural Earth; le regioni sono celle calcolate da elenchi di punti, non confini storici; tre linee sono tracciate a mano senza fonte. Vedi [`docs/CONFINI-MAPPA.md`](docs/CONFINI-MAPPA.md) e [`ATTRIBUZIONI.md`](ATTRIBUZIONI.md).
 - **L'AI non è provata dal vivo dalle prove automatiche.** Queste usano risposte simulate: la qualità delle mosse delle altre nazioni e il rispetto del formato dipendono dal modello. Le mosse territoriali delle altre nazioni arrivano sulla mappa solo per le province che il motore conosce.
 - **Accessibilità.** Tastiera, struttura per i lettori di schermo, contrasto e movimento ridotto sono curati e misurati con strumenti, ma la pagina non è mai stata provata con un lettore di schermo vero ([#4](../../issues/4)). Vedi [`docs/ACCESSIBILITA.md`](docs/ACCESSIBILITA.md).
-- **Repubbliche sovietiche senza dato proprio.** Sulla mappa le 14 repubbliche sovietiche sono Stati separati, ma il file dei dati ha una sola cifra per l'intera URSS: la scheda lo dice e non ne mostra una quota. Se trattarle come Stati o come suddivisioni dell'URSS è una decisione ancora aperta: vedi «Verifica dei dati di partenza» in [`docs/EDITOR-SCENARIO.md`](docs/EDITOR-SCENARIO.md).
+- **Repubbliche sovietiche senza dato proprio.** Sulla mappa le 14 repubbliche sovietiche sono Stati separati, ma il file dei dati ha una sola cifra per l'intera URSS: la scheda lo dice e non ne mostra una quota. Restano Stati separati e giocabili (decisione dell'autore, 3 novembre 2026; l'alternativa era farne suddivisioni dell'URSS): vedi «Verifica dei dati di partenza» in [`docs/EDITOR-SCENARIO.md`](docs/EDITOR-SCENARIO.md).
 - **Solo Chromium.** La pagina è provata solo con Chromium e non è stata aperta da GitHub Pages.
 
 ## Struttura del repository
@@ -60,7 +60,7 @@ GitHub le esegue a ogni push e a ogni pull request (workflow «Prove automatiche
 | [`docs/METODOLOGIA.md`](docs/METODOLOGIA.md) e [`docs/FONTI.md`](docs/FONTI.md) | Come sono trattati i dati storici e da dove vengono |
 | [`docs/STATUS-1960.md`](docs/STATUS-1960.md) | Status politici al 31 dicembre 1960: che cosa è stato controllato |
 | [`docs/DATI-INCORPORATI.md`](docs/DATI-INCORPORATI.md) | Inventario degli altri dati della pagina: Stati, capitali, alleanze, unità, valutazioni, note |
-| [`docs/LICENZA-DATI.md`](docs/LICENZA-DATI.md) | Una licenza separata per i dati? Una valutazione, non una decisione |
+| [`docs/LICENZA-DATI.md`](docs/LICENZA-DATI.md) | Una licenza separata per i dati? Valutazione e decisione dell'autore: resta la sola MIT |
 | [`docs/CONFINI-MAPPA.md`](docs/CONFINI-MAPPA.md) | Come è costruita la mappa |
 | [`CHANGELOG.md`](CHANGELOG.md) | Registro delle modifiche, versione per versione |
 
@@ -71,13 +71,12 @@ Il lavoro prosegue per issue. Da fare, in ordine:
 1. Provare un turno con il modello vero dentro Claude e rifinire la richiesta all'AI.
 2. Provare la pagina con un lettore di schermo vero (NVDA, VoiceOver o TalkBack) e riferire l'esito ([#4](../../issues/4)).
 3. Completare con fonti gli status mancanti, sostituire le fonti secondarie dei dati e controllare capitali, alleanze e note della pagina ([#3](../../issues/3)).
-4. Due decisioni dell'autore: come trattare le repubbliche sovietiche ([`docs/EDITOR-SCENARIO.md`](docs/EDITOR-SCENARIO.md)) e se dare una licenza separata ai dati ([`docs/LICENZA-DATI.md`](docs/LICENZA-DATI.md)).
-5. ESLint e axe nelle prove automatiche; aggiungere `package-lock.json`.
-6. Rendere la mappa riproducibile (aggiungere gli script di costruzione o indicare dove scaricare i file di partenza).
+4. ESLint e axe nelle prove automatiche; aggiungere `package-lock.json`.
+5. Rendere la mappa riproducibile (aggiungere gli script di costruzione o indicare dove scaricare i file di partenza).
 
 ## Licenza
 
-Il codice e i testi del progetto sono distribuiti con licenza **MIT** (vedi [`LICENSE`](LICENSE)). La licenza non cambia le condizioni dei dati di terzi (contorni degli Stati, elenchi di unità, dati di popolazione): da dove vengono e che cosa resta da chiarire è in [`ATTRIBUZIONI.md`](ATTRIBUZIONI.md). Se serva una licenza separata per i dati è valutato in [`docs/LICENZA-DATI.md`](docs/LICENZA-DATI.md): è una valutazione, la scelta spetta all'autore.
+Il codice e i testi del progetto sono distribuiti con licenza **MIT** (vedi [`LICENSE`](LICENSE)). La licenza non cambia le condizioni dei dati di terzi (contorni degli Stati, elenchi di unità, dati di popolazione): da dove vengono e che cosa resta da chiarire è in [`ATTRIBUZIONI.md`](ATTRIBUZIONI.md). Una licenza separata per i dati è stata valutata in [`docs/LICENZA-DATI.md`](docs/LICENZA-DATI.md): il 3 novembre 2026 l'autore ha scelto di restare con la sola MIT, quindi non ce n'è una.
 
 ## Come citare
 

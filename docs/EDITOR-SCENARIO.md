@@ -54,7 +54,7 @@ La legenda sotto i pulsanti lo ricorda sempre:
 
 L'ultimo punto della #2 chiedeva di verificare la coerenza dei dati di partenza in tre casi: Siria e Repubblica Araba Unita (RAU), Cipro, repubbliche sovietiche come suddivisioni dell'URSS. La #2 parla del 1° gennaio 1960; lo scenario è fissato al **31 dicembre 1960** ([`METODOLOGIA.md`](METODOLOGIA.md)) e la verifica vale per quella data. Controllo del **2 novembre 2026** sulla pagina (versione 29), sul file dei dati di popolazione e sulle fonti già schedate in [`STATUS-1960.md`](STATUS-1960.md); non è stata consultata nessuna fonte primaria d'archivio.
 
-**In breve.** Siria e Cipro sono coerenti. Per le repubbliche sovietiche la pagina fa una scelta **diversa da quella proposta dalla #2**: serve una decisione dell'autore.
+**In breve.** Siria e Cipro sono coerenti. Per le repubbliche sovietiche la pagina fa una scelta **diversa da quella proposta dalla #2**: il 3 novembre 2026 l'autore ha deciso di lasciarla così (opzione A).
 
 ### Siria e Repubblica Araba Unita: coerente
 
@@ -68,7 +68,7 @@ L'ultimo punto della #2 chiedeva di verificare la coerenza dei dati di partenza 
 - **Pagina.** Sei distretti; nei dati della pagina la capitale è Nicosia e l'alleanza è «da verificare» (la pagina stessa la segna come dubbia). I due valori di popolazione discordanti (573.000 e 580.000) sono mostrati come tali. Le basi britanniche di Akrotiri e Dhekelia sono citate nella nota del file dei dati e non sono sulla mappa.
 - Niente da correggere.
 
-### Repubbliche sovietiche: non come proposto dalla #2, serve una decisione
+### Repubbliche sovietiche: non come proposto dalla #2; l'autore ha deciso di lasciarle così
 
 - **Come sono oggi.** Le 14 repubbliche (Ucraina, Bielorussia, Moldavia, Estonia, Lettonia, Lituania, Georgia, Armenia, Azerbaigian, Kazakistan, Uzbekistan, Turkmenistan, Tagikistan, Kirghizistan) sono **Stati separati e giocabili**, con l'etichetta «Patto di Varsavia» e la nota «Repubblica sovietica, non uno stato sovrano nel 1960 — da verificare per usi storici precisi». «URSS» sulla mappa è la sola Russia (RSFSR) entro i confini attuali, con 20 unità. Esiste **un solo valore di popolazione**, riferito all'intera Unione («Intero Stato, inclusa la parte asiatica»); le repubbliche non ne hanno uno proprio e la scheda lo dice.
 - **Che cosa non torna.**
@@ -77,9 +77,9 @@ L'ultimo punto della #2 chiedeva di verificare la coerenza dei dati di partenza 
   3. Fra le tre nazioni in evidenza che la richiesta all'AI cita a ogni «Avanza» ([`TURNO-E-AZIONI.md`](TURNO-E-AZIONI.md)) può capitare anche una repubblica sovietica, trattata come un paese a sé.
   4. «Non uno stato sovrano» è una semplificazione: Ucraina e Bielorussia risultano fra i membri fondatori dell'ONU, con un seggio distinto da quello dell'URSS (ratifica depositata il 24 ottobre 1945; elenco letto il 2 novembre 2026 sulla [pagina dei membri fondatori](https://research.un.org/en/unmembers/founders) della Biblioteca Dag Hammarskjöld). Le altre dodici repubbliche non sono in quell'elenco.
 - **Opzioni.**
-  - **A. Lasciare com'è** (consigliata per ora). Nessun lavoro e nessun rischio per i salvataggi; le schede e le note già dicono che non sono Stati sovrani e che non hanno un dato proprio. Resta il disallineamento fra il territorio dell'URSS e la sua cifra, descritto qui.
+  - **A. Lasciare com'è** (scelta dell'autore il 3 novembre 2026). Nessun lavoro e nessun rischio per i salvataggi; le schede e le note già dicono che non sono Stati sovrani e che non hanno un dato proprio. Resta il disallineamento fra il territorio dell'URSS e la sua cifra, descritto qui.
   - **B. Farne suddivisioni dell'URSS**, come nella #2. Un solo Stato «URSS» con 15 unità: la cifra di popolazione tornerebbe coerente con il territorio. È una modifica grande: schede, regole di gioco («Gioca come Ucraina» sparirebbe), salvataggi esistenti da convertire, note e prove nel browser. Va fatta in una versione a parte, con le prove.
-- **Decisione richiesta** all'autore: A oppure B. Finché non c'è, vale A.
+- **Decisione dell'autore (3 novembre 2026): A, lasciare com'è.** Le repubbliche restano Stati separati e giocabili; non cambiano né la pagina né i dati, e il disallineamento fra il territorio dell'URSS e la sua cifra resta, descritto qui. La B si può riprendere in una versione a parte.
 
 ### Che cosa non è stato fatto
 
@@ -87,5 +87,4 @@ Nessuna modifica al codice, ai dati o alle prove: questa è solo la verifica. Gl
 
 ## Ancora da fare
 
-- Decidere come trattare le repubbliche sovietiche (vedi «Verifica dei dati di partenza» sopra).
 - Salvare gli scenari anche nella memoria del browser (oggi solo come file).

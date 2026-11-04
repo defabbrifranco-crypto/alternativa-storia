@@ -1,12 +1,12 @@
-# Una licenza separata per i dati? Valutazione
+# Una licenza separata per i dati? Valutazione e decisione
 
-Questo documento **valuta** se il progetto debba avere una licenza separata per i dati, oltre alla licenza del codice. Risponde al punto «Valutare una licenza separata per codice e dati» della #3. **Non è una decisione e non è un parere legale**: chi scrive non è un avvocato. La licenza la sceglie l'autore, titolare del progetto. Le letture online citate sono del **2 novembre 2026**.
+Questo documento **valuta** se il progetto debba avere una licenza separata per i dati, oltre alla licenza del codice. Risponde al punto «Valutare una licenza separata per codice e dati» della #3. **Non è un parere legale**: chi scrive non è un avvocato. La licenza la sceglie l'autore, titolare del progetto: il **3 novembre 2026 ha scelto l'opzione A, restare con la sola MIT** (vedi «Decisione dell'autore»). Le letture online citate sono del **2 novembre 2026**.
 
 ## In breve
 
 - Oggi c'è **una sola licenza, la MIT** ([`LICENSE`](../LICENSE)), per il codice e i testi scritti per il progetto. [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md) dice che la licenza **non cambia le condizioni dei dati di terzi**.
 - Nessuna licenza può dare permessi sui **numeri di terzi** (per esempio i valori di popolazione): lo può fare solo chi li possiede. Una licenza per i dati può riguardare solo ciò che ha scritto il progetto: annotazioni, status controllati, note, organizzazione dei dati.
-- Finché le fonti dei numeri non sono chiare (di nessuna delle quattro dichiarate le condizioni sono accertate per i dati effettivamente usati), **aggiungere una licenza per i dati rischia di promettere più di quanto si possa promettere**. Il punto di partenza più prudente è lasciare le cose come stanno e rimandare la scelta a quando i numeri avranno fonti con condizioni note (opzione D sotto). La decisione spetta all'autore.
+- Finché le fonti dei numeri non sono chiare (di nessuna delle quattro dichiarate le condizioni sono accertate per i dati effettivamente usati), **aggiungere una licenza per i dati rischia di promettere più di quanto si possa promettere**. Per questo la strada più prudente è lasciare le cose come stanno, ed è quella scelta dall'autore il 3 novembre 2026 (opzione A sotto). La questione si può riaprire quando i numeri avranno fonti con condizioni note (opzione D sotto).
 
 ## Com'è oggi
 
@@ -41,7 +41,7 @@ Non sono state lette le condizioni di Statistics and Data e di JetPunk, né quel
 
 ## Le opzioni
 
-**A. Restare con la sola MIT (come oggi).** Il codice e i testi del progetto sono MIT; i dati di terzi restano esclusi per iscritto in [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md).
+**A. Restare con la sola MIT (come oggi). Scelta dell'autore il 3 novembre 2026.** Il codice e i testi del progetto sono MIT; i dati di terzi restano esclusi per iscritto in [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md).
 - A favore: nessun lavoro; semplice da capire; non promette nulla sui dati di terzi.
 - Contro: la MIT parla di software e documentazione, non di dati; chiede solo di conservare l'avviso di copyright e il testo della licenza, non di citare il progetto come fonte; chi riusa il file JSON potrebbe credere che anche i numeri siano MIT (lo si mitiga con [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md) e con l'avvertenza nella scheda del gioco).
 
@@ -57,22 +57,24 @@ Non sono state lette le condizioni di Statistics and Data e di JetPunk, né quel
 - A favore: non promette ciò che non si può promettere; la scelta si fa quando i dati sono chiari.
 - Contro: nel frattempo resta la situazione di oggi (A).
 
-## Che cosa serve all'autore per decidere
+## Che cosa servirebbe per rivedere la scelta
 
-Tre risposte che solo l'autore può dare:
+Per riaprire la questione servirebbero tre risposte che solo l'autore può dare (con la scelta A non sono necessarie):
 
 1. **Da dove vengono i due file CSV di popolazione e i punti delle unità regionali** (strumento, sito, data): dalla risposta dipende se si può dire qualcosa sulle condizioni di quei numeri.
 2. **Se vuole che chi riusa i dati o i testi debba citare il progetto.** Se sì, A non basta (la MIT non lo chiede) e B è la strada più comune; se no, A o C.
 3. **Se pensa al file dei dati come a un prodotto che altri possano riusare**, o solo come supporto al gioco. Nel secondo caso A basta.
 
-## Decisione richiesta
+## Decisione dell'autore
 
-Una lettera: **A**, **B**, **C** o **D**. Finché non c'è, vale **A**: non cambia nessun file di licenza. Se la scelta è B o C servono un file di licenza per i dati e due frasi nel README e in [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md); se è D si lavora sulle fonti.
+Il **3 novembre 2026** l'autore ha scelto **A: restare con la sola MIT**. Non cambia nessun file: [`LICENSE`](../LICENSE), [`CITATION.cff`](../CITATION.cff) e le sezioni «Licenza» restano come sono, e i dati di terzi restano esclusi per iscritto in [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md). Oggi quindi: il codice e i testi scritti per il progetto sono MIT; i numeri e gli altri dati di terzi **non** lo sono e seguono le condizioni delle loro fonti, in gran parte non accertate.
+
+La scelta si può rivedere. Conviene farlo se si sostituiscono le fonti dei numeri con fonti a licenza aperta e citata (opzione D), se qualcuno chiede di riusare il file dei dati, o se l'autore vuole che chi riusa il progetto debba citarlo (la MIT chiede solo di conservare l'avviso di copyright). In quel caso si sceglie fra B e C e servono un file di licenza per i dati e due frasi nel README e in [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md).
 
 ## Che cosa non è stato fatto
 
 - Nessun legale ha letto questo documento e nessuna parte di esso è un parere legale.
-- Non sono stati cambiati [`LICENSE`](../LICENSE), [`CITATION.cff`](../CITATION.cff) né le sezioni «Licenza» del README e di [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md), a parte un rinvio a questo documento.
+- Non sono stati cambiati [`LICENSE`](../LICENSE), [`CITATION.cff`](../CITATION.cff) né le sezioni «Licenza» del README e di [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md), a parte un rinvio a questo documento e la frase che registra la decisione.
 
 ## Pagine lette (2 novembre 2026)
 
