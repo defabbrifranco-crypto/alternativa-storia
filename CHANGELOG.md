@@ -20,6 +20,7 @@ Solo documenti, strumenti e prove: la pagina non cambia (resta la versione 29) e
 - `docs/STATUS-1960.md`: i nomi delle due ali del Pakistan dopo la versione 29 (la pagina legge i nomi dal file dei dati: «Pakistan occidentale» e «Pakistan orientale (futuro Bangladesh)»).
 - `package.json`: due comandi nuovi; la versione non cambia (0.29.0).
 - Le due decisioni dell'autore del 3 novembre 2026 sono registrate in `docs/LICENZA-DATI.md`, `docs/EDITOR-SCENARIO.md`, `docs/DATI-INCORPORATI.md`, `docs/README.md`, `README.md` («Limiti», «Guide e documenti», «Sviluppo», «Licenza») e `ATTRIBUZIONI.md`. Nessuna modifica a codice, dati o licenze.
+- `src/README.md` dice in che cosa le due copie di riferimento (la versione 23 e la `map-overlay`) e il file di `archive/` sono diversi dalla pagina attuale: data dello scenario, territori, repubbliche sovietiche, Siria e Cipro, dati di popolazione, status, turno, segnaposto (controllato sui file il 6 novembre 2026). `README.md`, `archive/README.md` e `docs/DATI-INCORPORATI.md` rinviano a quella sezione. **Le copie non sono state aggiornate** (era un'idea facoltativa rimasta dopo la pull request #13): la `map-overlay` parte dal 1 gennaio 1960 e tratta in altro modo repubbliche sovietiche, Siria e Cipro, quindi farle leggere i dati attuali, con gli status al 31 dicembre 1960, mescolerebbe due date. Il motivo è scritto nel documento.
 
 ### Non cambia
 - La pagina, i dati di popolazione e di territorio, i salvataggi e le prove nel browser. `LICENSE` e `CITATION.cff`: per i dati si resta con la sola MIT (decisione dell'autore), quindi nessun file di licenza cambia.
@@ -28,7 +29,7 @@ Solo documenti, strumenti e prove: la pagina non cambia (resta la versione 29) e
 - **Difetti trovati e non corretti** (qui la pagina non cambia): la nota sull'estensione dell'URSS unisce due frasi senza punto («… da verificare Comprende l'exclave di Kaliningrad…»); la riga «Unità presenti» della scheda mostra le note storiche delle province, non unità militari, quindi l'etichetta è fuorviante. Sono elencati in `docs/DATI-INCORPORATI.md` («Difetti noti nei testi»).
 - **Capitali e alleanze** sono scritte dal prototipo e non hanno una fonte; la scheda non le segna come non verificate (solo le valutazioni portano «(provvisorio)»). Portarle in un file di dati, come la popolazione, permetterebbe di schedarle una per una: proposta in `docs/DATI-INCORPORATI.md`, non fatta.
 - I fatti sulle licenze (Maddison, ONU, Creative Commons) sono stati letti online il 2 novembre 2026 e non sono un parere legale. La licenza dei file di dati scaricabili dell'ONU non si è potuta confermare sulle pagine dell'ONU.
-- Le copie di riferimento `src/storia-alternativa-prototipo-map-overlay.html` e `src/storia-alternativa-prototipo-v23.html` non sono incluse nell'inventario: non sono la pagina attuale.
+- Le copie di riferimento `src/storia-alternativa-prototipo-map-overlay.html` e `src/storia-alternativa-prototipo-v23.html` non sono incluse nell'inventario: non sono la pagina attuale (che cosa le distingue è in `src/README.md`).
 
 ## [0.29.0] - 2026-11-01
 
