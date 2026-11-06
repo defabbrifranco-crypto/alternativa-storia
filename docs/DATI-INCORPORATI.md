@@ -4,7 +4,7 @@ Questo documento è l'**inventario dei dati che la pagina porta con sé oltre ai
 
 > **In breve.** Nessun dato di questo elenco è stato controllato su una fonte. Capitali, alleanze, colori, valutazioni, note e suddivisioni sono **etichette e scelte del prototipo**, non storia, e vanno lette così. Dove la pagina non sa un dato scrive «da verificare». Gli unici dati controllati online sono gli status politici dei dati di popolazione ([`STATUS-1960.md`](STATUS-1960.md)).
 
-Le tabelle sono **generate**: le scrive `scripts/censimento-dati.js` leggendo la pagina, quindi i numeri e gli elenchi sono quelli della pagina vera (vedi «Come si tiene aggiornato»). Il resto del documento è scritto a mano. Censimento del **2 novembre 2026**, pagina versione 29 (`src/storia-alternativa-prototipo.html`): le copie di riferimento (la versione 23, la variante «map-overlay») e `archive/` non sono incluse.
+Le tabelle sono **generate**: le scrive `scripts/censimento-dati.js` leggendo la pagina, quindi i numeri e gli elenchi sono quelli della pagina vera (vedi «Come si tiene aggiornato»). Il resto del documento è scritto a mano. Censimento del **2 novembre 2026**, pagina versione 29 (`src/storia-alternativa-prototipo.html`): le copie di riferimento (la versione 23, la variante «map-overlay») e `archive/` non sono incluse: non sono la pagina attuale e [`../src/README.md`](../src/README.md) dice in che cosa ne sono diverse.
 
 ## Come leggere i livelli
 

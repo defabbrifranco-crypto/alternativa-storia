@@ -25,8 +25,8 @@ Il turno è spiegato in [`docs/TURNO-E-AZIONI.md`](docs/TURNO-E-AZIONI.md). Con 
 
 | Percorso | Contenuto |
 |---|---|
-| `src/` | La pagina del gioco (`storia-alternativa-prototipo.html`, un solo file HTML), due copie di riferimento (la versione 23 e la variante «map-overlay») e i dati in `src/data/` |
-| `archive/` | Versione precedente: `storia-alternativa-prototipo.html` |
+| `src/` | La pagina del gioco (`storia-alternativa-prototipo.html`, un solo file HTML), due copie di riferimento non aggiornate (la versione 23 e la variante «map-overlay»: che cosa le distingue è in [`src/README.md`](src/README.md)) e i dati in `src/data/` |
+| `archive/` | Versione precedente, non aggiornata: `storia-alternativa-prototipo.html` |
 | `docs/` | Guide e documenti: vedi l'[indice](docs/README.md) |
 | `scripts/` | Strumenti: `incorpora-popolazione.js` mette nella pagina una copia identica dei dati di popolazione; `censimento-dati.js` aggiorna le tabelle dell'inventario degli altri dati della pagina |
 | `tests/` | Prove sui dati e sulla pagina (`node --test`) e prove nel browser (`tests/browser/`) |
