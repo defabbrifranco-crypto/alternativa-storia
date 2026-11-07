@@ -78,6 +78,7 @@ Su GitHub le stesse prove partono da sole a ogni push e a ogni pull request (`.g
   per l'AI) fissano gli status al **31 dicembre 1960** controllati online (`docs/STATUS-1960.md`). Se si cambia uno
   status vanno cambiati insieme: `src/data/population_1960.json` (poi `npm run dati:incorpora`, che ricopia i dati
   nella pagina), `docs/STATUS-1960.md` e questi controlli (la prova `tests/population-pagina.test.js` si ferma se
-  dati, pagina e documento non coincidono).
+  dati, pagina e documento non coincidono). Gli elenchi delle tre copie di riferimento vanno cambiati a mano:
+  `tests/copie-di-riferimento.test.js` si ferma se una copia resta indietro.
 - Le prove dipendono dai nomi interni della pagina: rinominare una funzione esposta dal gancio richiede di
   aggiornare `harness.js` e le prove che la usano.
