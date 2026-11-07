@@ -72,7 +72,7 @@
   /* --- map --- */
   .legend { display:flex; gap:14px; font-size:0.72rem; color:var(--muted); margin-bottom:8px; flex-wrap:wrap; }
   .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:4px; }
-  .dot.nato { background:#3b6ea5; } .dot.patto { background:#a5453b; } .dot.neutro { background:#7a9b6a; } .dot.colonia { background:#b59c78; }
+  .dot.nato { background:#3b6ea5; } .dot.patto { background:#a5453b; } .dot.neutro { background:#7a9b6a; } .dot.colonia { background:#b59c78; } .dot.nd { background:#8f9598; }
   .map-wrap { position:relative; width:100%; aspect-ratio: 16/10; background:#cfe3ee; border-radius:10px;
     overflow:hidden; touch-action:none; border:1px solid var(--border); }
   #euroSvg { width:100%; height:100%; display:block; }
@@ -130,13 +130,14 @@
     </div>
 
     <div class="panel" id="fixedScenarioPanel">
-      <h2 class="section-title">Scenario fisso — Europa, 1 gennaio 1960</h2>
+      <h2 class="section-title">Scenario fisso — Europa, 31 dicembre 1960</h2>
       <p class="sub">Tocca un territorio sulla mappa per vederne i dettagli, oppure scegli uno Stato come nazione giocabile.</p>
       <div class="legend">
         <span><i class="dot nato"></i>NATO e alleati</span>
         <span><i class="dot patto"></i>Patto di Varsavia e blocco comunista</span>
         <span><i class="dot neutro"></i>Non allineata</span>
         <span><i class="dot colonia"></i>Colonie e protettorati</span>
+        <span><i class="dot nd"></i>Alleanza da verificare</span>
       </div>
       <div class="map-wrap">
         <div class="map-controls">
@@ -618,7 +619,7 @@ window.MAP_SVG = {
     QAT: { name:"Qatar", capital:"Doha", alliance:"Protettorato britannico", color:"#b1a680", playable:true },
     BHR: { name:"Bahrein", capital:"Manama", alliance:"Protettorato britannico", color:"#b5a77c", playable:true },
     KWT: { name:"Kuwait", capital:"Kuwait City", alliance:"Protettorato britannico", color:"#aaa07a", playable:true },
-    CYP: { name:"Cipro", capital:"Nicosia", alliance:"Colonia britannica", color:"#bcac82", playable:false, sovereign:false, parentCountry:"GBR" },
+    CYP: { name:"Cipro", capital:"Nicosia", alliance:"da verificare", color:"#aeb2b4", playable:true },
     AFG: { name:"Afghanistan", capital:"Kabul", alliance:"Non allineata", color:"#7f8156", playable:true },
     PAK: { name:"Pakistan", capital:"Rawalpindi (capitale provvisoria dal 1959 — da verificare)", alliance:"SEATO e CENTO", color:"#3c6f9b", playable:true },
     IND: { name:"India", capital:"Nuova Delhi", alliance:"Non allineata", color:"#7ba350", playable:true },
@@ -648,13 +649,15 @@ window.MAP_SVG = {
     TLS: { name:"Timor Portoghese", capital:"Dili", alliance:"Colonia portoghese", color:"#ae9368", playable:true },
   };
 
-  // NOTE on data quality: nothing below has been checked against sources yet
-  // (docs/FONTI.md: no entry is verified). Capitals and alliance memberships are
-  // entered as historical data for 1 Jan 1960; where the capital is unknown it is
-  // "da verificare". Population figures are inserted as provided in the CSV files
-  // (see the population sections below) and stay null where the files have no row.
-  // infrastructure / stability / strategicValue are provisional illustrative
-  // ratings for the demo, not historical statistics.
+  // NOTE on data quality: capitals and alliance labels are this prototype's own simplified labels, not
+  // verified data (docs/FONTI.md: no entry is verified); where one could not be checked it reads
+  // "da verificare". Population figures are inserted as provided in the CSV files (see the population
+  // sections below) and stay null where the files have no row; the political status in those lists comes from
+  // src/data/population_1960.json, read at 31 December 1960 and checked online (docs/STATUS-1960.md).
+  // infrastructure / stability / strategicValue are provisional illustrative ratings for the demo,
+  // not historical statistics.
+  // Start date: 31 December 1960. This copy was first written for 1 January 1960; its date was later
+  // moved to 31 December (Cyprus and the statuses in the population lists were updated, see CHANGELOG.md).
   let provinces = {
     FRA_MAIN: mkProv("Francia","FRA","Parigi",58,70,75),
     BEL_MAIN: mkProv("Belgio","BEL","Bruxelles",60,65,55),
@@ -715,7 +718,7 @@ window.MAP_SVG = {
     QAT_MAIN: mkProv("Qatar","QAT","Doha",35,50,40, ["Protettorato britannico nel 1960 — da verificare per usi storici precisi"]),
     BHR_MAIN: mkProv("Bahrein","BHR","Manama",35,50,40, ["Protettorato britannico nel 1960 — da verificare per usi storici precisi"]),
     KWT_MAIN: mkProv("Kuwait","KWT","Kuwait City",45,60,60, ["Protettorato britannico fino al 1961"]),
-    CYP_MAIN: mkProv("Cipro","GBR","Nicosia",45,50,55, ["Colonia britannica il 1 gennaio 1960; indipendenza il 16 agosto 1960"]),
+    CYP_MAIN: mkProv("Cipro","CYP","Nicosia",45,50,55, ["Stato sovrano dal 16 agosto 1960 (membro dell'ONU dal 20 settembre 1960); il Regno Unito conserva le basi sovrane di Akrotiri e Dhekelia"]),
     AFG_MAIN: mkProv("Afghanistan","AFG","Kabul",20,50,50),
     PAK_W: mkProv("Pakistan Occidentale","PAK","Lahore",35,50,65),
     PAK_E: mkProv("Pakistan Orientale (attuale Bangladesh)","PAK","Dacca",30,45,45),
@@ -813,7 +816,7 @@ window.MAP_SVG = {
     { entita: "India", status: "Stato sovrano", code: "IND", n: 450548000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Indonesia", status: "Stato sovrano", code: "IDN", n: 87793000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Giappone", status: "Stato sovrano", code: "JPN", n: 93605000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Pakistan", status: "Stato sovrano", code: "PAK_W", n: 45928000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
+    { entita: "Pakistan", status: "Ala occidentale del Pakistan (Stato sovrano)", code: "PAK_W", n: 45928000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Bangladesh", status: "Pakistan Orientale (non Stato sovrano)", code: "PAK_E", n: 50980000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Filippine", status: "Stato sovrano", code: "PHL", n: 27210000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Vietnam del Nord", status: "Stato sovrano", code: "VNN", n: 16600000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
@@ -828,8 +831,8 @@ window.MAP_SVG = {
     { entita: "Afghanistan", status: "Stato sovrano", code: "AFG", n: 8622000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Arabia Saudita", status: "Stato sovrano", code: "SAU", n: 4087000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Yemen", status: "Stato sovrano", code: "YEM", n: 5168000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico.", part: true },
-    { entita: "Yemen del Sud", status: "Stato sovrano", code: "YEM", n: 1000000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico.", part: true },
-    { entita: "Siria", status: "Stato sovrano", code: "SYR", n: 4574000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
+    { entita: "Yemen del Sud", status: "Colonia di Aden e protettorati britannici (indipendenza il 30 novembre 1967)", code: "YEM", n: 1000000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico.", part: true },
+    { entita: "Siria", status: "Regione settentrionale della Repubblica Araba Unita (febbraio 1958 - 28 settembre 1961)", code: "SYR", n: 4574000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Giordania", status: "Stato sovrano", code: "JOR", n: 933000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Israele", status: "Stato sovrano", code: "ISR", n: 2114000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Libano", status: "Stato sovrano", code: "LBN", n: 1900000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
@@ -840,19 +843,19 @@ window.MAP_SVG = {
     { entita: "Cambogia", status: "Stato sovrano", code: "KHM", n: 5728000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Laos", status: "Stato sovrano", code: "LAO", n: 2056000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Mongolia", status: "Stato sovrano", code: "MNG", n: 982000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Bhutan", status: "Stato sovrano", code: "BTN", n: 224000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Kuwait", status: "Stato sovrano", code: "KWT", n: 321000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
+    { entita: "Bhutan", status: "Stato sovrano, con la politica estera guidata dall'India (trattato del 1949)", code: "BTN", n: 224000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
+    { entita: "Kuwait", status: "Protettorato britannico (indipendente dal 19 giugno 1961)", code: "KWT", n: 321000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Qatar", status: "Protettorato britannico", code: "QAT", n: 48000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Bahrein", status: "Protettorato britannico", code: "BHR", n: 162000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Emirati della Costa dei Pirati (futuri EAU)", status: "Protettorati britannici", code: "ARE", n: 90000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Oman", status: "Stato sovrano", code: "OMN", n: 552000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
+    { entita: "Oman", status: "Stato sovrano (sotto forte influenza britannica)", code: "OMN", n: 552000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Cipro", status: "Stato sovrano", code: "CYP", n: 573000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico.", prevNote: "Il file precedente indicava 580.000 (fonte: ONU retrospettiva tramite JetPunk; nota: Incluso per convenzione politica)" },
     { entita: "Brunei", status: "Protettorato britannico", code: "BRN", n: 83000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Hong Kong", status: "Territorio britannico", code: "HKG", n: 3076000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Macao", status: "Territorio portoghese", code: "MAC", n: 169000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Taiwan (Repubblica di Cina)", status: "Stato de facto", code: "TWN", n: 10920000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Timor portoghese", status: "Territorio portoghese", code: "TLS", n: 517000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
-    { entita: "Maldive", status: "Sultanato indipendente", code: null, n: 90000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
+    { entita: "Maldive", status: "Stato protetto britannico con autogoverno interno (fino al 1965)", code: null, n: 90000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
     { entita: "Palestina/Gaza e Cisgiordania", status: "Territori non sovrani", code: null, n: 1200000, nota: "Stima storica retrospettiva; non mescolare entità sovrane e territori senza leggere lo status politico." },
   ];
   POPULATION_1960_B.forEach(r => {
@@ -889,12 +892,12 @@ window.MAP_SVG = {
   }
 
   // Keep demographic records attached to their historical region even when
-  // its legal owner is a union state (USSR, UAR, or the United Kingdom).
+  // its legal owner is a union state (USSR or UAR).
   const regionalPopulationProvinces = {
     UKR: 'UKR_MAIN', BLR: 'BLR_MAIN', MDA: 'MDA_MAIN', EST: 'EST_MAIN',
     LVA: 'LVA_MAIN', LTU: 'LTU_MAIN', GEO: 'GEO_MAIN', ARM: 'ARM_MAIN',
     AZE: 'AZE_MAIN', KAZ: 'KAZ_MAIN', UZB: 'UZB_MAIN', TKM: 'TKM_MAIN',
-    TJK: 'TJK_MAIN', KGZ: 'KGZ_MAIN', SYR: 'SYR_MAIN', CYP: 'CYP_MAIN'
+    TJK: 'TJK_MAIN', KGZ: 'KGZ_MAIN', SYR: 'SYR_MAIN'
   };
   for (const [countryId, provinceId] of Object.entries(regionalPopulationProvinces)) {
     const region = countries[countryId], province = provinces[provinceId];
@@ -912,7 +915,7 @@ window.MAP_SVG = {
   let gameMode = null;          // null | 'fixed' (map scenario) | 'free'
   let gameOver = false;
 
-  // Snapshot of the starting (1 Jan 1960) territorial state, used by "Nuova partita".
+  // Snapshot of the starting (31 Dec 1960) territorial state, used by "Nuova partita".
   const initialTerritory = {};
   for (const id in provinces) initialTerritory[id] = { owner: provinces[id].owner, controller: provinces[id].controller };
 
@@ -1066,7 +1069,7 @@ window.MAP_SVG = {
     el('pp-controller').textContent = cc ? cc.name : p.controller;
     el('pp-capital').textContent = p.capital || 'da verificare';
     // Population: the province's own figure if it has one (a state made of a single province);
-    // otherwise only the figure of the state it belonged to on 1 Jan 1960, with source and note.
+    // otherwise only the figure of the state it belonged to on 31 Dec 1960, with source and note.
     const fmtPop = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     const homeC = countries[initialTerritory[id] ? initialTerritory[id].owner : p.owner];
     el('pp-population').textContent = (p.population === null || p.population === undefined) ? 'da verificare' : fmtPop(p.population);
@@ -1074,12 +1077,12 @@ window.MAP_SVG = {
     const stateFigure = p.population == null && homeC && (homeC.population != null || (parts && parts.length));
     el('pp-statepop-row').classList.toggle('hidden', !stateFigure);
     if (stateFigure) el('pp-statepop').textContent = (parts && parts.length)
-      ? parts.map(x => x.entita + ' (' + x.status + '): ' + fmtPop(x.n)).join(' · ')
+      ? parts.map(x => x.entita + ' — ' + x.status + ': ' + fmtPop(x.n)).join(' · ')
       : homeC.name + ': ' + fmtPop(homeC.population);
     // source, political status and note of the figure shown: the province's own, otherwise its state's
     const src = (p.populationStatus || p.populationNote || p.populationSource) ? p : homeC;
     const popInfo = src ? [src.populationSource ? 'Fonte: ' + src.populationSource : '',
-                           src.populationStatus ? 'Status nel 1960: ' + src.populationStatus : '',
+                           src.populationStatus ? 'Status al 31 dicembre 1960: ' + src.populationStatus : '',
                            src.populationNote || ''].filter(Boolean).join(' · ') : '';
     el('pp-popnote').textContent = popInfo;
     el('pp-popnote').classList.toggle('hidden', !popInfo);
@@ -1601,7 +1604,7 @@ window.MAP_SVG = {
     gameSession += 1; diplomacySession += 1;
     state = freshState();
     state.nation = countries[countryId].name;
-    state.year = '1 gennaio 1960';
+    state.year = '31 dicembre 1960';
     state.premise = COLD_WAR_PREMISE;
     mapGameStarted = true; gameOver = false;
     renderMapAnnotations();

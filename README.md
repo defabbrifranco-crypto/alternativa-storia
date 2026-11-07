@@ -25,8 +25,8 @@ Il turno è spiegato in [`docs/TURNO-E-AZIONI.md`](docs/TURNO-E-AZIONI.md). Con 
 
 | Percorso | Contenuto |
 |---|---|
-| `src/` | La pagina del gioco (`storia-alternativa-prototipo.html`, un solo file HTML), due copie di riferimento non aggiornate (la versione 23 e la variante «map-overlay»: che cosa le distingue è in [`src/README.md`](src/README.md)) e i dati in `src/data/` |
-| `archive/` | Versione precedente, non aggiornata: `storia-alternativa-prototipo.html` |
+| `src/` | La pagina del gioco (`storia-alternativa-prototipo.html`, un solo file HTML), due copie di riferimento (la versione 23 e la variante «map-overlay»: partono dal 31 dicembre 1960 come la pagina, ma non sono la pagina attuale; che cosa le distingue è in [`src/README.md`](src/README.md)) e i dati in `src/data/` |
+| `archive/` | Versione precedente, conservata per riferimento (non è la pagina attuale): `storia-alternativa-prototipo.html` |
 | `docs/` | Guide e documenti: vedi l'[indice](docs/README.md) |
 | `scripts/` | Strumenti: `incorpora-popolazione.js` mette nella pagina una copia identica dei dati di popolazione; `censimento-dati.js` aggiorna le tabelle dell'inventario degli altri dati della pagina |
 | `tests/` | Prove sui dati e sulla pagina (`node --test`) e prove nel browser (`tests/browser/`) |
@@ -45,7 +45,7 @@ Prove automatiche (serve Node 20 o più recente):
 
 GitHub le esegue a ogni push e a ogni pull request (workflow «Prove automatiche»).
 
-**Se cambi i dati di popolazione.** I numeri, le fonti e gli status stanno in un solo posto, `src/data/population_1960.json`. La pagina deve funzionare anche aperta da sola, quindi ne porta dentro una copia identica: dopo ogni modifica al file dei dati lancia `npm run dati:incorpora` (ricopia i dati nella pagina). Se ti dimentichi, `node --test` si ferma e lo dice; `npm run dati:controlla` fa solo il controllo, senza scrivere.
+**Se cambi i dati di popolazione.** I numeri, le fonti e gli status stanno in un solo posto, `src/data/population_1960.json`. La pagina deve funzionare anche aperta da sola, quindi ne porta dentro una copia identica: dopo ogni modifica al file dei dati lancia `npm run dati:incorpora` (ricopia i dati nella pagina). Se ti dimentichi, `node --test` si ferma e lo dice; `npm run dati:controlla` fa solo il controllo, senza scrivere. Le tre copie di riferimento (`src/` e `archive/`) hanno invece gli elenchi di popolazione scritti nella pagina: se cambia un valore o uno status, vanno cambiati a mano anche lì; `node --test` si ferma e dice quale riga è rimasta indietro.
 
 **Se cambi Stati, capitali, alleanze, unità regionali, valutazioni o note nella pagina.** [`docs/DATI-INCORPORATI.md`](docs/DATI-INCORPORATI.md) contiene tabelle generate leggendo la pagina: dopo la modifica lancia `npm run censimento` (le riscrive). Se ti dimentichi, `node --test` si ferma e lo dice; `npm run censimento:controlla` fa solo il controllo, senza scrivere.
 
