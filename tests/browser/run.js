@@ -21,6 +21,7 @@ const SUITES = [
   ['t14_a11y.js', 'Accessibilità: punti di riferimento, tastiera sulla mappa, elenco dei territori, contrasto, movimento ridotto'],
   ['t15_turni.js', 'Turni: azioni in attesa («Invia»), «Avanza», mosse delle altre nazioni, errori, salvataggio'],
   ['t16_popolazione.js', 'Popolazione 1960: dati letti dal file, scheda con fonte, perimetro, verifica e avvertenze, guasti messi apposta'],
+  ['t17_stati.js', 'Stati: dati letti dal file, capitale e alleanza «non verificata» nella scheda e nella legenda, guasti messi apposta'],
 ];
 if (process.argv.includes('--perf')) SUITES.push(['t6_perf.js', 'Prestazioni (soglie dipendenti dalla macchina)']);
 

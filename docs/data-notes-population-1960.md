@@ -44,7 +44,7 @@ I flag nuovi: `status_corretto` (lo status del file era sbagliato per la data), 
 
 La pagina `src/storia-alternativa-prototipo.html` **legge questo file**. Deve funzionare anche aperta da sola (da file, da GitHub Pages, dentro Claude), quindi non lo scarica: ne porta dentro una **copia identica**, in un blocco `<script type="application/json" id="population-1960-data">` fra i marcatori `DATI-POPOLAZIONE-INIZIO` e `DATI-POPOLAZIONE-FINE`. Nel codice non ci sono più elenchi di numeri scritti a mano (`POPULATION_1960` e `POPULATION_1960_B` sono spariti con la versione 29).
 
-- **Dopo ogni modifica al file dei dati**: `npm run dati:incorpora` (cioè `node scripts/incorpora-popolazione.js`) ricopia i dati nella pagina. `npm run dati:controlla` controlla soltanto, senza scrivere.
+- **Dopo ogni modifica al file dei dati**: `npm run dati:incorpora` ricopia i dati nella pagina (è `node scripts/incorpora-popolazione.js` seguito da `node scripts/incorpora-stati.js`, che fa lo stesso per i dati degli Stati). `npm run dati:controlla` controlla soltanto, senza scrivere.
 - **Se ci si dimentica**: `node --test` si ferma («La copia dei dati nella pagina è diversa da src/data/population_1960.json») e dice come rimediare; lo stesso fa GitHub.
 - Lo strumento rifiuta un file dei dati che non è JSON o che contiene «</script» o «<!--» (non potrebbe stare dentro la pagina).
 - Se il blocco manca o è rotto, la pagina si apre lo stesso: la scheda scrive «I dati di popolazione non sono stati letti (…)», nessun valore è mostrato e l'errore va nella console del browser.

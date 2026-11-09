@@ -1,6 +1,6 @@
 {
   "name": "alternativa-storia",
-  "version": "0.29.0",
+  "version": "0.30.0",
   "private": true,
   "description": "Prototipo di gioco di storia alternativa con mappa interattiva",
   "scripts": {
@@ -8,8 +8,8 @@
     "test:data": "node --test",
     "test:browser": "node tests/browser/run.js",
     "lint": "node --test tests/lint.test.js",
-    "dati:incorpora": "node scripts/incorpora-popolazione.js",
-    "dati:controlla": "node scripts/incorpora-popolazione.js --check",
+    "dati:incorpora": "node scripts/incorpora-popolazione.js && node scripts/incorpora-stati.js",
+    "dati:controlla": "node scripts/incorpora-popolazione.js --check && node scripts/incorpora-stati.js --check",
     "censimento": "node scripts/censimento-dati.js",
     "censimento:controlla": "node scripts/censimento-dati.js --check"
   },

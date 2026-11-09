@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Stati del prototipo",
+  "type": "object",
+  "required": ["meta", "states"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["reference_date", "global_warning", "verification_policy", "sources"],
+      "properties": {
+        "title": {"type": "string"},
+        "reference_date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+        "global_warning": {"type": "string", "minLength": 1},
+        "verification_policy": {"type": "string", "minLength": 1},
+        "origin": {"type": "string"},
+        "sources": {"type": "object", "additionalProperties": {"type": "string"}}
+      }
+    },
+    "states": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "capital", "capital_verified", "capital_source_id", "alliance", "alliance_verified", "alliance_source_id", "color", "playable", "flags"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[A-Z]{3,4}$"},
+          "name": {"type": "string", "minLength": 1},
+          "capital": {"type": "string", "minLength": 1},
+          "capital_verified": {"type": "boolean"},
+          "capital_source_id": {"type": "string"},
+          "alliance": {"type": "string", "minLength": 1},
+          "alliance_verified": {"type": "boolean"},
+          "alliance_source_id": {"type": "string"},
+          "color": {"type": "string", "pattern": "^#[0-9a-f]{6}$"},
+          "playable": {"type": "boolean"},
+          "flags": {"type": "array", "items": {"enum": ["capitale_da_verificare", "alleanza_da_verificare"]}, "uniqueItems": true},
+          "note": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}
