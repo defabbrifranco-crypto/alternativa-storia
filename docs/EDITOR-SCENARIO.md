@@ -60,12 +60,12 @@ L'ultimo punto della #2 chiedeva di verificare la coerenza dei dati di partenza 
 
 - **Dati.** Il record della Siria dice «Regione settentrionale della Repubblica Araba Unita (febbraio 1958 - 28 settembre 1961)»; il file fornito diceva «Stato sovrano» ed è stato corretto (status controllato online su fonti secondarie il 25 e 26 ottobre 2026, con cinque fonti: [`STATUS-1960.md`](STATUS-1960.md)). La nota ricorda che all'ONU la RAU era un solo membro e che la Siria riprese il proprio seggio il 13 ottobre 1961.
 - **Pagina.** La scheda della Siria mostra quello status, il perimetro («Regione siriana») e la nota.
-- **Limiti da conoscere.** L'Egitto non è sulla mappa (copre Europa e Asia), quindi la RAU non compare come Stato unico: la Siria è uno Stato giocabile a sé, con l'etichetta di alleanza «Non allineata», scritta dal prototipo e non verificata. Lo status si vede solo nella scheda: **non è mandato all'AI**, che riceve il nome dello Stato, l'alleanza e l'elenco dei territori. Chi gioca come Siria parte quindi come se guidasse uno Stato indipendente.
+- **Limiti da conoscere.** L'Egitto non è sulla mappa (copre Europa e Asia), quindi la RAU non compare come Stato unico: la Siria è uno Stato giocabile a sé, con l'etichetta di alleanza «Non allineata», scritta dal prototipo e non verificata (la scheda del territorio la segna «non verificata»). Lo status si vede solo nella scheda: **non è mandato all'AI**, che riceve il nome dello Stato, l'alleanza e l'elenco dei territori. Chi gioca come Siria parte quindi come se guidasse uno Stato indipendente.
 
 ### Cipro: coerente
 
 - **Dati.** Al 31 dicembre 1960 Cipro è uno Stato sovrano: indipendente dal 16 agosto 1960, membro dell'ONU dal 20 settembre 1960 (tre fonti secondarie). Al 1° gennaio 1960 non era ancora indipendente, quindi per Cipro la data dello scenario conta: la scheda mostra lo status del 31 dicembre.
-- **Pagina.** Sei distretti; nei dati della pagina la capitale è Nicosia e l'alleanza è «da verificare» (la pagina stessa la segna come dubbia). I due valori di popolazione discordanti (573.000 e 580.000) sono mostrati come tali. Le basi britanniche di Akrotiri e Dhekelia sono citate nella nota del file dei dati e non sono sulla mappa.
+- **Pagina.** Sei distretti; nei dati della pagina la capitale è Nicosia, segnata «non verificata» come tutte le altre, e l'alleanza è «da verificare» (la pagina stessa la segna come dubbia). I due valori di popolazione discordanti (573.000 e 580.000) sono mostrati come tali. Le basi britanniche di Akrotiri e Dhekelia sono citate nella nota del file dei dati e non sono sulla mappa.
 - Niente da correggere.
 
 ### Repubbliche sovietiche: non come proposto dalla #2; l'autore ha deciso di lasciarle così

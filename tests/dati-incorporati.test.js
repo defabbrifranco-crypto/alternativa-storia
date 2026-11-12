@@ -32,7 +32,7 @@ test('le tabelle di docs/DATI-INCORPORATI.md coincidono con quelle ricavate dall
 });
 
 test('lo strumento di censimento aggiorna un documento rimasto indietro e poi lo trova a posto', t => {
-  const stantio = doc.replace('| Stati | `countries` | 83 |', '| Stati | `countries` | 84 |');
+  const stantio = doc.replace('| Stati | `states_1960.json` | 83 |', '| Stati | `states_1960.json` | 84 |');
   assert.notStrictEqual(stantio, doc, 'la prova non ha trovato la riga da guastare: il formato della tabella è cambiato');
   const { d, env } = copie(t, { docTesto: stantio });
   const prima = lancia(['--check'], env);
@@ -69,7 +69,8 @@ test('lo strumento di censimento si ferma se un marcatore manca, è doppio o è 
 });
 
 test('lo strumento di censimento si ferma se la pagina non ha più una tabella che legge', t => {
-  for (const marca of ['const ADJ = ', 'let countries = ', 'const REGION_UNITS = ', 'const SINGLE_NOTES = ']) {
+  // Gli Stati non sono più fra queste: dalla versione 30 vengono dal blocco dei dati (prova qui sotto), non da «let countries = ».
+  for (const marca of ['const ADJ = ', 'const REGION_UNITS = ', 'const SINGLE_NOTES = ']) {
     const guasta = pagina.replace(marca, marca.replace(' = ', '_Z = '));
     assert.notStrictEqual(guasta, pagina);
     const { env } = copie(t, { paginaTesto: guasta });
@@ -85,6 +86,36 @@ test('lo strumento di censimento si ferma se la pagina non ha più una tabella c
   assert.match(r.stderr, /più di una volta/);
 });
 
+// Il blocco dei dati degli Stati: la copia di src/data/states_1960.json che la pagina porta con sé (versione 30). Il censimento legge da lì.
+const APERTURA_STATI = '\n<script type="application/json" id="states-1960-data">\n';
+
+test('lo strumento di censimento legge gli Stati dalla copia nella pagina, che è quella del file', () => {
+  const file = JSON.parse(read('src/data/states_1960.json'));
+  assert.deepStrictEqual(Object.keys(dati.stati), file.states.map(s => s.id), 'gli Stati letti dalla pagina non sono quelli del file, o non sono nello stesso ordine');
+  for (const s of file.states) assert.deepStrictEqual(dati.stati[s.id], s, `${s.id}: il record letto dalla pagina è diverso da quello del file`);
+});
+
+test('lo strumento di censimento si ferma se il blocco dei dati degli Stati manca, è doppio o è rotto', t => {
+  const a = pagina.indexOf(APERTURA_STATI);
+  assert.ok(a >= 0, 'la prova non trova il blocco degli Stati nella pagina');
+  const b = pagina.indexOf('</script>', a);
+  const dentro = pagina.slice(a + APERTURA_STATI.length, b);
+  const blocco = pagina.slice(a, b + '</script>'.length);
+  const casi = [
+    ['blocco assente', pagina.replace(APERTURA_STATI, APERTURA_STATI.replace('states-1960-data', 'states-1960-altro')), /manca il blocco dei dati degli Stati/],
+    ['blocco doppio', pagina.replace(blocco, blocco + blocco), /compare più di una volta/],
+    ['blocco che non è JSON', pagina.replace(APERTURA_STATI + dentro, APERTURA_STATI + 'non JSON ' + dentro), /non è un JSON valido/],
+    ["blocco senza l'elenco «states»", pagina.replace(APERTURA_STATI + dentro, APERTURA_STATI + dentro.replace('"states"', '"stati"')), /manca l'elenco «states»/],
+  ];
+  for (const [che, paginaTesto, atteso] of casi) {
+    assert.notStrictEqual(paginaTesto, pagina, `${che}: la prova non ha guastato nulla`);
+    const { env } = copie(t, { paginaTesto });
+    const r = lancia(['--check'], env);
+    assert.strictEqual(r.status, 1, che);
+    assert.match(r.stderr, atteso, che);
+  }
+});
+
 test('ogni tabella di dati della pagina è nominata nel documento, e il documento non nomina tabelle che non esistono più', () => {
   // Se si aggiunge una tabella di dati alla pagina: descriverla in docs/DATI-INCORPORATI.md e aggiungerla qui.
   const TABELLE = ['countries', 'provinces', 'REGION_UNITS', 'REGION_TYPES', 'REGION_METHODS', 'REGION_KINDS', 'TERRITORY_NOTES', 'UNIT_NOTES',
@@ -94,7 +125,9 @@ test('ogni tabella di dati della pagina è nominata nel documento, e il document
     assert.ok(new RegExp(`\\b(const|let) ${nome} =`).test(pagina), `nella pagina non c'è più «${nome}»: aggiornare il documento e l'elenco di questa prova`);
     assert.ok(doc.includes('`' + nome + '`'), `docs/DATI-INCORPORATI.md non nomina «${nome}»`);
   }
-  assert.ok(doc.includes('`mkProv`'));
+  // la funzione che costruisce le province degli Stati senza suddivisioni (la capitale viene dal file degli Stati)
+  assert.ok(/function mkMain\(/.test(pagina), 'nella pagina non c\'è più «mkMain»: aggiornare il documento e questa prova');
+  assert.ok(doc.includes('`mkMain`'), 'docs/DATI-INCORPORATI.md non nomina «mkMain»');
   // ogni nome in MAIUSCOLO fra apici (tabelle, codici di Stati e di unità) deve esistere ancora nella pagina
   const nomi = new Set([...doc.matchAll(/`([A-Z][A-Z0-9_]{2,})`/g)].map(m => m[1]));
   assert.ok(nomi.size > 100, 'il documento nomina pochi codici: il controllo non sta guardando nei posti giusti');

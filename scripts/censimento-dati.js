@@ -10,8 +10,8 @@
 //   node scripts/censimento-dati.js           aggiorna le tabelle nel documento
 //   node scripts/censimento-dati.js --check   non scrive: esce con errore se le tabelle del documento sono diverse da quelle della pagina
 //
-// Si lancia ogni volta che si cambiano nella pagina Stati, capitali, alleanze, unità regionali, valutazioni o note
-// (npm run censimento). Se ci si dimentica, tests/dati-incorporati.test.js si ferma e lo dice.
+// Si lancia ogni volta che si cambiano il file degli Stati (src/data/states_1960.json: Stati, capitali, alleanze, verifica) o, nella pagina,
+// unità regionali, valutazioni o note (npm run censimento). Se ci si dimentica, tests/dati-incorporati.test.js si ferma e lo dice.
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
@@ -48,18 +48,38 @@ function letterale(src, marca) {
 // Valuta un letterale scritto nel codice della pagina (è codice del progetto, già eseguito dalle prove; il limite di tempo evita solo i cicli).
 const valuta = (testo, contesto) => vm.runInNewContext('(' + testo + ')', contesto || {}, { timeout: 2000 });
 
-// Come la pagina costruisce le province degli Stati senza suddivisioni (la sua funzione mkProv).
-const mkProv = (name, owner, capital, infrastructure, stability, strategicValue, units) =>
-  ({ name, owner, capital, infrastructure, stability, strategicValue, units: units || [] });
+// Gli Stati: dalla versione 30 non sono più un elenco scritto nel codice, ma la copia del file src/data/states_1960.json che la pagina porta
+// con sé in un blocco <script type="application/json" id="states-1960-data">. Restituisce un oggetto «identificativo → record del file»
+// (nome, capitale, alleanza, colore, giocabilità, e per capitale e alleanza se sono verificate), nell'ordine del file.
+function leggiStati(src) {
+  // L'apertura è cercata a inizio riga: nel codice della pagina un commento nomina lo stesso blocco, ma non a inizio riga.
+  const apertura = '\n<script type="application/json" id="states-1960-data">\n';
+  const a = src.indexOf(apertura);
+  if (a < 0) throw new Error('nella pagina manca il blocco dei dati degli Stati («states-1960-data»)');
+  if (src.indexOf(apertura, a + 1) >= 0) throw new Error('nella pagina il blocco dei dati degli Stati compare più di una volta');
+  const b = src.indexOf('</script>', a);
+  if (b < 0) throw new Error('nella pagina il blocco dei dati degli Stati non finisce');
+  let blocco;
+  try { blocco = JSON.parse(src.slice(a + apertura.length, b)); }
+  catch (e) { throw new Error('nella pagina il blocco dei dati degli Stati non è un JSON valido: ' + e.message); }
+  if (!blocco || !Array.isArray(blocco.states)) throw new Error('nel blocco dei dati degli Stati manca l\'elenco «states»');
+  const stati = {};
+  for (const r of blocco.states) stati[r.id] = r;
+  return stati;
+}
 
 function leggiPagina(src) {
   const prendi = (marca, contesto) => {
     try { return valuta(letterale(src, marca), contesto); }
     catch (e) { throw new Error(e.message.startsWith('nella pagina') || e.message.startsWith('dopo') || e.message.startsWith('il letterale') ? e.message : `«${marca}»: ${e.message}`); }
   };
+  const stati = leggiStati(src);
+  // Come la pagina costruisce le province degli Stati senza suddivisioni (la sua funzione mkMain): la capitale è quella dello Stato.
+  const mkMain = (name, owner, infrastructure, stability, strategicValue, units) =>
+    ({ name, owner, capital: stati[owner] ? stati[owner].capital : null, infrastructure, stability, strategicValue, units: units || [] });
   const d = {
-    stati: prendi('let countries = '),
-    singole: prendi('let provinces = ', { mkProv }),
+    stati,
+    singole: prendi('let provinces = ', { mkMain }),
     unita: prendi('const REGION_UNITS = '),
     tipi: prendi('const REGION_TYPES = '),
     metodi: prendi('const REGION_METHODS = '),
@@ -110,14 +130,18 @@ function perStato(d) {
 function contatori(d) {
   const nStati = Object.keys(d.stati).length;
   const giocabili = Object.values(d.stati).filter(s => s.playable).length;
+  const capVerificate = Object.values(d.stati).filter(s => s.capital_verified === true).length;
+  const allVerificate = Object.values(d.stati).filter(s => s.alliance_verified === true).length;
   const nSingole = Object.keys(d.singole).length;
   const statiSuddivisi = new Set(d.unita.map(u => u[2])).size;
   const coppie = d.adiacenze.reduce((n, r) => n + r.length, 0) / 2;
   const principali = [
-    ['Stati', '`countries`', nStati],
-    ['Stati giocabili (`playable: true`)', '`countries`', giocabili],
+    ['Stati', '`states_1960.json`', nStati],
+    ['Stati giocabili (`playable: true`)', '`states_1960.json`', giocabili],
+    ['Capitali verificate su una fonte (`capital_verified`)', '`states_1960.json`', `${capVerificate} su ${nStati}`],
+    ['Alleanze verificate su una fonte (`alliance_verified`)', '`states_1960.json`', `${allVerificate} su ${nStati}`],
     ['Province in tutto', '`provinces`', nSingole + d.unita.length],
-    ['Province di Stati senza suddivisioni', '`provinces` (`mkProv`)', nSingole],
+    ['Province di Stati senza suddivisioni', '`provinces` (`mkMain`)', nSingole],
     ['Unità regionali', '`REGION_UNITS`', d.unita.length],
     ['Stati suddivisi in unità regionali', '`REGION_UNITS`', statiSuddivisi],
     ['Tipi di unità (provincia, distretto, Land…)', '`REGION_TYPES`', d.tipi.length],
@@ -159,9 +183,10 @@ function stati(d) {
   const righe = ids.map(id => {
     const s = d.stati[id], t = Object.keys(ps[id].terne);
     const segnato = [daVerificare(s.capital) ? 'capitale' : '', daVerificare(s.alliance) ? 'alleanza' : ''].filter(Boolean).join(' e ');
-    return [`\`${id}\``, s.name, s.capital, s.alliance, ps[id].province, t.length === 1 ? t[0] : `più valori (${t.length})`, segnato || '—'];
+    const verificate = `${s.capital_verified === true ? 'sì' : 'no'} / ${s.alliance_verified === true ? 'sì' : 'no'}`;
+    return [`\`${id}\``, s.name, s.capital, s.alliance, verificate, ps[id].province, t.length === 1 ? t[0] : `più valori (${t.length})`, segnato || '—'];
   });
-  return tabella(['Codice', 'Stato', 'Capitale', 'Alleanza', 'Province', 'Valutazioni provvisorie', '«da verificare» nella pagina'], righe);
+  return tabella(['Codice', 'Stato', 'Capitale', 'Alleanza', 'Verificate (capitale / alleanza)', 'Province', 'Valutazioni provvisorie', '«da verificare» nella pagina'], righe);
 }
 
 function valutazioni(d) {
@@ -196,7 +221,7 @@ function noteTerritori(d) {
     '',
     tabella(['Codice', 'Unità', 'Testo', 'Dice «da verificare»'], unita),
     '',
-    '**Note scritte nelle province degli Stati senza suddivisioni** (ultimo argomento di `mkProv`, mostrate nella riga «Unità presenti»):',
+    '**Note scritte nelle province degli Stati senza suddivisioni** (ultimo argomento di `mkMain`, mostrate nella riga «Unità presenti»):',
     '',
     tabella(['Testo', 'Province', 'Quali', 'Dice «da verificare»'], nelleProvince),
   ].join('\n');
@@ -252,4 +277,4 @@ if (require.main === module) {
   catch (e) { console.error('Errore: ' + e.message); process.exitCode = 1; }
 }
 
-module.exports = { INIZIO, FINE, GENERATORI, letterale, leggiPagina, costruisciDoc, perStato };
+module.exports = { INIZIO, FINE, GENERATORI, letterale, leggiStati, leggiPagina, costruisciDoc, perStato };

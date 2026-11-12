@@ -14,7 +14,7 @@ Il turno è spiegato in [`docs/TURNO-E-AZIONI.md`](docs/TURNO-E-AZIONI.md). Con 
 
 ## Limiti attuali
 
-- **Dati storici verificati solo in parte.** Nessun valore di popolazione è stato ricontrollato sulla fonte primaria (`verified: false` in tutti i record). Gli status politici al 31 dicembre 1960 sono stati controllati online per 37 record su 77, su fonti secondarie e non d'archivio; 32 record europei non hanno status. Capitali, alleanze, colori, valutazioni e note della pagina sono etichette del prototipo o testi dei file dell'autore, mai controllati su una fonte. Vedi [`docs/METODOLOGIA.md`](docs/METODOLOGIA.md), [`docs/FONTI.md`](docs/FONTI.md), [`docs/STATUS-1960.md`](docs/STATUS-1960.md) e, per tutti gli altri dati della pagina, [`docs/DATI-INCORPORATI.md`](docs/DATI-INCORPORATI.md) ([#3](../../issues/3)).
+- **Dati storici verificati solo in parte.** Nessun valore di popolazione è stato ricontrollato sulla fonte primaria (`verified: false` in tutti i record). Gli status politici al 31 dicembre 1960 sono stati controllati online per 37 record su 77, su fonti secondarie e non d'archivio; 32 record europei non hanno status. Capitali e alleanze (nel file `src/data/states_1960.json`) sono etichette del prototipo, tutte segnate «non verificate», e la scheda del territorio lo dice; colori, valutazioni e note della pagina sono etichette del prototipo o testi dei file dell'autore, mai controllati su una fonte. Vedi [`docs/METODOLOGIA.md`](docs/METODOLOGIA.md), [`docs/FONTI.md`](docs/FONTI.md), [`docs/STATUS-1960.md`](docs/STATUS-1960.md) e, per tutti gli altri dati della pagina, [`docs/DATI-INCORPORATI.md`](docs/DATI-INCORPORATI.md) ([#3](../../issues/3)).
 - **La mappa è approssimata.** I contorni degli Stati derivano da un file con gli attributi di Natural Earth; le regioni sono celle calcolate da elenchi di punti, non confini storici; tre linee sono tracciate a mano senza fonte. Vedi [`docs/CONFINI-MAPPA.md`](docs/CONFINI-MAPPA.md) e [`ATTRIBUZIONI.md`](ATTRIBUZIONI.md).
 - **L'AI non è provata dal vivo dalle prove automatiche.** Queste usano risposte simulate: la qualità delle mosse delle altre nazioni e il rispetto del formato dipendono dal modello. Le mosse territoriali delle altre nazioni arrivano sulla mappa solo per le province che il motore conosce.
 - **Accessibilità.** Tastiera, struttura per i lettori di schermo, contrasto e movimento ridotto sono curati e misurati con strumenti, ma la pagina non è mai stata provata con un lettore di schermo vero ([#4](../../issues/4)). Vedi [`docs/ACCESSIBILITA.md`](docs/ACCESSIBILITA.md).
@@ -28,7 +28,7 @@ Il turno è spiegato in [`docs/TURNO-E-AZIONI.md`](docs/TURNO-E-AZIONI.md). Con 
 | `src/` | La pagina del gioco (`storia-alternativa-prototipo.html`, un solo file HTML), due copie di riferimento (la versione 23 e la variante «map-overlay»: partono dal 31 dicembre 1960 come la pagina, ma non sono la pagina attuale; che cosa le distingue è in [`src/README.md`](src/README.md)) e i dati in `src/data/` |
 | `archive/` | Versione precedente, conservata per riferimento (non è la pagina attuale): `storia-alternativa-prototipo.html` |
 | `docs/` | Guide e documenti: vedi l'[indice](docs/README.md) |
-| `scripts/` | Strumenti: `incorpora-popolazione.js` mette nella pagina una copia identica dei dati di popolazione; `censimento-dati.js` aggiorna le tabelle dell'inventario degli altri dati della pagina |
+| `scripts/` | Strumenti: `incorpora-popolazione.js` e `incorpora-stati.js` mettono nella pagina una copia identica dei dati di popolazione e dei dati degli Stati (il modo di lavorare comune sta in `incorpora-blocco.js`); `censimento-dati.js` aggiorna le tabelle dell'inventario degli altri dati della pagina |
 | `tests/` | Prove sui dati e sulla pagina (`node --test`) e prove nel browser (`tests/browser/`) |
 | `index.html` | Reindirizza alla pagina del gioco (per GitHub Pages) |
 | `LICENSE`, `ATTRIBUZIONI.md`, `CHANGELOG.md`, `CITATION.cff` | Licenza, provenienza dei dati, registro delle modifiche, bozza di citazione |
@@ -45,9 +45,9 @@ Prove automatiche (serve Node 20 o più recente):
 
 GitHub le esegue a ogni push e a ogni pull request (workflow «Prove automatiche»).
 
-**Se cambi i dati di popolazione.** I numeri, le fonti e gli status stanno in un solo posto, `src/data/population_1960.json`. La pagina deve funzionare anche aperta da sola, quindi ne porta dentro una copia identica: dopo ogni modifica al file dei dati lancia `npm run dati:incorpora` (ricopia i dati nella pagina). Se ti dimentichi, `node --test` si ferma e lo dice; `npm run dati:controlla` fa solo il controllo, senza scrivere. Le tre copie di riferimento (`src/` e `archive/`) hanno invece gli elenchi di popolazione scritti nella pagina: se cambia un valore o uno status, vanno cambiati a mano anche lì; `node --test` si ferma e dice quale riga è rimasta indietro.
+**Se cambi i dati di popolazione o i dati degli Stati.** I numeri, le fonti e gli status di popolazione stanno in un solo posto, `src/data/population_1960.json`; il nome, la capitale, l'alleanza, il colore e la giocabilità di ogni Stato, con il segno di verifica di capitale e alleanza, in `src/data/states_1960.json`. La pagina deve funzionare anche aperta da sola, quindi porta dentro una copia identica di ciascun file: dopo ogni modifica a uno dei due lancia `npm run dati:incorpora` (ricopia entrambi nella pagina). Se ti dimentichi, `node --test` si ferma e lo dice; `npm run dati:controlla` fa solo il controllo, senza scrivere. Le tre copie di riferimento (`src/` e `archive/`) hanno invece gli elenchi di popolazione scritti nella pagina: se cambia un valore o uno status, vanno cambiati a mano anche lì; `node --test` si ferma e dice quale riga è rimasta indietro. Le loro capitali e alleanze sono scritte nelle pagine, non vengono dal file degli Stati e non sono segnate «non verificate».
 
-**Se cambi Stati, capitali, alleanze, unità regionali, valutazioni o note nella pagina.** [`docs/DATI-INCORPORATI.md`](docs/DATI-INCORPORATI.md) contiene tabelle generate leggendo la pagina: dopo la modifica lancia `npm run censimento` (le riscrive). Se ti dimentichi, `node --test` si ferma e lo dice; `npm run censimento:controlla` fa solo il controllo, senza scrivere.
+**Se cambi Stati, capitali, alleanze, unità regionali, valutazioni o note.** Stati, capitali e alleanze si cambiano nel file `src/data/states_1960.json` (poi `npm run dati:incorpora`, come sopra); unità regionali, valutazioni e note sono scritte nella pagina. [`docs/DATI-INCORPORATI.md`](docs/DATI-INCORPORATI.md) contiene tabelle generate leggendo la pagina: dopo la modifica lancia `npm run censimento` (le riscrive). Se ti dimentichi, `node --test` si ferma e lo dice; `npm run censimento:controlla` fa solo il controllo, senza scrivere.
 
 ## Guide e documenti
 
@@ -70,7 +70,7 @@ Il lavoro prosegue per issue. Da fare, in ordine:
 
 1. Provare un turno con il modello vero dentro Claude e rifinire la richiesta all'AI.
 2. Provare la pagina con un lettore di schermo vero (NVDA, VoiceOver o TalkBack) e riferire l'esito ([#4](../../issues/4)).
-3. Completare con fonti gli status mancanti, sostituire le fonti secondarie dei dati e controllare capitali, alleanze e note della pagina ([#3](../../issues/3)).
+3. Completare con fonti gli status mancanti, sostituire le fonti secondarie dei dati e controllare, una per una, capitali, alleanze e note della pagina: capitali e alleanze sono nel file `src/data/states_1960.json`, tutte «non verificate» finché non hanno una fonte registrata ([#3](../../issues/3)).
 4. ESLint e axe nelle prove automatiche; aggiungere `package-lock.json`.
 5. Rendere la mappa riproducibile (aggiungere gli script di costruzione o indicare dove scaricare i file di partenza).
 

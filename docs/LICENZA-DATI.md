@@ -24,7 +24,7 @@ Questo documento **valuta** se il progetto debba avere una licenza separata per 
 | Celle delle regioni e adiacenze | calcolate dal progetto dai punti dei file dell'autore | dipendono dalle condizioni di quei file, non chiarite (dubbio sul dataset MPIDR: [`ATTRIBUZIONI.md`](../ATTRIBUZIONI.md)) | da chiarire prima di decidere |
 | Valori di popolazione (`src/data/population_1960.json`) | numeri di due file CSV dell'autore | miste e in parte sconosciute (vedi sotto) | niente, finché le fonti non sono chiare |
 | Annotazioni del progetto nel file di popolazione (status e loro fonti, perimetri, avvertenze, note) | il progetto, con il controllo online del 25 e 26 ottobre 2026 ([`STATUS-1960.md`](STATUS-1960.md)) | nessuna licenza propria | la licenza di queste annotazioni |
-| Capitali, alleanze, colori e valutazioni provvisorie ([`DATI-INCORPORATI.md`](DATI-INCORPORATI.md)) | il prototipo | nessuna licenza propria; sono da verificare | la licenza di questi testi |
+| Capitali, alleanze, colori e valutazioni provvisorie (quelle degli Stati sono in `src/data/states_1960.json`; l'inventario è in [`DATI-INCORPORATI.md`](DATI-INCORPORATI.md)) | il prototipo | nessuna licenza propria; sono da verificare (nel file ogni capitale e ogni alleanza è segnata «non verificata») | la licenza di questi testi |
 | Note scritte nella pagina (`COUNTRY_NOTES` e le altre: [`DATI-INCORPORATI.md`](DATI-INCORPORATI.md)) | in parte testi dei file dell'autore (`europa-1960-regioni.md`), in parte del prototipo | quelle dei file seguono le condizioni dei file, non chiarite | da chiarire insieme agli elenchi di unità |
 
 ## Che cosa si sa delle fonti dei numeri

@@ -309,7 +309,8 @@ function scanTargets() {
   const audit = [];
   cdp.on('Audits.issueAdded', e => audit.push(e.issue));
   let auditOk = true;
-  try { await cdp.send('Audits.enable'); } catch (e) { auditOk = false; console.log('  (the contrast audit of Chromium is not available in this build: skipped)'); }
+  // some builds accept Audits.enable but have no Audits.checkContrast (Chromium 153, for one): both are tried here, and the audit is skipped if either is missing
+  try { await cdp.send('Audits.enable'); await cdp.send('Audits.checkContrast', { reportAAA: false }); } catch (e) { auditOk = false; console.log('  (the contrast audit of Chromium is not available in this build: skipped)'); }
   const chromiumLow = async () => {
     const vp = page.viewportSize();
     await page.setViewportSize({ width: vp.width, height: 6000 });

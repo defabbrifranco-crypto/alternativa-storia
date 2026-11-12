@@ -23,6 +23,7 @@ function instrument(html) {
     setView: (x, y, s) => { scale = s; tx = VBW / 2 - s * x; ty = 1029 - s * y; updateTransform(); updateLabels(); } };
   if (typeof POP !== 'undefined') Object.assign(window.__t, { POP, popUnplaced, popCardLines, fillPopulationCard, POP_FLAG_TEXT, POP_SOVIET_STATES, fmtPop,
     getPopLoadError: () => popLoadError });
+  if (typeof STATES !== 'undefined') Object.assign(window.__t, { STATES, STATE_FLAG_TEXT, stateCardLines, fillStateCard, capoluogoText, renderLegendNote });
   if (typeof markers !== 'undefined') Object.assign(window.__t, {
     getMarkers: () => markers, getSelectedMarkerId: () => selectedMarkerId, getLastClusters: () => lastClusters, getMarkerSeq: () => markerSeq,
     MARKER_TYPES, MARKER_ORDER, MARKER_ALIASES, MAX_MARKERS, MAX_MARKER_OPS, addMarker, removeMarker, clearMarkers, applyMarkerChanges, selectMarker,
@@ -46,9 +47,11 @@ let launches = 0;
 // Opzioni: withClaude=false prova la pagina senza window.claude (come su GitHub Pages); blockStorage=true fa lanciare
 // un errore a localStorage; seedLocal precarica chiavi di localStorage (una sola volta); serve=true apre la pagina
 // da un piccolo server http locale invece che da file://. withDownloads=false toglie a Claude la capacità «downloads».
+// waitForHook=false non aspetta il gancio di prova: serve a provare una pagina che si ferma subito (per esempio perché i dati degli Stati
+// non si leggono) e quindi non lo definisce mai.
 // transform(html) cambia il testo della pagina prima di aprirla (per provare un guasto messo apposta: il file su disco non cambia).
 async function launch({ width = 390, height = 844, store = {}, withSample = true, withDb = true, withClaude = true, withDownloads = true,
-  blockStorage = false, seedLocal = null, serve = false, mobile = true, colorScheme = 'light', transform = null } = {}) {
+  blockStorage = false, seedLocal = null, serve = false, mobile = true, colorScheme = 'light', transform = null, waitForHook = true } = {}) {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 2, hasTouch: mobile, isMobile: mobile, colorScheme });
   const page = await ctx.newPage();
@@ -112,7 +115,7 @@ async function launch({ width = 390, height = 844, store = {}, withSample = true
     browser.close = async () => { await close(); server.close(); };
   }
   await page.goto(url);
-  await page.waitForFunction(() => window.__t, null, { timeout: 15000 });
+  if (waitForHook) await page.waitForFunction(() => window.__t, null, { timeout: 15000 });
   await page.waitForTimeout(150);
   return { browser, ctx, page, errors, store, url };
 }
