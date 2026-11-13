@@ -29,6 +29,7 @@ const righeAttese = s => [
   ...(s.note ? ['Nota: ' + s.note] : []),
   'Avvertenza generale: ' + FILE.meta.global_warning,
 ];
+const N_CAP = FILE.states.filter(s => s.capital_verified === true).length, N_ALL = FILE.states.filter(s => s.alliance_verified === true).length; // quante ne dice verificate il file così com'è
 const NOTA_LEGENDA = (c, a) => `Capitali verificate: ${c} su ${FILE.states.length}. Alleanze verificate: ${a} su ${FILE.states.length}. Le altre sono etichette scritte dal prototipo: la scheda del territorio le segna «non verificata».`;
 
 (async () => {
@@ -114,7 +115,7 @@ const NOTA_LEGENDA = (c, a) => `Capitali verificate: ${c} su ${FILE.states.lengt
     return bad;
   })).length === 0);
   const senzaVerifica = ids.filter(id => /\bverificat[ao]\b/.test(Object.values(tutte[id].rows).join(' | ').replace(/non verificat[ao]/g, '').replace(/da verificare/g, '')));
-  check('nessuna riga della scheda dice «verificata» o «verificato» senza «non»: finché il file non lo dice, niente è verificato', senzaVerifica.length === 0, senzaVerifica.slice(0, 4));
+  check('nessuna riga della scheda dice «verificata» o «verificato» senza «non»: la verifica si legge nella nota, non nelle righe', senzaVerifica.length === 0, senzaVerifica.slice(0, 4));
 
   console.log('— casi scelti a mano (le frasi sono scritte qui, non ricavate dal file)');
   const fra = await card(await firstOf('FRA'));
@@ -138,14 +139,23 @@ const NOTA_LEGENDA = (c, a) => `Capitali verificate: ${c} su ${FILE.states.lengt
   check('Stati della Tregua: capoluogo «da verificare» e basta, alleanza «Protettorato britannico (non verificata)»', are.rows['Capoluogo'] === 'da verificare' && are.rows['Alleanza del proprietario'] === 'Protettorato britannico (non verificata)', are.rows);
   check('Stati della Tregua: l\'avvertenza dice che il prototipo non conosce la capitale', are.lines.includes('Avvertenze: la capitale è «da verificare»: il prototipo non la conosce'), are.lines);
   const brb = await card('BRB_MAIN');
-  check('Borneo Britannico: capoluogo «da verificare» e basta', brb.rows['Capoluogo'] === 'da verificare' && brb.rows['Alleanza del proprietario'] === 'Colonia britannica (non verificata)', brb.rows);
+  check('Borneo Britannico: le due capitali, verificate (nessun «non verificato»); l\'alleanza resta «Colonia britannica (non verificata)»', brb.rows['Capoluogo'] === 'Kuching (Sarawak); Jesselton (Borneo Settentrionale)' && brb.rows['Alleanza del proprietario'] === 'Colonia britannica (non verificata)', brb.rows);
+  const capDi = c => ('Capitale del proprietario' in c.rows ? c.rows['Capitale del proprietario'] : c.rows['Capoluogo']);
+  const phl = await card(await firstOf('PHL'));
+  check("Filippine (un'unità): la capitale è Quezon City, verificata (nessun «non verificata»); l'alleanza resta «SEATO (non verificata)»", capDi(phl) === 'Quezon City (capitale ufficiale dal 1948 al 1976; molte funzioni di governo restavano a Manila)' && phl.rows['Alleanza del proprietario'] === 'SEATO (non verificata)', phl.rows);
+  check('Filippine: la nota dice «Verifica della capitale: verificata», cita le due fonti con indirizzo e data di lettura, e l\'alleanza resta «non verificata»',
+    phl.lines[0].startsWith('Fonte della capitale: Capitale delle Filippine al 31 dicembre 1960. (1) Sito ufficiale della Città di Quezon (https://quezoncity.gov.ph/?p=1658), pagina letta il 12 novembre 2026') && phl.lines[0].includes('(2) Encyclopaedia Britannica, voce «Quezon City»') && phl.lines[1] === 'Verifica della capitale: verificata' && phl.lines[3] === "Verifica dell'alleanza: non verificata", phl.lines.slice(0, 4));
+  const yem = await card(await firstOf('YEM'));
+  check("Yemen: «Taiz (capitale dal 1948 al 1962; Sana'a prima e dopo)», verificata: non è più Sana'a", capDi(yem) === "Taiz (capitale dal 1948 al 1962; Sana'a prima e dopo)" && yem.lines[1] === 'Verifica della capitale: verificata', [capDi(yem), yem.lines.slice(0, 2)]);
+  const nld = await card(await firstOf('NLD'));
+  check("Paesi Bassi: Amsterdam con il governo all'Aia, verificata; l'alleanza resta «NATO (non verificata)»", capDi(nld) === "Amsterdam (capitale riconosciuta dal 1814; governo e parlamento all'Aia)" && nld.rows['Alleanza del proprietario'] === 'NATO (non verificata)' && nld.lines[1] === 'Verifica della capitale: verificata', [capDi(nld), nld.rows]);
   const pak = await card(await idOf('Bahawalpur', 'PAK'));
   check('Pakistan (una divisione): la capitale dice già «da verificare», quindi resta com\'è; l\'alleanza «SEATO e CENTO (non verificata)»',
     pak.rows['Capitale del proprietario'] === 'Rawalpindi (capitale provvisoria dal 1959 — da verificare)' && pak.rows['Alleanza del proprietario'] === 'SEATO e CENTO (non verificata)', pak.rows);
   const btn = await card(await firstOf('BTN'));
-  check('Bhutan (un\'unità): «Thimphu (da verificare)» resta com\'è, senza «non verificata» in più', btn.rows['Capitale del proprietario'] === 'Thimphu (da verificare)', btn.rows);
+  check('Bhutan (un\'unità): la capitale ha il testo nuovo con le date, ma resta «non verificata» (una sola fonte, con date discordanti)', btn.rows['Capitale del proprietario'] === 'Thimphu (capitale di fatto dal 1955; ufficiale dal 1961) (non verificata)', btn.rows);
   const isr = await card('ISR_MAIN');
-  check('Israele: «Gerusalemme (status contestato) (non verificato)»: il testo del prototipo resta intero, con la sua parentesi', isr.rows['Capoluogo'] === 'Gerusalemme (status contestato) (non verificato)', isr.rows);
+  check('Israele: «Gerusalemme (sede del governo; status contestato; ambasciate a Tel Aviv)», verificata: il testo resta intero, con le sue parentesi e senza «non verificato»', isr.rows['Capoluogo'] === 'Gerusalemme (sede del governo; status contestato; ambasciate a Tel Aviv)' && isr.lines[1] === 'Verifica della capitale: verificata', [isr.rows, isr.lines.slice(0, 2)]);
   const kaz = await card('KAZ_MAIN');
   check('Kazakistan: il nome di allora e di oggi restano nel testo: «Alma-Ata (oggi Almaty) (non verificato)»', kaz.rows['Capoluogo'] === 'Alma-Ata (oggi Almaty) (non verificato)', kaz.rows);
   const sovietici = ['UKR', 'BLR', 'MDA', 'EST', 'LVA', 'LTU', 'GEO', 'ARM', 'AZE', 'KAZ', 'UZB', 'TKM', 'TJK', 'KGZ'];
@@ -155,7 +165,8 @@ const NOTA_LEGENDA = (c, a) => `Capitali verificate: ${c} su ${FILE.states.lengt
 
   console.log('— la legenda dice quante capitali e alleanze sono verificate');
   const leg = await ev(() => ({ testo: document.getElementById('legendNote').textContent, dopoLegenda: document.getElementById('legendNote').previousElementSibling.className }));
-  check('legenda: «Capitali verificate: 0 su 83. Alleanze verificate: 0 su 83…», scritta dai dati', leg.testo === NOTA_LEGENDA(0, 0), leg.testo);
+  const nCap = FILE.states.filter(s => s.capital_verified === true).length, nAll = FILE.states.filter(s => s.alliance_verified === true).length;
+  check('legenda: «Capitali verificate: ' + nCap + ' su ' + FILE.states.length + '. Alleanze verificate: ' + nAll + ' su ' + FILE.states.length + '…», scritta dai dati', nCap >= 1 && leg.testo === NOTA_LEGENDA(nCap, nAll), leg.testo);
   check('la nota sta subito dopo le cinque famiglie di alleanza', leg.dopoLegenda === 'legend', leg.dopoLegenda);
 
   console.log('— la richiesta all\'AI e i salvataggi non cambiano');
@@ -235,7 +246,7 @@ const NOTA_LEGENDA = (c, a) => `Capitali verificate: ${c} su ${FILE.states.lengt
   });
   check('capitale della Francia segnata verificata nel file: la scheda dice «Parigi» senza «(non verificata)» e «Verifica della capitale: verificata»', f1.cap === 'Parigi' && f1.v === 'Verifica della capitale: verificata', f1);
   check('…ma l\'alleanza della Francia resta «NATO (non verificata)» e l\'Italia resta «non verificata»', f1.all === 'NATO (non verificata)' && f1.ita === 'Roma (non verificata)', f1);
-  check('…e la legenda conta una capitale verificata su 83', f1.leg === NOTA_LEGENDA(1, 0), f1.leg);
+  check('…e la legenda conta una capitale verificata in più (' + (N_CAP + 1) + ' su ' + FILE.states.length + ')', f1.leg === NOTA_LEGENDA(N_CAP + 1, N_ALL), f1.leg);
   check('…senza errori della pagina', v1.errors.length === 0, v1.errors);
   await v1.browser.close();
 
@@ -244,7 +255,7 @@ const NOTA_LEGENDA = (c, a) => `Capitali verificate: ${c} su ${FILE.states.lengt
   const f2 = await v2.page.evaluate(() => { window.__t.openProvincePanel('KWT_MAIN'); return { rows: [...document.querySelectorAll('#provincePanel .pp-row')].map(r => r.children[0].textContent + '=' + r.children[1].textContent), leg: document.getElementById('legendNote').textContent }; });
   check('alleanza del Kuwait segnata verificata nel file: la scheda dice «Protettorato britannico» senza «non verificata»; il capoluogo resta «non verificato»',
     f2.rows.includes('Alleanza del proprietario=Protettorato britannico') && f2.rows.includes('Capoluogo=Kuwait City (non verificato)'), f2.rows);
-  check('…e la legenda conta un\'alleanza verificata su 83', f2.leg === NOTA_LEGENDA(0, 1), f2.leg);
+  check('…e la legenda conta un\'alleanza verificata in più (' + (N_ALL + 1) + ' su ' + FILE.states.length + ')', f2.leg === NOTA_LEGENDA(N_CAP, N_ALL + 1), f2.leg);
   await v2.browser.close();
 
   const v3 = await launch({ width: 390, height: 844, transform: cambia('"capital": "Parigi", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "NATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#3b6ea5", "playable": true, "flags": []',
