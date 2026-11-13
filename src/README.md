@@ -17,7 +17,7 @@ Nessuna copia è collegata alla pagina o al sito (`../index.html` rinvia alla pa
 
 Che cosa le distingue dalla pagina attuale (controllato sui file il 7 novembre 2026; la riga «Capitali e alleanze», aggiunta con la versione 30, il 9 novembre 2026):
 
-| | Pagina attuale (versione 30) | `storia-alternativa-prototipo-v23.html` | `storia-alternativa-prototipo-map-overlay.html` | `../archive/storia-alternativa-prototipo.html` |
+| | Pagina attuale (versione 31) | `storia-alternativa-prototipo-v23.html` | `storia-alternativa-prototipo-map-overlay.html` | `../archive/storia-alternativa-prototipo.html` |
 |---|---|---|---|---|
 | Territori | 1.020 province, 83 Stati | la stessa mappa e le stesse unità della pagina attuale | 95 province, 84 voci fra Stati e territori dipendenti (69 giocabili) | 95 province, 83 Stati |
 | Le 14 repubbliche sovietiche | Stati separati e giocabili | Stati separati e giocabili | non giocabili e non sovrane: dipendono dall'URSS | Stati separati e giocabili |
@@ -30,7 +30,7 @@ Che cosa le distingue dalla pagina attuale (controllato sui file il 7 novembre 2
 
 Nessuna delle tre ha l'Editor scenario, i salvataggi con numero di versione (`schemaVersion`) o la modalità manuale. Per i salvataggi e per il modello linguistico dipendono da `claude.use`: fuori da Claude non hanno né gli uni né l'altro.
 
-Come nella pagina attuale, **capitali e alleanze sono etichette semplificate del prototipo, non dati verificati** ([`../docs/METODOLOGIA.md`](../docs/METODOLOGIA.md)); a differenza della pagina attuale (dalla versione 30), però, queste pagine non lo dicono: non leggono `data/states_1960.json` e la loro scheda non segna le capitali e le alleanze «non verificata». Per Cipro non c'è una fonte sull'alleanza al 31 dicembre 1960: è «da verificare».
+Come nella pagina attuale, **capitali e alleanze sono etichette semplificate del prototipo, non dati verificati** ([`../docs/METODOLOGIA.md`](../docs/METODOLOGIA.md)); a differenza della pagina attuale (dalla versione 30), però, queste pagine non lo dicono: non leggono `data/states_1960.json` e la loro scheda non segna le capitali e le alleanze «non verificata». Per Cipro non c'è una fonte sull'alleanza al 31 dicembre 1960: è «da verificare». Le nove capitali riscritte nella versione 31 (Paesi Bassi, Germania Ovest, Germania Est, Filippine, Laos, Israele, Yemen, Borneo Britannico e Bhutan) hanno nelle copie ancora il testo della versione 29: per esempio «Manila» per le Filippine (controllato sui file il 13 novembre 2026).
 
 ### Che cosa è stato cambiato il 7 novembre 2026
 

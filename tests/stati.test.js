@@ -94,13 +94,47 @@ test('nessuna capitale e nessuna alleanza è segnata «verificata» con la fonte
   assert.ok(fs.existsSync(path.join(root, 'tests', 'stati.test.js')), 'il file della prova citata in meta.verification_policy non esiste');
 });
 
+// Una capitale o un'alleanza segnata «verificata» deve avere una fonte che si può andare a rileggere: un indirizzo e la data in cui la pagina è
+// stata letta, scritta come «pagina letta il 12 novembre 2026» (una data qualunque nel testo, come «al 31 dicembre 1960», non basta).
+// Il criterio di docs/METODOLOGIA.md è: due fonti che concordano, oppure un documento d'epoca. Qui si controlla solo il minimo che una macchina
+// può vedere: almeno due indirizzi, oppure la dicitura «Documento d'epoca». Se le fonti dicono davvero la cosa giusta lo decide chi le legge.
+// Lo stesso vale per ogni fonte registrata che non sia l'etichetta del prototipo, anche se il dato resta «non verificato» (è una fonte consultata):
+// per quelle bastano un indirizzo e una data di lettura.
+const MESE = '(?:gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)';
+const LETTURE = new RegExp(`\\blett[ao] (?:il |l')\\d{1,2} ${MESE} \\d{4}\\b`, 'g');
+const INDIRIZZI = /https?:\/\/\S+/g;
+// Ogni pagina citata ha il suo indirizzo e la sua data di lettura (di una pagina con una copia archiviata si cita un solo indirizzo).
+function indirizziELetture(descrizione) {
+  return { indirizzi: (descrizione.match(INDIRIZZI) || []).length, letture: (descrizione.match(LETTURE) || []).length };
+}
+test('ogni dato segnato «verificato» ha una fonte vera: indirizzi, data di lettura, due fonti o un documento d\'epoca, e un testo che non dice «da verificare»', () => {
+  for (const s of data.states) {
+    for (const [campo, verificato, fonte, testo] of [['capitale', s.capital_verified, s.capital_source_id, s.capital], ['alleanza', s.alliance_verified, s.alliance_source_id, s.alliance]]) {
+      if (!verificato) continue;
+      const descrizione = data.meta.sources[fonte];
+      assert.strictEqual(typeof descrizione, 'string', `${s.id}: ${campo} verificata ma la fonte «${fonte}» non è registrata`);
+      const { indirizzi, letture } = indirizziELetture(descrizione);
+      assert.ok(indirizzi >= 1, `${s.id}: la fonte della ${campo} verificata non ha nessun indirizzo`);
+      assert.ok(letture >= indirizzi, `${s.id}: la fonte della ${campo} verificata ha ${indirizzi} indirizzi ma solo ${letture} date di lettura («pagina letta il …»): ogni pagina deve dire quando è stata letta`);
+      assert.ok(indirizzi >= 2 || /documento d'epoca/i.test(descrizione), `${s.id}: la ${campo} verificata ha una sola fonte e non è un documento d'epoca: ne servono due che concordano (docs/METODOLOGIA.md)`);
+      assert.ok(!daVerificare(testo), `${s.id}: la ${campo} «${testo}» è segnata verificata ma dice «da verificare»`);
+    }
+  }
+  for (const [id, descrizione] of Object.entries(data.meta.sources)) {
+    if (id === PROTOTIPO) continue;
+    const { indirizzi, letture } = indirizziELetture(descrizione);
+    assert.ok(indirizzi >= 1, `la fonte ${id} non ha nessun indirizzo`);
+    assert.ok(letture >= indirizzi, `la fonte ${id} ha ${indirizzi} indirizzi ma solo ${letture} date di lettura («pagina letta il …»)`);
+  }
+});
+
 test('i flag dicono la stessa cosa dei testi: «da verificare» nel testo se e solo se c\'è il flag', () => {
   for (const s of data.states) {
     assert.strictEqual(s.flags.includes('capitale_da_verificare'), daVerificare(s.capital), `${s.id}: il flag capitale_da_verificare e il testo «${s.capital}» non coincidono`);
     assert.strictEqual(s.flags.includes('alleanza_da_verificare'), daVerificare(s.alliance), `${s.id}: il flag alleanza_da_verificare e il testo «${s.alliance}» non coincidono`);
   }
   const con = data.states.filter(s => s.flags.length).map(s => s.id).sort();
-  assert.deepStrictEqual(con, ['ARE', 'BRB', 'BTN', 'CYP', 'OMN', 'PAK'], 'gli Stati con un\'avvertenza sono cambiati: aggiornare questa prova e docs/DATI-INCORPORATI.md');
+  assert.deepStrictEqual(con, ['ARE', 'CYP', 'OMN', 'PAK'], 'gli Stati con un\'avvertenza sono cambiati: aggiornare questa prova e docs/DATI-INCORPORATI.md');
 });
 
 test('gli identificativi sono univoci, i nomi e i colori sono tutti diversi', () => {

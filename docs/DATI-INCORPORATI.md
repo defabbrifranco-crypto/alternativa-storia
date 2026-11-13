@@ -2,7 +2,7 @@
 
 Questo documento è l'**inventario dei dati che la pagina porta con sé oltre ai dati di popolazione**: Stati, capitali, alleanze, colori, unità regionali, valutazioni, note, province confinanti. Dalla versione 30 Stati, capitali e alleanze stanno in un file di dati, `src/data/states_1960.json`, come la popolazione. Per ognuno dice dove sta nel codice, quanti sono, da dove viene, se è stato verificato e dove si vede nel gioco. Risponde al primo criterio della #3: *ogni dato storico rilevante ha una fonte o un'indicazione «da verificare»*.
 
-> **In breve.** Nessun dato di questo elenco è stato controllato su una fonte. Capitali, alleanze, colori, valutazioni, note e suddivisioni sono **etichette e scelte del prototipo**, non storia, e vanno lette così. Dove la pagina non sa un dato scrive «da verificare». Gli unici dati controllati online sono gli status politici dei dati di popolazione ([`STATUS-1960.md`](STATUS-1960.md)). Dalla versione 30 la scheda del territorio lo dice anche per capitali e alleanze: le segna «non verificata».
+> **In breve.** Quasi nessun dato di questo elenco è stato controllato su una fonte: fanno eccezione otto capitali di Stati, controllate nella versione 31 (vedi «Verifica» più sotto e [`FONTI.md`](FONTI.md)). Le altre capitali, le alleanze, i colori, le valutazioni, le note e le suddivisioni sono **etichette e scelte del prototipo**, non storia, e vanno lette così. Dove la pagina non sa un dato scrive «da verificare». Gli altri dati controllati online sono gli status politici dei dati di popolazione ([`STATUS-1960.md`](STATUS-1960.md)). Dalla versione 30 la scheda del territorio dice, per ogni capitale e ogni alleanza, se è verificata: le segna «non verificata» quando non lo è (oggi tutte le alleanze e 75 capitali su 83).
 
 Le tabelle sono **generate**: le scrive `scripts/censimento-dati.js` leggendo la pagina, quindi i numeri e gli elenchi sono quelli della pagina vera (vedi «Come si tiene aggiornato»). Il resto del documento è scritto a mano. Censimento del **2 novembre 2026**, pagina versione 29; la sezione 1 e le tabelle sono aggiornate alla versione 30 del **9 novembre 2026** (`src/storia-alternativa-prototipo.html`): le copie di riferimento (la versione 23, la variante «map-overlay») e `archive/` non sono incluse: non sono la pagina attuale e [`../src/README.md`](../src/README.md) dice in che cosa ne sono diverse.
 
@@ -17,7 +17,7 @@ I documenti ([`METODOLOGIA.md`](METODOLOGIA.md)) usano tre livelli: *verificato*
 | calcolato | ricavato dal progetto da altri dati: non è un'informazione storica |
 | scelta del progetto | grafica o regola di gioco: non è un dato storico |
 
-**Nessuna voce è «verificata».** Qualche data scritta nelle note coincide con uno status controllato altrove (per esempio la Malaya, indipendente dal 1957, in [`FONTI.md`](FONTI.md)), ma il testo delle note non è stato confrontato con la fonte.
+**Nessuna voce è «verificata», tranne otto capitali** (versione 31: vedi «Verifica» più sotto). Qualche data scritta nelle note coincide con uno status controllato altrove (per esempio la Malaya, indipendente dal 1957, in [`FONTI.md`](FONTI.md)), ma il testo delle note non è stato confrontato con la fonte.
 
 ## Quanti sono
 
@@ -26,7 +26,7 @@ I documenti ([`METODOLOGIA.md`](METODOLOGIA.md)) usano tre livelli: *verificato*
 |---|---|---|
 | Stati | `states_1960.json` | 83 |
 | Stati giocabili (`playable: true`) | `states_1960.json` | 83 |
-| Capitali verificate su una fonte (`capital_verified`) | `states_1960.json` | 0 su 83 |
+| Capitali verificate su una fonte (`capital_verified`) | `states_1960.json` | 8 su 83 |
 | Alleanze verificate su una fonte (`alliance_verified`) | `states_1960.json` | 0 su 83 |
 | Province in tutto | `provinces` | 1.020 |
 | Province di Stati senza suddivisioni | `provinces` (`mkMain`) | 36 |
@@ -69,11 +69,11 @@ Come è stato trovato il punto di ogni unità regionale (`REGION_METHODS`, dichi
 
 - **Dove.** `src/data/states_1960.json` (lo schema è `src/data/states_1960.schema.json`): un record per Stato, con nome, capitale, alleanza, colore, giocabilità e, per capitale e alleanza, se sono verificate e su quale fonte. La pagina ne porta una copia identica in un blocco `<script type="application/json" id="states-1960-data">` (la scrive `scripts/incorpora-stati.js`) e costruisce da lì la tabella `countries`: nel codice non resta nessun nome, capitale, alleanza o colore scritto a mano (commento «NOTE on data quality»).
 - **Da dove.** Scritti dal prototipo, come prima: nella versione 30 i valori sono stati copiati dalla tabella della versione 29 senza cambiarne nessuno (confronto fatto Stato per Stato: stesso ordine, stessi nomi, capitali, alleanze, colori e giocabilità). Non vengono dai file forniti (gli elenchi di unità e i file di popolazione non hanno capitali né alleanze) e non hanno una fonte: nel file la fonte di ogni capitale e di ogni alleanza è `PROTOTYPE_LABEL` («Etichetta scritta dal prototipo … senza una fonte: non è un dato verificato») e `capital_verified` e `alliance_verified` sono `false`. Il commento nel codice dice che capitali e alleanze sono «this prototype's own simplified labels, not verified data».
-- **Livello.** da verificare, tutte le voci. Un'etichetta può essere sbagliata o discutibile anche dove non c'è scritto «da verificare».
+- **Livello.** da verificare, tutte le voci, salvo otto capitali controllate su fonti nella versione 31 (vedi «Verifica»). Un'etichetta può essere sbagliata o discutibile anche dove non c'è scritto «da verificare».
 
 **Nomi.** Sono nomi in italiano scelti dal prototipo, in parte quelli dell'epoca (Ceylon, Birmania, Germania Ovest, Timor Portoghese…). Non sono stati confrontati con una fonte.
 
-**Capitali.** Alcune voci hanno il nome di allora e quello di oggi (per esempio «Alma-Ata (oggi Almaty)»); per Israele la pagina scrive «Gerusalemme (status contestato)». La colonna «da verificare nella pagina» della tabella degli Stati dice quali capitali la pagina stessa segna come dubbie (nel file hanno il flag `capitale_da_verificare`). Nella scheda del territorio la riga «Capoluogo» mostra la capitale dello Stato solo per le province degli Stati senza suddivisioni, con «(non verificato)»; per le unità regionali scrive «da verificare», perché i file forniti non indicano i capoluoghi, e la riga «Capitale del proprietario» mostra la capitale dello Stato con «(non verificata)». Se il testo dice già «da verificare», la scheda non aggiunge altro.
+**Capitali.** Alcune voci hanno il nome di allora e quello di oggi (per esempio «Alma-Ata (oggi Almaty)»); per Israele la pagina scrive «Gerusalemme (sede del governo; status contestato; ambasciate a Tel Aviv)». La colonna «da verificare nella pagina» della tabella degli Stati dice quali capitali la pagina stessa segna come dubbie (nel file hanno il flag `capitale_da_verificare`). Nella scheda del territorio la riga «Capoluogo» mostra la capitale dello Stato solo per le province degli Stati senza suddivisioni, con «(non verificato)»; per le unità regionali scrive «da verificare», perché i file forniti non indicano i capoluoghi, e la riga «Capitale del proprietario» mostra la capitale dello Stato con «(non verificata)». Se il testo dice già «da verificare», la scheda non aggiunge altro.
 
 **Alleanze.** Le etichette mescolano tre cose diverse: blocchi militari (NATO, Patto di Varsavia, CENTO, SEATO), status (colonie e protettorati) e orientamenti («Non allineata», «Alleata USA»). Nel progetto non c'è una definizione di «Non allineata»: non va letta come appartenenza a un movimento né come neutralità giuridica. L'etichetta si vede nella legenda (cinque famiglie di colore), nella riga «Alleanza del proprietario» della scheda (con «(non verificata)»), nella richiesta all'AI («alleanza: …», per lo Stato del giocatore; la richiesta non nomina la verifica) e in una regola di gioco: gli Stati con un'alleanza che comincia con «Colonia» non sono scelti fra le altre nazioni che agiscono a ogni «Avanza».
 
@@ -95,7 +95,7 @@ Come è stato trovato il punto di ogni unità regionale (`REGION_METHODS`, dichi
 | SEATO e CENTO | 1 | `PAK` |
 <!-- CENSIMENTO alleanze FINE -->
 
-**Verifica.** Ogni capitale e ogni alleanza ha il suo `capital_verified` / `alliance_verified` e la sua fonte (`capital_source_id` / `alliance_source_id`, registrata in `meta.sources`). Oggi sono tutte `false` con la fonte `PROTOTYPE_LABEL`: segnarle «non verificate» è la descrizione dello stato attuale, non il risultato di un controllo. Per segnarne una verificata si registra in `meta.sources` la fonte consultata (con la data di consultazione), si mette il suo identificativo nel campo della fonte e il campo `*_verified` a `true`; la prova `tests/stati.test.js` si ferma se un valore è «verificato» con la fonte `PROTOTYPE_LABEL`. Dove il prototipo non conosce il dato il testo dice «da verificare» e il record ha il flag `capitale_da_verificare` o `alleanza_da_verificare` (oggi: capitale di Emirati/Stati della Tregua, Borneo Britannico, Pakistan e Bhutan; alleanza di Cipro e Oman). La scheda mostra la fonte, la verifica e le avvertenze nella nota richiudibile «Capitale e alleanza: fonte e verifica»; la legenda dice quante capitali e alleanze sono verificate (oggi 0 su 83, scritto dai dati). Per il Kuwait il file ha una nota: l'etichetta di alleanza segue lo status politico controllato online ([`STATUS-1960.md`](STATUS-1960.md)), ma resta una scelta del prototipo e non è segnata come verificata. Le etichette dell'alleanza e della capitale non cambiano nei testi inviati all'AI né nei salvataggi.
+**Verifica.** Ogni capitale e ogni alleanza ha il suo `capital_verified` / `alliance_verified` e la sua fonte (`capital_source_id` / `alliance_source_id`, registrata in `meta.sources`). Le alleanze sono ancora tutte `false` con la fonte `PROTOTYPE_LABEL`, e lo sono 74 capitali su 83: segnarle «non verificate» è la descrizione dello stato attuale, non il risultato di un controllo. Dalla versione 31 otto capitali sono `true`, ognuna con una fonte registrata in `meta.sources` (Paesi Bassi, Germania Ovest, Germania Est, Filippine, Laos, Israele, Yemen, Borneo Britannico); quella del Bhutan ha una fonte consultata ma resta `false`, perché la fonte è una sola e le sue date non coincidono. In due casi il controllo ha cambiato il valore: Filippine (da «Manila» a «Quezon City», capitale ufficiale dal 1948 al 1976) e Yemen (da «Sana'a» a «Taiz», capitale dal 1948 al 1962). Per segnarne una verificata si registra in `meta.sources` la fonte consultata (con la data di consultazione), si mette il suo identificativo nel campo della fonte e il campo `*_verified` a `true`; la prova `tests/stati.test.js` si ferma se un valore è «verificato» con la fonte `PROTOTYPE_LABEL`, con una fonte senza indirizzo o in cui una pagina citata non dice quando è stata letta, con una sola fonte che non è un documento d'epoca, o con un testo che dice «da verificare». Dove il prototipo non conosce il dato il testo dice «da verificare» e il record ha il flag `capitale_da_verificare` o `alleanza_da_verificare` (oggi: capitale di Emirati/Stati della Tregua e Pakistan; alleanza di Cipro e Oman). La scheda mostra la fonte, la verifica e le avvertenze nella nota richiudibile «Capitale e alleanza: fonte e verifica»; la legenda dice quante capitali e alleanze sono verificate (oggi 8 su 83 per le capitali e 0 su 83 per le alleanze, scritto dai dati). Per il Kuwait il file ha una nota: l'etichetta di alleanza segue lo status politico controllato online ([`STATUS-1960.md`](STATUS-1960.md)), ma resta una scelta del prototipo e non è segnata come verificata. Le etichette dell'alleanza e della capitale non cambiano nei testi inviati all'AI né nei salvataggi.
 
 **Colori.** Una tinta per Stato, tutte diverse. Sono scelte grafiche e non hanno significato storico: di norma richiamano la famiglia di colore dell'alleanza nella legenda (blu per la NATO, rossi per il Patto di Varsavia e il blocco comunista, verdi per i non allineati, beige per colonie e protettorati), con qualche eccezione (per esempio la Svizzera). I valori esadecimali sono nel codice (`countries`).
 
@@ -114,10 +114,10 @@ Come è stato trovato il punto di ogni unità regionale (`REGION_METHODS`, dichi
 | `AZE` | Azerbaigian | Baku | Patto di Varsavia | no / no | 1 | 35/50/40 | — |
 | `BHR` | Bahrein | Manama | Protettorato britannico | no / no | 1 | 35/50/40 | — |
 | `BEL` | Belgio | Bruxelles | NATO | no / no | 9 | 60/65/55 | — |
-| `BTN` | Bhutan | Thimphu (da verificare) | Non allineata | no / no | 7 | 35/50/40 | capitale |
+| `BTN` | Bhutan | Thimphu (capitale di fatto dal 1955; ufficiale dal 1961) | Non allineata | no / no | 7 | 35/50/40 | — |
 | `BLR` | Bielorussia | Minsk | Patto di Varsavia | no / no | 1 | 40/50/45 | — |
 | `MMR` | Birmania | Rangoon (oggi Yangon) | Non allineata | no / no | 12 | 35/50/40 | — |
-| `BRB` | Borneo Britannico (Sarawak e Nord Borneo) | da verificare | Colonia britannica | no / no | 1 | 35/50/40 | capitale |
+| `BRB` | Borneo Britannico (Sarawak e Nord Borneo) | Kuching (Sarawak); Jesselton (Borneo Settentrionale) | Colonia britannica | sì / no | 1 | 35/50/40 | — |
 | `BRN` | Brunei | Brunei Town (oggi Bandar Seri Begawan) | Protettorato britannico | no / no | 1 | 35/50/40 | — |
 | `BGR` | Bulgaria | Sofia | Patto di Varsavia | no / no | 30 | 45/55/45 | — |
 | `KHM` | Cambogia | Phnom Penh | Non allineata | no / no | 14 | 35/50/40 | — |
@@ -129,12 +129,12 @@ Come è stato trovato il punto di ogni unità regionale (`REGION_METHODS`, dichi
 | `KOR` | Corea del Sud | Seul | Alleata USA | no / no | 10 | 45/40/70 | — |
 | `DNK` | Danimarca | Copenaghen | NATO | no / no | 22 | 55/68/45 | — |
 | `EST` | Estonia | Tallinn | Patto di Varsavia | no / no | 1 | 40/50/55 | — |
-| `PHL` | Filippine | Manila | SEATO | no / no | 54 | 40/55/55 | — |
+| `PHL` | Filippine | Quezon City (capitale ufficiale dal 1948 al 1976; molte funzioni di governo restavano a Manila) | SEATO | sì / no | 54 | 40/55/55 | — |
 | `FIN` | Finlandia | Helsinki | Non allineata | no / no | 12 | 45/60/50 | — |
 | `FRA` | Francia | Parigi | NATO | no / no | 21 | 58/70/75 | — |
 | `GEO` | Georgia | Tbilisi | Patto di Varsavia | no / no | 1 | 35/50/40 | — |
-| `GDR` | Germania Est | Berlino Est | Patto di Varsavia | no / no | 15 | più valori (2) | — |
-| `FRG` | Germania Ovest | Bonn | NATO | no / no | 11 | più valori (2) | — |
+| `GDR` | Germania Est | Berlino Est (capitale per la RDT; non riconosciuta dalle potenze occidentali) | Patto di Varsavia | sì / no | 15 | più valori (2) | — |
+| `FRG` | Germania Ovest | Bonn (capitale provvisoria dal 1949) | NATO | sì / no | 11 | più valori (2) | — |
 | `JPN` | Giappone | Tokyo | Alleata USA | no / no | 46 | 75/70/80 | — |
 | `JOR` | Giordania | Amman | Non allineata | no / no | 8 | 35/50/40 | — |
 | `GRC` | Grecia | Atene | NATO | no / no | 49 | 45/55/60 | — |
@@ -145,13 +145,13 @@ Come è stato trovato il punto di ogni unità regionale (`REGION_METHODS`, dichi
 | `IRQ` | Iraq | Baghdad | Non allineata | no / no | 10 | 40/40/65 | — |
 | `IRL` | Irlanda | Dublino | Non allineata | no / no | 27 | 45/65/25 | — |
 | `ISL` | Islanda | Reykjavík | NATO | no / no | 23 | 40/70/50 | — |
-| `ISR` | Israele | Gerusalemme (status contestato) | Non allineata | no / no | 1 | 60/65/70 | — |
+| `ISR` | Israele | Gerusalemme (sede del governo; status contestato; ambasciate a Tel Aviv) | Non allineata | sì / no | 1 | 60/65/70 | — |
 | `ITA` | Italia | Roma | NATO | no / no | 19 | 55/55/60 | — |
 | `YUG` | Iugoslavia | Belgrado | Non allineata | no / no | 8 | più valori (4) | — |
 | `KAZ` | Kazakistan | Alma-Ata (oggi Almaty) | Patto di Varsavia | no / no | 1 | 45/50/60 | — |
 | `KGZ` | Kirghizistan | Frunze (oggi Biškek) | Patto di Varsavia | no / no | 1 | 35/50/40 | — |
 | `KWT` | Kuwait | Kuwait City | Protettorato britannico | no / no | 1 | 45/60/60 | — |
-| `LAO` | Laos | Vientiane | Non allineata | no / no | 1 | 35/50/40 | — |
+| `LAO` | Laos | Vientiane (capitale amministrativa; Luang Prabang residenza reale) | Non allineata | sì / no | 1 | 35/50/40 | — |
 | `LVA` | Lettonia | Riga | Patto di Varsavia | no / no | 1 | 40/50/50 | — |
 | `LBN` | Libano | Beirut | Non allineata | no / no | 1 | 35/50/40 | — |
 | `LTU` | Lituania | Vilnius | Patto di Varsavia | no / no | 1 | 40/50/45 | — |
@@ -163,7 +163,7 @@ Come è stato trovato il punto di ogni unità regionale (`REGION_METHODS`, dichi
 | `NPL` | Nepal | Kathmandu | Non allineata | no / no | 1 | 35/50/40 | — |
 | `NOR` | Norvegia | Oslo | NATO | no / no | 20 | 50/65/45 | — |
 | `OMN` | Oman | Mascate | da verificare | no / no | 1 | 35/50/40 | alleanza |
-| `NLD` | Paesi Bassi | Amsterdam | NATO | no / no | 11 | 60/65/50 | — |
+| `NLD` | Paesi Bassi | Amsterdam (capitale riconosciuta dal 1814; governo e parlamento all'Aia) | NATO | sì / no | 11 | 60/65/50 | — |
 | `PAK` | Pakistan | Rawalpindi (capitale provvisoria dal 1959 — da verificare) | SEATO e CENTO | no / no | 12 | 32/48/55 | capitale |
 | `POL` | Polonia | Varsavia | Patto di Varsavia | no / no | 22 | 45/55/65 | — |
 | `PRT` | Portogallo | Lisbona | NATO | no / no | 22 | 45/60/40 | — |
@@ -188,7 +188,7 @@ Come è stato trovato il punto di ogni unità regionale (`REGION_METHODS`, dichi
 | `UZB` | Uzbekistan | Tashkent | Patto di Varsavia | no / no | 1 | 35/50/40 | — |
 | `VNN` | Vietnam del Nord | Hanoi | Blocco comunista | no / no | 1 | 30/55/55 | — |
 | `VNS` | Vietnam del Sud | Saigon | Alleata USA | no / no | 1 | 35/40/60 | — |
-| `YEM` | Yemen | Sana'a | Non allineata | no / no | 1 | 35/50/40 | — |
+| `YEM` | Yemen | Taiz (capitale dal 1948 al 1962; Sana'a prima e dopo) | Non allineata | sì / no | 1 | 35/50/40 | — |
 <!-- CENSIMENTO stati FINE -->
 
 ## 2. Unità regionali e province

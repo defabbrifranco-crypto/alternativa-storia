@@ -4,6 +4,34 @@ Qui sono annotate le modifiche rilevanti del progetto, dalla più recente alla p
 
 Le date sono quelle di consegna dei pacchetti di modifiche. Prima della versione 23 il progetto non aveva un registro: le versioni fino alla 22 non sono documentate in questo repository (`archive/` conserva una versione precedente; `src/storia-alternativa-prototipo-map-overlay.html` è il file di partenza della mappa a sovrapposizione). Il numero 0.23.0 è stato assegnato a posteriori: allora non c'era ancora `package.json`.
 
+## [0.31.0] - 2026-11-13
+
+Le prime capitali controllate su fonti: otto sono segnate «verificate» nella scheda del territorio e nel file `src/data/states_1960.json`, e in due casi il controllo cambia il valore: al 31 dicembre 1960 la capitale ufficiale delle Filippine era **Quezon City** (non Manila) e quella dello Yemen era **Taiz** (non Sana'a). Le alleanze non cambiano: sono ancora tutte «non verificate». Lavoro sulla issue [#3](../../issues/3) (fonti e stato di verifica dei dati). Non la chiude.
+
+### Cambiato
+- **Nove capitali hanno un testo nuovo** in `src/data/states_1960.json`, con la fonte registrata in `meta.sources` (indirizzo delle pagine lette, data di lettura, che cosa dicono e che cosa non è stato accertato). Otto sono segnate verificate (`capital_verified: true`):
+  - Paesi Bassi: «Amsterdam» → «Amsterdam (capitale riconosciuta dal 1814; governo e parlamento all'Aia)».
+  - Germania Ovest: «Bonn» → «Bonn (capitale provvisoria dal 1949)».
+  - Germania Est: «Berlino Est» → «Berlino Est (capitale per la RDT; non riconosciuta dalle potenze occidentali)».
+  - Filippine: «Manila» → «Quezon City (capitale ufficiale dal 1948 al 1976; molte funzioni di governo restavano a Manila)».
+  - Laos: «Vientiane» → «Vientiane (capitale amministrativa; Luang Prabang residenza reale)».
+  - Israele: «Gerusalemme (status contestato)» → «Gerusalemme (sede del governo; status contestato; ambasciate a Tel Aviv)».
+  - Yemen: «Sana'a» → «Taiz (capitale dal 1948 al 1962; Sana'a prima e dopo)».
+  - Borneo Britannico: «da verificare» → «Kuching (Sarawak); Jesselton (Borneo Settentrionale)» (sono due colonie distinte).
+  - Bhutan: «Thimphu (da verificare)» → «Thimphu (capitale di fatto dal 1955; ufficiale dal 1961)»: **non verificata**, perché la fonte è una sola e le sue date non coincidono.
+- Per il Borneo Britannico e il Bhutan il flag `capitale_da_verificare` non c'è più: ora il file ha un testo e una fonte consultata. Restano con il flag la capitale di Emirati/Stati della Tregua e del Pakistan e l'alleanza di Cipro e dell'Oman.
+- La legenda dice «Capitali verificate: 8 su 83» (scritto dai dati; le alleanze restano 0 su 83).
+- La testata del file (`global_warning`, `origin`) non dice più che tutte le capitali sono etichette del prototipo.
+- `docs/FONTI.md` ha una sezione «Capitali degli Stati»: le otto verificate con le fonti e i limiti, e che cosa si è trovato per altre sette capitali che restano non verificate (Bhutan, Pakistan, Taiwan, Siria, Arabia Saudita, Oman, Stati della Tregua). `docs/DATI-INCORPORATI.md`, `docs/METODOLOGIA.md`, `README.md` e `src/README.md` dicono che otto capitali sono verificate.
+
+### Aggiunto
+- `tests/stati.test.js` (88 prove in tutto): una prova nuova. Ogni capitale o alleanza segnata verificata ha una fonte registrata in cui ogni pagina citata ha il suo indirizzo e la sua data di lettura («pagina letta il …»), almeno due fonti oppure un documento d'epoca, e un testo che non dice «da verificare»; ogni altra fonte registrata, tranne l'etichetta del prototipo, ha indirizzo e data di lettura per ogni pagina. La prova controlla il minimo che una macchina vede, non se le fonti dicono davvero quello che il file afferma.
+- `tests/browser/t17_stati.js` (83 controlli): casi nuovi (Filippine, Yemen, Paesi Bassi) e legenda che non dipende più da un numero fisso.
+
+### Da sapere
+- «Verificata» vuol dire: scritta da almeno due fonti che concordano, oppure da un documento d'epoca. Le fonti sono secondarie (enciclopedie, siti istituzionali, Wikipedia) e un documento del Dipartimento di Stato americano del 1959; nessuna è d'archivio. Alcune pagine sono state lette da un assistente di ricerca e non riaperte una per una: ogni registrazione lo dice.
+- Le tre copie di riferimento in `src/` e `archive/` hanno ancora i testi della versione 29 (per esempio «Manila» per le Filippine).
+
 ## [0.30.0] - 2026-11-09
 
 La pagina legge nome, capitale, alleanza, colore e giocabilità di ogni Stato dal file `src/data/states_1960.json`, e la scheda del territorio segna ogni capitale e ogni alleanza «non verificata». **Nessun valore cambia**: capitali e alleanze sono quelle della versione 29, ancora tutte senza una fonte; cambia solo che il file lo dice e la pagina lo mostra. Lavoro sulle issue [#3](../../issues/3) (fonti e stato di verifica dei dati) e [#2](../../issues/2) (dati di partenza). Non le chiude. Comprende anche le modifiche delle pull request #14 e #15, già unite e finora sotto «Non rilasciato»: l'inventario dei dati, gli strumenti e le prove, le decisioni dell'autore e le tre copie di riferimento al 31 dicembre 1960 (le voci qui sotto, dopo quelle della versione 30). Il 3 novembre 2026 l'autore ha deciso due cose: le repubbliche sovietiche restano Stati separati e giocabili (opzione A) e i dati non hanno una licenza separata, resta la sola MIT (opzione A).
