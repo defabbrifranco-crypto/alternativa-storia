@@ -38,6 +38,8 @@ A ogni «Avanza» la richiesta al motore dice che nello stesso periodo **anche l
 
 **Cosa si vede.** Il blocco mostra al massimo **10 mosse** per turno. Si accettano mosse scritte come `{"nazione": …, "mossa": …}` oppure come semplici frasi; le righe senza una mossa e i dati che non c'entrano sono ignorati; i testi sono ripuliti e accorciati (la mossa a 280 caratteri) e mostrati come testo. Se il motore non scrive nulla in `mosse_altre_nazioni`, il blocco non compare e il turno prosegue normalmente.
 
+**Le relazioni fra gli Stati (versione 32).** Nello scenario con la mappa la risposta può avere anche un campo `relazioni`, una lista di `{"nazione_a": "FRA", "nazione_b": "ITA", "variazione": -20, "motivo": "…"}`: i fatti che cambiano davvero i rapporti fra due Stati (accordo, alleanza, crisi, rottura…). La pagina controlla ogni voce (variazione intera da −30 a +30 per coppia e per turno, al massimo 12 voci), le applica dopo i cambi di mappa e scrive nella cronaca una riga «🤝 Relazioni» per ogni coppia cambiata, insieme con quello che costano i territori passati di mano o occupati. Le voci non valide non fanno danni: una sola riga «⚠️ Variazioni di relazione ignorate: N». Se il campo manca, il turno prosegue normalmente. Tutto è spiegato in [`RELAZIONI.md`](RELAZIONI.md).
+
 **Limite da conoscere.** Il motore conosce gli ID delle province del giocatore, di quelle che confinano con lui e di quelle degli Stati nominati nelle azioni o nel riepilogo del mondo. Se un'altra nazione fa qualcosa di territoriale che coinvolge province non elencate (per esempio due Stati lontani che si fanno la guerra), il motore può raccontarlo ma **non può scriverlo sulla mappa** in quel turno; entrando nel riepilogo del mondo, quegli Stati risultano «nominati» e dal turno dopo le loro province sono elencate. Le mosse delle altre nazioni sono **finzione** prodotta dal modello: non sono fatti storici.
 
 ## Se qualcosa va storto
@@ -49,6 +51,8 @@ A ogni «Avanza» la richiesta al motore dice che nello stesso periodo **anche l
 ## Salvataggio
 
 L'elenco delle azioni in attesa e il numero di turni fatti sono parte della partita salvata (campi `pending` e `turn` nella sezione `game`). La versione del salvataggio resta `schemaVersion` 3: i salvataggi di prima si caricano ancora, con la coda vuota e il contatore a 0. Quello che c'è in un salvataggio importato viene sempre controllato: le azioni devono essere testi, vengono ripulite e accorciate a 400 caratteri e se ne tengono al massimo 12; il contatore dei turni è riportato a un numero intero tra 0 e 1 000 000; le righe di «Le altre nazioni» sono limitate a 60 e quelle vuote (o i blocchi rimasti vuoti) scartate.
+
+Dalla versione 32 la sezione `game` di una partita nello scenario con la mappa ha anche, se servono, i campi facoltativi `relations` (le relazioni diverse dal valore di partenza) e `relClock` (la frazione di mese non ancora contata per il ritorno lento): i salvataggi di prima si caricano con tutte le relazioni al valore di partenza ([`RELAZIONI.md`](RELAZIONI.md)).
 
 La bozza scritta nella casella e non inviata **non** fa parte del salvataggio (come un testo in un modulo qualunque).
 

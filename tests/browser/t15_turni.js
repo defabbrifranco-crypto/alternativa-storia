@@ -340,7 +340,7 @@ const lines = (n, base = 'Ordine numero ') => Array.from({ length: n }, (_, i) =
   await advance();
   const mp = await ev(g => ({ a: window.__t.provinces[g.A].owner, b: window.__t.provinces[g.B].owner, terr: [...document.querySelectorAll('#log .entry-terr')].map(e => e.textContent).join(' | '), kinds: window.__t.getState().log.map(e => e.k).join() }), geo);
   check('i cambi territoriali dello stesso turno passano dalla regola dei confini: quello valido sì, quello senza confine no, con il motivo', mp.a === 'FRG' && mp.b === 'GDR' && /Non applicato/.test(mp.terr), mp);
-  check('…e la cronaca ha turno, altre nazioni e cambi sulla mappa, in quest\'ordine', mp.kinds === 't,n,g', mp.kinds);
+  check('…e la cronaca ha turno, altre nazioni, cambi sulla mappa e relazioni (il territorio passato di mano le peggiora da sé), in quest\'ordine', mp.kinds === 't,n,g,r', mp.kinds);
   await ev(() => { const T = window.__t; for (const id in T.initialTerritory) { T.provinces[id].owner = T.initialTerritory[id].owner; T.provinces[id].controller = T.initialTerritory[id].controller; } T.renderMapColors(); });
 
   // =============================================================== 10. errore, annullamento, riprova

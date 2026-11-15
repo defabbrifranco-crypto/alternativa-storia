@@ -16,7 +16,30 @@
       "CAPITALE_BRB": "Capitali delle due colonie britanniche che il prototipo tratta come una sola unità. (1) Wikipedia (inglese), voce «Crown Colony of Sarawak» (https://en.wikipedia.org/wiki/Crown_Colony_of_Sarawak), pagina letta il 12 novembre 2026: la scheda indica Kuching come capitale. (2) Wikipedia (inglese), voce «Crown Colony of North Borneo» (https://en.wikipedia.org/wiki/Crown_Colony_of_North_Borneo), pagina letta il 12 novembre 2026: la scheda indica Jesselton come capitale; la voce non dice quando lo divenne. (3) Encyclopaedia Britannica, voce «Kota Kinabalu» (https://www.britannica.com/place/Kota-Kinabalu), pagina letta l'11 novembre 2026 da un assistente di ricerca: il sito di Jesselton (oggi Kota Kinabalu) fu scelto nel 1946 per la nuova capitale del Borneo Settentrionale Britannico. Fonti secondarie.",
       "CAPITALE_BTN": "Capitale del Bhutan al 31 dicembre 1960: fonte consultata, ma non sufficiente per segnarla verificata. Wikipedia (inglese), voce «Thimphu» (https://en.wikipedia.org/wiki/Thimphu), pagina letta il 12 novembre 2026: l'antica capitale Punakha fu sostituita da Thimphu nel 1955; nel 1961 Thimphu fu dichiarata ufficialmente capitale dal terzo re. La stessa voce dà anche il 1952 per la decisione di spostare la capitale: le date non coincidono. Una sola fonte secondaria; nessuna fonte ufficiale del Bhutan è stata letta."
     },
-    "origin": "Valori copiati senza modifiche dalla tabella degli Stati che la pagina aveva scritta nel codice fino alla versione 29. Nella versione 30 la pagina li legge da questo file. Nella versione 31 otto capitali (Paesi Bassi, Germania Ovest, Germania Est, Filippine, Laos, Israele, Yemen, Borneo Britannico) sono state controllate su fonti e segnate verificate, e quella del Bhutan è stata riscritta con le fonti consultate ma resta non verificata; tutto il resto è ancora come nella versione 29."
+    "origin": "Valori copiati senza modifiche dalla tabella degli Stati che la pagina aveva scritta nel codice fino alla versione 29. Nella versione 30 la pagina li legge da questo file. Nella versione 31 otto capitali (Paesi Bassi, Germania Ovest, Germania Est, Filippine, Laos, Israele, Yemen, Borneo Britannico) sono state controllate su fonti e segnate verificate, e quella del Bhutan è stata riscritta con le fonti consultate ma resta non verificata; tutto il resto è ancora come nella versione 29.",
+    "relations": {
+      "verified": false,
+      "basis": "Valori di partenza delle relazioni fra gli Stati al 31 dicembre 1960. Sono una stima del prototipo, non dati storici: nessuna coppia è stata controllata su una fonte. Si calcolano solo da tre cose: il blocco di appartenenza (ricavato dalle etichette di alleanza, a loro volta non verificate), l'appartenenza all'Unione Sovietica e il legame di una colonia o di un protettorato con la sua madrepatria. Ogni valore è un numero intero da -100 a +100: da -100 a 0 relazioni ostili o fredde, da +1 a +100 relazioni amichevoli.",
+      "blocs": {
+        "west": {"label": "Blocco occidentale", "alliances": ["NATO", "CENTO", "SEATO", "SEATO e CENTO", "Alleata USA", "Alleata del Regno Unito"]},
+        "east": {"label": "Blocco orientale", "alliances": ["Patto di Varsavia", "Blocco comunista"]},
+        "neutral": {"label": "Non allineati", "alliances": ["Non allineata"]},
+        "colonial": {"label": "Colonie e protettorati", "alliances": ["Colonia britannica", "Colonia portoghese", "Protettorato britannico"]},
+        "unknown": {"label": "Alleanza da verificare", "alliances": ["da verificare"]}
+      },
+      "bloc_values": {
+        "colonial|colonial": 0, "colonial|east": -10, "colonial|neutral": 0, "colonial|unknown": 0, "colonial|west": 10,
+        "east|east": 45, "east|neutral": 0, "east|unknown": 0, "east|west": -60,
+        "neutral|neutral": 10, "neutral|unknown": 0, "neutral|west": 0,
+        "unknown|unknown": 0, "unknown|west": 0,
+        "west|west": 35
+      },
+      "groups": [
+        {"id": "urss", "label": "Unione Sovietica e repubbliche sovietiche", "members": ["URSS", "UKR", "BLR", "MDA", "EST", "LVA", "LTU", "GEO", "ARM", "AZE", "KAZ", "UZB", "TKM", "TJK", "KGZ"], "value": 80}
+      ],
+      "metropoles": {"Colonia britannica": "GBR", "Protettorato britannico": "GBR", "Colonia portoghese": "PRT"},
+      "metropole_value": 60
+    }
   },
   "states": [
     {"id": "FRA", "name": "Francia", "capital": "Parigi", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "NATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#3b6ea5", "playable": true, "flags": [], "note": null},

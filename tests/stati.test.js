@@ -2,6 +2,9 @@
 // Nome, capitale, alleanza, colore e giocabilità di ogni Stato, e per ogni capitale e ogni alleanza se è stata verificata e su quale fonte.
 // Si controlla che il file rispetti il suo schema, che nessun valore sia segnato «verificato» senza una fonte vera e che i testi dicano la stessa
 // cosa dei flag. La copia nella pagina e la scheda del territorio si provano in tests/stati-pagina.test.js e tests/browser/t17_stati.js.
+// Dalla versione 32 il file ha anche meta.relations: la regola da cui si calcolano i valori di partenza delle relazioni fra gli Stati (da -100 a +100).
+// Sono una stima del prototipo, non dati storici: qui si controlla che la regola sia completa e coerente con gli Stati e che non si dichiari «verificata».
+// Il comportamento in partita si prova in tests/browser/t18_relazioni.js.
 // Esegui con: node --test
 const test = require('node:test');
 const assert = require('node:assert');
@@ -168,4 +171,95 @@ test('i testi del file sono in italiano con gli accenti (la pagina li mostra cos
   })(data, '');
   assert.ok(testi.length > 300, 'la prova sta guardando pochi testi');
   for (const [p, t] of testi) for (const re of sbagliati) assert.ok(!re.test(t), `${p}: il testo sembra scritto senza accenti («${(re.exec(t) || [''])[0]}»): «${t.slice(0, 90)}…»`);
+});
+
+// ---- le relazioni fra gli Stati (versione 32): meta.relations ------------------------------------------------------------
+const REL = data.meta.relations;
+const ID_STATI = new Set(data.states.map(s => s.id));
+const ALLEANZE = new Set(data.states.map(s => s.alliance));
+const ammesso = v => Number.isInteger(v) && v >= -100 && v <= 100;
+const bloccoDi = {};
+for (const [b, o] of Object.entries(REL.blocs)) for (const a of o.alliances) (bloccoDi[a] = bloccoDi[a] || []).push(b);
+// Il valore di partenza di una coppia, calcolato qui con la stessa regola scritta nel file (gruppo, poi madrepatria, poi i due blocchi)
+function valorePartenza(a, b) {
+  if (a === b) return 0;
+  for (const g of REL.groups) if (g.members.includes(a) && g.members.includes(b)) return g.value;
+  const A = data.states.find(s => s.id === a).alliance, B = data.states.find(s => s.id === b).alliance;
+  if (REL.metropoles[A] === b || REL.metropoles[B] === a) return REL.metropole_value;
+  return REL.bloc_values[[bloccoDi[A][0], bloccoDi[B][0]].sort().join('|')];
+}
+
+test('le relazioni di partenza non sono segnate «verificate» e il testo dice che sono una stima, non dati storici', () => {
+  assert.strictEqual(REL.verified, false, 'nessuna coppia ha una fonte: meta.relations.verified deve restare false (se un giorno ci sarà una fonte, la prova e docs/RELAZIONI.md si riscrivono insieme al file)');
+  assert.match(REL.basis, /stima del prototipo, non dati storici/, 'meta.relations.basis deve dire che i valori sono una stima e non dati storici');
+  assert.match(REL.basis, /nessuna coppia è stata controllata su una fonte/, 'meta.relations.basis deve dire che nessuna coppia è stata controllata');
+  assert.match(REL.basis, /da -100 a \+100/, 'meta.relations.basis deve dire la scala');
+});
+
+test('ogni alleanza degli Stati sta in uno e un solo blocco delle relazioni, e ogni etichetta dei blocchi è usata da qualcuno', () => {
+  assert.ok(Object.keys(REL.blocs).length >= 3, 'i blocchi sono pochi');
+  for (const a of ALLEANZE) assert.strictEqual((bloccoDi[a] || []).length, 1, `l'alleanza «${a}» deve stare in un solo blocco (sta in: ${(bloccoDi[a] || []).join(', ') || 'nessuno'})`);
+  for (const a of Object.keys(bloccoDi)) assert.ok(ALLEANZE.has(a), `l'etichetta «${a}» è in un blocco ma nessuno Stato la usa`);
+});
+
+test('i valori fra blocchi: una voce per ogni coppia di blocchi (anche un blocco con se stesso), interi da -100 a +100, e nessuna voce in più', () => {
+  const blocchi = Object.keys(REL.blocs).sort(), attese = [];
+  for (let i = 0; i < blocchi.length; i++) for (let j = i; j < blocchi.length; j++) attese.push(blocchi[i] + '|' + blocchi[j]);
+  assert.deepStrictEqual(Object.keys(REL.bloc_values).sort(), attese.sort(), 'le voci di bloc_values devono essere le coppie dei blocchi, con i nomi in ordine alfabetico');
+  for (const [k, v] of Object.entries(REL.bloc_values)) assert.ok(ammesso(v), `bloc_values[${k}] = ${v}: deve essere un intero da -100 a +100`);
+});
+
+test('gruppi e madrepatrie: Stati che esistono, nessuno in due gruppi, valori interi da -100 a +100', () => {
+  const idGruppi = new Set(), visti = new Set();
+  for (const g of REL.groups) {
+    assert.ok(!idGruppi.has(g.id), `il gruppo «${g.id}» è ripetuto`);
+    idGruppi.add(g.id);
+    assert.ok(g.members.length >= 2, `il gruppo «${g.id}» ha meno di due Stati`);
+    assert.strictEqual(new Set(g.members).size, g.members.length, `il gruppo «${g.id}» ripete uno Stato`);
+    for (const m of g.members) {
+      assert.ok(ID_STATI.has(m), `il gruppo «${g.id}» nomina «${m}», che non è nel file`);
+      assert.ok(!visti.has(m), `lo Stato «${m}» è in due gruppi: non si saprebbe quale valore vale`);
+      visti.add(m);
+    }
+    assert.ok(ammesso(g.value), `il gruppo «${g.id}» ha il valore ${g.value}: deve essere un intero da -100 a +100`);
+  }
+  for (const [etichetta, madre] of Object.entries(REL.metropoles)) {
+    assert.ok(ALLEANZE.has(etichetta), `«${etichetta}» è fra le madrepatrie ma nessuno Stato la usa come alleanza`);
+    assert.ok(ID_STATI.has(madre), `la madrepatria «${madre}» di «${etichetta}» non è nel file`);
+  }
+  assert.ok(ammesso(REL.metropole_value), `metropole_value ${REL.metropole_value}: deve essere un intero da -100 a +100`);
+  assert.deepStrictEqual(data.states.filter(s => REL.metropoles[s.alliance] === s.id).map(s => s.id), [], 'uno Stato risulta madrepatria di se stesso');
+});
+
+test('ogni coppia di Stati ha un valore di partenza intero da -100 a +100, uguale nei due versi, e la scala usa tutti e due i lati', () => {
+  const ids = data.states.map(s => s.id), valori = [];
+  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+    const v = valorePartenza(ids[i], ids[j]);
+    assert.ok(ammesso(v), `${ids[i]}|${ids[j]}: ${v} non è un intero da -100 a +100`);
+    assert.strictEqual(valorePartenza(ids[j], ids[i]), v, `${ids[i]}|${ids[j]}: il valore cambia se si scambiano gli Stati`);
+    valori.push(v);
+  }
+  assert.strictEqual(valori.length, ids.length * (ids.length - 1) / 2);
+  assert.ok(valori.some(v => v < 0) && valori.some(v => v === 0) && valori.some(v => v > 0), 'la scala deve avere valori negativi, zero e positivi');
+  // alcuni valori, scritti a mano: se il file o la regola cambiano, bisogna accorgersene
+  assert.strictEqual(valorePartenza('FRA', 'ITA'), 35);
+  assert.strictEqual(valorePartenza('ITA', 'URSS'), -60);
+  assert.strictEqual(valorePartenza('UKR', 'URSS'), 80);
+  assert.strictEqual(valorePartenza('GBR', 'HKG'), 60);
+  assert.strictEqual(valorePartenza('ITA', 'YUG'), 0);
+});
+
+test('lo schema si accorge dei guasti nelle relazioni', () => {
+  const guasta = f => { const copia = JSON.parse(JSON.stringify(data)); f(copia); const e = []; valida(copia, schema, 'file', e); return e; };
+  assert.ok(guasta(d => { delete d.meta.relations; }).length > 0, 'manca meta.relations: non notato');
+  assert.ok(guasta(d => { delete d.meta.relations.bloc_values; }).length > 0, 'manca bloc_values: non notato');
+  assert.ok(guasta(d => { d.meta.relations.verified = 'no'; }).length > 0, 'verified non booleano: non notato');
+  assert.ok(guasta(d => { d.meta.relations.basis = ''; }).length > 0, 'basis vuoto: non notato');
+  assert.ok(guasta(d => { d.meta.relations.bloc_values['east|west'] = -60.5; }).length > 0, 'valore con la virgola: non notato');
+  assert.ok(guasta(d => { d.meta.relations.blocs.west.alliances = 'NATO'; }).length > 0, 'alliances che non è una lista: non notato');
+  assert.ok(guasta(d => { delete d.meta.relations.blocs.west.label; }).length > 0, 'blocco senza nome: non notato');
+  assert.ok(guasta(d => { d.meta.relations.groups[0].members = ['urss']; }).length > 0, 'codice in minuscolo nel gruppo: non notato');
+  assert.ok(guasta(d => { d.meta.relations.groups[0].value = '80'; }).length > 0, 'valore del gruppo come testo: non notato');
+  assert.ok(guasta(d => { d.meta.relations.metropoles['Colonia portoghese'] = 'prt'; }).length > 0, 'madrepatria in minuscolo: non notato');
+  assert.ok(guasta(d => { d.meta.relations.metropole_value = '60'; }).length > 0, 'metropole_value come testo: non notato');
 });

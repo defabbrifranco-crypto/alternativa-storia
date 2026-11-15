@@ -17,7 +17,7 @@ Nessuna copia è collegata alla pagina o al sito (`../index.html` rinvia alla pa
 
 Che cosa le distingue dalla pagina attuale (controllato sui file il 7 novembre 2026; la riga «Capitali e alleanze», aggiunta con la versione 30, il 9 novembre 2026):
 
-| | Pagina attuale (versione 31) | `storia-alternativa-prototipo-v23.html` | `storia-alternativa-prototipo-map-overlay.html` | `../archive/storia-alternativa-prototipo.html` |
+| | Pagina attuale (versione 32) | `storia-alternativa-prototipo-v23.html` | `storia-alternativa-prototipo-map-overlay.html` | `../archive/storia-alternativa-prototipo.html` |
 |---|---|---|---|---|
 | Territori | 1.020 province, 83 Stati | la stessa mappa e le stesse unità della pagina attuale | 95 province, 84 voci fra Stati e territori dipendenti (69 giocabili) | 95 province, 83 Stati |
 | Le 14 repubbliche sovietiche | Stati separati e giocabili | Stati separati e giocabili | non giocabili e non sovrane: dipendono dall'URSS | Stati separati e giocabili |
@@ -27,6 +27,7 @@ Che cosa le distingue dalla pagina attuale (controllato sui file il 7 novembre 2
 | Status degli Stati | quelli del file, controllati online al 31 dicembre 1960 | gli stessi, scritti negli elenchi | gli stessi, scritti negli elenchi | gli stessi, scritti negli elenchi |
 | Turno | «Invia» e «Avanza»; le altre nazioni agiscono | «Agisci e avanza» | «Agisci e avanza» | «Agisci e avanza» |
 | Segnaposto sulla mappa | sì | sì | no (ha le annotazioni di mappa in testo) | no |
+| Relazioni fra gli Stati (da −100 a +100) | sì: valori di partenza stimati, letti da `meta.relations` del file `data/states_1960.json` ([`../docs/RELAZIONI.md`](../docs/RELAZIONI.md)) | no | no | no |
 
 Nessuna delle tre ha l'Editor scenario, i salvataggi con numero di versione (`schemaVersion`) o la modalità manuale. Per i salvataggi e per il modello linguistico dipendono da `claude.use`: fuori da Claude non hanno né gli uni né l'altro.
 
