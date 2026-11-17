@@ -4,6 +4,58 @@ Qui sono annotate le modifiche rilevanti del progetto, dalla più recente alla p
 
 Le date sono quelle di consegna dei pacchetti di modifiche. Prima della versione 23 il progetto non aveva un registro: le versioni fino alla 22 non sono documentate in questo repository (`archive/` conserva una versione precedente; `src/storia-alternativa-prototipo-map-overlay.html` è il file di partenza della mappa a sovrapposizione). Il numero 0.23.0 è stato assegnato a posteriori: allora non c'era ancora `package.json`.
 
+## [0.32.0] - 2026-11-15
+
+Le **relazioni fra gli Stati**: ogni coppia di Stati ha un numero intero da −100 a +100 (da −100 a 0 relazioni ostili o fredde, da +1 a +100 amichevoli) che cambia durante la partita, torna lentamente verso il valore di partenza e si vede nel gioco. I valori di partenza al 31 dicembre 1960 **non sono dati storici**: sono una stima del prototipo, calcolata dai blocchi di alleanza (che a loro volta sono «non verificati»), e la pagina li chiama «provvisori». Questa versione si costruisce sulla 31 (pull request n. 17), che va unita prima. Non chiude nessuna issue.
+
+### Aggiunto
+- **I valori di partenza**, nel file `src/data/states_1960.json`, in un blocco nuovo `meta.relations` (con `verified: false` e una frase `basis` che dice che sono una stima): i blocchi di alleanza (occidentale 22 Stati, orientale 26, non allineati 23, colonie e protettorati 10, alleanza da verificare 2) con il valore fra ogni coppia di blocchi (15 valori: occidentale–orientale −60, occidentale–occidentale +35, orientale–orientale +45…), un gruppo con valore fisso (l'Unione Sovietica e le sue 14 repubbliche, +80) e le madrepatrie di colonie e protettorati (Regno Unito e Portogallo, +60). Vale la prima regola che si applica: gruppo, madrepatria, blocchi. Sono 3.403 coppie. Lo schema (`src/data/states_1960.schema.json`) descrive il blocco; se manca o è sbagliato la pagina non parte e dice perché, come per gli altri dati degli Stati.
+- **Che cosa si vede** (solo nello scenario con la mappa): il pannello «Relazioni» sotto la scheda della nazione («Più vicine», «Più ostili», l'elenco completo con la fascia a parole, da «Ostilità aperta» a «Molto strette», e lo scarto dall'inizio, la nota sulla scala e «Come sono calcolati i valori di partenza»); la riga «Relazione con il proprietario» nella scheda di ogni territorio altrui («+35 · Amichevoli (provvisorio)»); le righe «🤝 Relazioni» nella cronaca, una per ogni coppia mossa da un evento.
+- **Come cambiano.** (1) Il motore può elencare nella risposta il nuovo campo `relazioni`: da −30 a +30 per coppia e per turno, al massimo 12 voci; le voci non valide si scartano e la cronaca lo dice in una riga. (2) I territori che passano di mano o vengono occupati peggiorano la relazione fra i due Stati (sovranità: −10 il primo e −2 ogni altro, al massimo −20; occupazione: −6, −1, al massimo −12): è una regola del gioco, non storia. (3) Col tempo lo scarto dal valore di partenza si riduce del 4% al mese, di un punto almeno; una settimana vale un quarto di mese.
+- **Il motore e il consigliere**: la richiesta ha una parte nuova (la scala; le relazioni di chi gioca con fino a cinque Stati vicini e cinque ostili, a parità il più popoloso, e con quelli che si sono mossi o sono nominati; le coppie fra altri Stati cambiate; le regole) e lo schema della risposta ha il campo `relazioni`. Il consigliere riceve un riassunto; la conversazione con un'altra nazione, la relazione con lo Stato con cui si parla. La popolazione dei dati serve solo a mettere in ordine, non viene mostrata.
+- **Salvataggio**: campi facoltativi `game.relations` (solo le coppie diverse dal valore di partenza) e `game.relClock` (la frazione di mese non ancora contata); `schemaVersion` resta 3 e i salvataggi di prima si caricano con tutti i valori di partenza. Ogni voce è controllata come se il documento fosse ostile.
+- **`docs/RELAZIONI.md`**: la guida nuova (scala e fasce, valori di partenza, come cambiano, che cosa si vede, che cosa sa il motore, salvataggio, limiti).
+- **Prove**: `tests/browser/t18_relazioni.js` (192 controlli: tutte le 3.403 coppie contro un secondo calcolo scritto nella prova, fasce, pannello e scheda anche a 320 px e nei due temi, risposte del motore valide e sporche, territori, ritorno lento, salvataggio con documenti ostili, richiesta all'AI, dati rotti messi apposta); sei prove nuove sui dati in `tests/stati.test.js`; `FAIL_FAST=1` nel `harness.js` per fermarsi al primo controllo fallito. Le regole sono state messe alla prova con 69 difetti inseriti apposta nel codice della pagina e 34 nel file dei dati, uno alla volta: tutti notati (due difetti hanno mostrato una lacuna sulle partite caricate senza uno Stato valido, ora coperta).
+
+### Cambiato
+- `tests/browser/t3_game.js`: il limite alla lunghezza della richiesta passa da 9.000 a 11.000 caratteri (la prova misurava 8,8 mila, con le relazioni 10,2 mila). `tests/browser/t15_turni.js`: la cronaca di un turno in cui un territorio passa di mano ha anche la riga delle relazioni, dopo i cambi sulla mappa.
+- Documentazione: `README.md`, `docs/README.md`, `docs/METODOLOGIA.md`, `docs/DATI-INCORPORATI.md`, `docs/ACCESSIBILITA.md`, `docs/TURNO-E-AZIONI.md`, `src/README.md` e `tests/browser/README.md` parlano delle relazioni.
+- La pagina dice «Versione 32»; `package.json` passa a 0.32.0.
+
+### Da sapere
+- **Una stima, non storia.** Nessuna coppia è stata controllata su una fonte. Le alleanze da cui si ricavano i blocchi sono ancora tutte «non verificate». I costi dei territori e il ritorno lento sono scelte di gioco (costanti `REL_CONQUEST`, `REL_OCCUPATION`, `REL_DRIFT` nella pagina).
+- **Non provato con il motore vero.** Le prove usano risposte simulate: come il modello userà il campo `relazioni` e i numeri si vedrà giocando. La richiesta al motore è più lunga di circa 1.300 caratteri.
+- **Per ora le relazioni non decidono nulla da sole**: la pagina non blocca né permette azioni in base ai valori; li legge il motore e li vede il giocatore. Non si modificano nell'Editor scenario e nelle partite libere non ci sono.
+- Le copie di riferimento in `src/` e in `archive/` non hanno le relazioni.
+
+## [0.31.0] - 2026-11-13
+
+Le prime capitali controllate su fonti: otto sono segnate «verificate» nella scheda del territorio e nel file `src/data/states_1960.json`, e in due casi il controllo cambia il valore: al 31 dicembre 1960 la capitale ufficiale delle Filippine era **Quezon City** (non Manila) e quella dello Yemen era **Taiz** (non Sana'a). Le alleanze non cambiano: sono ancora tutte «non verificate». Lavoro sulla issue [#3](../../issues/3) (fonti e stato di verifica dei dati). Non la chiude.
+
+### Cambiato
+- **Nove capitali hanno un testo nuovo** in `src/data/states_1960.json`, con la fonte registrata in `meta.sources` (indirizzo delle pagine lette, data di lettura, che cosa dicono e che cosa non è stato accertato). Otto sono segnate verificate (`capital_verified: true`):
+  - Paesi Bassi: «Amsterdam» → «Amsterdam (capitale riconosciuta dal 1814; governo e parlamento all'Aia)».
+  - Germania Ovest: «Bonn» → «Bonn (capitale provvisoria dal 1949)».
+  - Germania Est: «Berlino Est» → «Berlino Est (capitale per la RDT; non riconosciuta dalle potenze occidentali)».
+  - Filippine: «Manila» → «Quezon City (capitale ufficiale dal 1948 al 1976; molte funzioni di governo restavano a Manila)».
+  - Laos: «Vientiane» → «Vientiane (capitale amministrativa; Luang Prabang residenza reale)».
+  - Israele: «Gerusalemme (status contestato)» → «Gerusalemme (sede del governo; status contestato; ambasciate a Tel Aviv)».
+  - Yemen: «Sana'a» → «Taiz (capitale dal 1948 al 1962; Sana'a prima e dopo)».
+  - Borneo Britannico: «da verificare» → «Kuching (Sarawak); Jesselton (Borneo Settentrionale)» (sono due colonie distinte).
+  - Bhutan: «Thimphu (da verificare)» → «Thimphu (capitale di fatto dal 1955; ufficiale dal 1961)»: **non verificata**, perché la fonte è una sola e le sue date non coincidono.
+- Per il Borneo Britannico e il Bhutan il flag `capitale_da_verificare` non c'è più: ora il file ha un testo e una fonte consultata. Restano con il flag la capitale di Emirati/Stati della Tregua e del Pakistan e l'alleanza di Cipro e dell'Oman.
+- La legenda dice «Capitali verificate: 8 su 83» (scritto dai dati; le alleanze restano 0 su 83).
+- La testata del file (`global_warning`, `origin`) non dice più che tutte le capitali sono etichette del prototipo.
+- `docs/FONTI.md` ha una sezione «Capitali degli Stati»: le otto verificate con le fonti e i limiti, e che cosa si è trovato per altre sette capitali che restano non verificate (Bhutan, Pakistan, Taiwan, Siria, Arabia Saudita, Oman, Stati della Tregua). `docs/DATI-INCORPORATI.md`, `docs/METODOLOGIA.md`, `README.md` e `src/README.md` dicono che otto capitali sono verificate.
+
+### Aggiunto
+- `tests/stati.test.js` (88 prove in tutto): una prova nuova. Ogni capitale o alleanza segnata verificata ha una fonte registrata in cui ogni pagina citata ha il suo indirizzo e la sua data di lettura («pagina letta il …»), almeno due fonti oppure un documento d'epoca, e un testo che non dice «da verificare»; ogni altra fonte registrata, tranne l'etichetta del prototipo, ha indirizzo e data di lettura per ogni pagina. La prova controlla il minimo che una macchina vede, non se le fonti dicono davvero quello che il file afferma.
+- `tests/browser/t17_stati.js` (83 controlli): casi nuovi (Filippine, Yemen, Paesi Bassi) e legenda che non dipende più da un numero fisso.
+
+### Da sapere
+- «Verificata» vuol dire: scritta da almeno due fonti che concordano, oppure da un documento d'epoca. Le fonti sono secondarie (enciclopedie, siti istituzionali, Wikipedia) e un documento del Dipartimento di Stato americano del 1959; nessuna è d'archivio. Alcune pagine sono state lette da un assistente di ricerca e non riaperte una per una: ogni registrazione lo dice.
+- Le tre copie di riferimento in `src/` e `archive/` hanno ancora i testi della versione 29 (per esempio «Manila» per le Filippine).
+
 ## [0.30.0] - 2026-11-09
 
 La pagina legge nome, capitale, alleanza, colore e giocabilità di ogni Stato dal file `src/data/states_1960.json`, e la scheda del territorio segna ogni capitale e ogni alleanza «non verificata». **Nessun valore cambia**: capitali e alleanze sono quelle della versione 29, ancora tutte senza una fonte; cambia solo che il file lo dice e la pagina lo mostra. Lavoro sulle issue [#3](../../issues/3) (fonti e stato di verifica dei dati) e [#2](../../issues/2) (dati di partenza). Non le chiude. Comprende anche le modifiche delle pull request #14 e #15, già unite e finora sotto «Non rilasciato»: l'inventario dei dati, gli strumenti e le prove, le decisioni dell'autore e le tre copie di riferimento al 31 dicembre 1960 (le voci qui sotto, dopo quelle della versione 30). Il 3 novembre 2026 l'autore ha deciso due cose: le repubbliche sovietiche restano Stati separati e giocabili (opzione A) e i dati non hanno una licenza separata, resta la sola MIT (opzione A).

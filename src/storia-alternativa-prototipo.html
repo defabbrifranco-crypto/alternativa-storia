@@ -9,6 +9,7 @@
     --bg: #f4f1ea; --panel: #ffffff; --ink: #2b2419; --muted: #6b6255;
     --accent: #8a3324; --border: #d8d0c0; --user-msg: #efe6d8;
     --on-accent: #ffffff; --field-border: #857a69; --focus: #0b57d0;
+    --rel-pos: #2f6b4f; --rel-neg: #a5322a;
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -17,11 +18,13 @@
     :root:not([data-theme="light"]) {
       --bg: #1b1712; --panel: #262019; --ink: #ece4d6; --muted: #a89e8c;
       --accent: #d97757; --border: #3a3327; --user-msg: #332b20; --on-accent: #1b1712; --field-border: #7d7364; --focus: #8ab4f8;
+      --rel-pos: #6fbf8f; --rel-neg: #e0786d;
     }
   }
   :root[data-theme="dark"] {
     --bg: #1b1712; --panel: #262019; --ink: #ece4d6; --muted: #a89e8c;
     --accent: #d97757; --border: #3a3327; --user-msg: #332b20; --on-accent: #1b1712; --field-border: #7d7364; --focus: #8ab4f8;
+    --rel-pos: #6fbf8f; --rel-neg: #e0786d;
   }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
   * { box-sizing: border-box; }
@@ -106,6 +109,20 @@
   .province-poly.flash { animation: flashpulse 1.8s ease-out 1; }
   @keyframes flashpulse { 0%, 45% { stroke:#ffd54a; stroke-width:5px; } 100% { stroke-width:.6px; } }
   .entry-terr { font-size:.88rem; background:var(--user-msg); border-left:3px solid var(--accent); border-radius:6px; padding:6px 10px; line-height:1.4; }
+  /* relations between the states, from -100 to +100: the sign and the words say what a value means; the bar only repeats it */
+  .entry-rel { font-size:.88rem; background:var(--user-msg); border-left:3px solid var(--muted); border-radius:6px; padding:6px 10px; line-height:1.4; }
+  .rel-gist { font-size:.85rem; line-height:1.45; margin:0 0 4px; overflow-wrap:anywhere; }
+  .rel-gist b { font-weight:600; }
+  .rel-list { list-style:none; margin:6px 0 0; padding:0; max-height:340px; overflow-y:auto; }
+  .rel-item { display:grid; grid-template-columns:minmax(0, 1fr) auto; column-gap:10px; row-gap:3px; align-items:center; padding:6px 4px; border-bottom:1px dashed var(--border); }
+  .rel-name { font-size:.88rem; color:var(--ink); overflow-wrap:anywhere; }
+  .rel-val { font-size:.95rem; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; text-align:right; }
+  .rel-sub { font-size:.72rem; color:var(--muted); min-width:0; }
+  .rel-bar { position:relative; display:block; width:96px; height:6px; border-radius:999px; background:var(--border); justify-self:end; }
+  .rel-bar::after { content:''; position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:var(--muted); }
+  .rel-bar i { position:absolute; top:0; bottom:0; border-radius:999px; }
+  .rel-bar i.pos { left:50%; background:var(--rel-pos); }
+  .rel-bar i.neg { right:50%; background:var(--rel-neg); }
   /* borders: one thin line per border / coast, the same thickness on screen at every zoom */
   .border-coast, .border-land { fill:none; vector-effect:non-scaling-stroke; stroke-linejoin:round; stroke-linecap:round; pointer-events:none; }
   .border-coast { stroke:#3a3022; stroke-width:.8px; }
@@ -263,6 +280,8 @@
     .mode-btn.active, .tab-btn.active { forced-color-adjust:none; background:Highlight; color:HighlightText; border-color:Highlight; }
     .meter-track { forced-color-adjust:none; background:Canvas; border:1px solid CanvasText; }
     .meter-fill { forced-color-adjust:none; background:Highlight; }
+    .rel-bar { forced-color-adjust:none; background:Canvas; border:1px solid CanvasText; }
+    .rel-bar i { forced-color-adjust:none; background:Highlight; }
     .dot, .sw { forced-color-adjust:none; border:1px solid CanvasText; }
   }
 </style>
@@ -278,7 +297,7 @@
     <header class="panel" id="appHead">
       <h1 id="appTitle" tabindex="-1"><span aria-hidden="true">🗺️ </span>Storia Alternativa</h1>
       <p class="sub">Prototipo ispirato al funzionamento di Pax Historia: scegli lo scenario fisso della Guerra Fredda o crea un tuo scenario libero.</p>
-      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 30</p>
+      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 32</p>
     </header>
 
     <div class="panel hidden" id="resumeBanner">
@@ -368,6 +387,7 @@
         <div class="pp-row hidden" id="pp-statecap-row"><span>Capitale del proprietario</span><strong id="pp-statecap">—</strong></div>
         <div class="pp-row"><span>Alleanza del proprietario</span><strong id="pp-statealliance">—</strong></div>
         <details class="pp-det" id="pp-statedet"><summary>Capitale e alleanza: fonte e verifica</summary><div class="pp-note" id="pp-statenote"></div></details>
+        <div class="pp-row hidden" id="pp-rel-row"><span>Relazione con il proprietario</span><strong id="pp-rel">—</strong></div>
         <div class="pp-row"><span>Popolazione (1960)</span><strong id="pp-population">—</strong></div>
         <div class="pp-row hidden" id="pp-statepop-row"><span id="pp-statepop-label">Popolazione dello Stato</span><strong id="pp-statepop">—</strong></div>
         <div class="pp-note hidden" id="pp-popnote"></div>
@@ -479,6 +499,18 @@
         <div class="meter-track" aria-hidden="true"><div class="meter-fill" id="f-prestigio" style="width:50%"></div></div>
       </div>
     </div>
+
+    <section class="panel hidden" id="relPanel" aria-labelledby="relTitle">
+      <h3 id="relTitle">Relazioni</h3>
+      <p class="rel-gist" id="relBest"></p>
+      <p class="rel-gist" id="relWorst"></p>
+      <details class="pp-det" id="relBox">
+        <summary id="relSummary">Tutte le relazioni</summary>
+        <p class="pp-note" id="relNote"></p>
+        <ul class="rel-list" id="relList" aria-label="Relazioni della tua nazione con gli altri Stati"></ul>
+        <details class="pp-det" id="relBasisBox"><summary>Come sono calcolati i valori di partenza</summary><p class="pp-note" id="relBasis"></p></details>
+      </details>
+    </section>
 
     <div class="tabs" role="tablist" aria-label="Sezioni della partita">
       <button class="tab-btn active" id="tabActions" type="button" role="tab" aria-selected="true" aria-controls="actionsPanel" tabindex="0">Azioni</button>
@@ -2911,21 +2943,53 @@ window.MAP_SVG = {
   "meta": {
     "title": "Stati del prototipo: nome, capitale, alleanza, colore",
     "reference_date": "1960-12-31",
-    "global_warning": "Capitali e alleanze sono etichette scritte dal prototipo, non dati storici verificati. L'etichetta di alleanza mescola blocchi militari (NATO, Patto di Varsavia, CENTO, SEATO), status (colonie e protettorati) e orientamenti («Non allineata»): non va letta come appartenenza giuridica né come neutralità. Nome, colore e giocabilità sono scelte del prototipo, non dati storici.",
-    "verification_policy": "capital_verified=false e alliance_verified=false significano che il valore è l'etichetta scritta dal prototipo e non è stato controllato su nessuna fonte (la fonte registrata è PROTOTYPE_LABEL). Un valore si segna true solo dopo aver registrato in sources la fonte consultata, con la data di consultazione, e averne messo l'identificativo in capital_source_id o alliance_source_id: la prova tests/stati.test.js si ferma se un valore è segnato verificato con la fonte PROTOTYPE_LABEL. Dove il prototipo non conosceva il dato, il testo dice «da verificare» e il record ha il flag capitale_da_verificare o alleanza_da_verificare.",
+    "global_warning": "Le alleanze e quasi tutte le capitali sono etichette scritte dal prototipo, non dati storici verificati: sono verificate solo le capitali che la scheda segna come tali, con la fonte e la data di consultazione nella nota. L'etichetta di alleanza mescola blocchi militari (NATO, Patto di Varsavia, CENTO, SEATO), status (colonie e protettorati) e orientamenti («Non allineata»): non va letta come appartenenza giuridica né come neutralità. Nome, colore e giocabilità sono scelte del prototipo, non dati storici.",
+    "verification_policy": "capital_verified=false e alliance_verified=false significano che il valore è l'etichetta scritta dal prototipo e non è stato controllato su nessuna fonte (la fonte registrata è PROTOTYPE_LABEL). Un valore si segna true solo dopo aver registrato in sources la fonte consultata, con la data di consultazione, e averne messo l'identificativo in capital_source_id o alliance_source_id: la prova tests/stati.test.js si ferma se un valore è segnato verificato con la fonte PROTOTYPE_LABEL, con una fonte senza indirizzo o in cui una pagina citata non dice quando è stata letta, con una sola fonte che non è un documento d'epoca, o con un testo che dice «da verificare». Dove il prototipo non conosceva il dato, il testo dice «da verificare» e il record ha il flag capitale_da_verificare o alleanza_da_verificare.",
     "sources": {
-      "PROTOTYPE_LABEL": "Etichetta scritta dal prototipo (versione 29 e precedenti), senza una fonte: non è un dato verificato."
+      "PROTOTYPE_LABEL": "Etichetta scritta dal prototipo (versione 29 e precedenti), senza una fonte: non è un dato verificato.",
+      "CAPITALE_NLD": "Capitale dei Paesi Bassi al 31 dicembre 1960. (1) Wikipedia (inglese), voce «Capital of the Netherlands» (https://en.wikipedia.org/wiki/Capital_of_the_Netherlands), pagina letta l'11 novembre 2026 da un assistente di ricerca e riscontrata il 12 novembre 2026 in una copia ridotta della voce: Amsterdam è riconosciuta come capitale dal 1814; la sede del governo e del parlamento è L'Aia; la Costituzione chiama Amsterdam capitale solo dalla revisione del 1983. (2) NH Nieuws, articolo sui quarant'anni di Amsterdam capitale formale (https://www.nhnieuws.nl/nieuws/322023/amsterdam-dit-jaar-officieel-40-jaar-hoofdstad-van-nederland-ik-dacht-200-jaar), pagina letta l'11 novembre 2026 da un assistente di ricerca: per secoli la città del governo fu L'Aia; solo nel 1983 la capitale è stata fissata di nuovo per iscritto. Fonti secondarie; il testo della Costituzione in vigore nel 1960 non è stato letto.",
+      "CAPITALE_FRG": "Capitale della Germania Ovest al 31 dicembre 1960. (1) Deutscher Bundestag, archivio web, pagina sulla sede del governo a Bonn (https://www.bundestag.de/webarchiv/textarchiv/2014/kw45_regierungssitz_bonn-337836), pagina letta l'11 novembre 2026 da un assistente di ricerca: per molti anni Bonn restò la capitale federale provvisoria e il «segnaposto» di Berlino. (2) berlin.de, «Berlin after 1945» (https://www.berlin.de/en/history/8481782-8619314-berlin-after-1945.en.html), pagina letta l'11 novembre 2026 da un assistente di ricerca: il 10 maggio 1949 il Consiglio parlamentare indicò Bonn come capitale provvisoria del nuovo Stato. Fonti istituzionali tedesche; il testo della decisione del 1949 non è stato letto.",
+      "CAPITALE_GDR": "Capitale della Germania Est al 31 dicembre 1960. (1) German History in Documents and Images (Istituto storico tedesco di Washington), Costituzione della Repubblica Democratica Tedesca del 7 ottobre 1949 (https://germanhistorydocs.org/de/die-besatzungszeit-und-die-entstehung-zweier-staaten-1945-1961/die-verfassung-der-deutschen-demokratischen-republik-7-oktober-1949), pagina letta l'11 novembre 2026 da un assistente di ricerca: l'articolo 2 dice che la capitale della Repubblica è Berlino. (2) Wikipedia (inglese), voce «East Berlin» (https://en.wikipedia.org/wiki/East_Berlin), pagina letta l'11 novembre 2026 da un assistente di ricerca: le potenze alleate occidentali non riconobbero Berlino Est come capitale della RDT. Il secondo punto poggia su una sola fonte secondaria.",
+      "CAPITALE_PHL": "Capitale delle Filippine al 31 dicembre 1960. (1) Sito ufficiale della Città di Quezon (https://quezoncity.gov.ph/?p=1658), pagina letta il 12 novembre 2026: la legge n. 333 del 17 luglio 1948 fece di Quezon City la capitale delle Filippine; il decreto presidenziale n. 940 del 24 giugno 1976 restituì il ruolo di capitale a Manila. (2) Encyclopaedia Britannica, voce «Quezon City» (https://www.britannica.com/place/Quezon-City), pagina letta l'11 novembre 2026 da un assistente di ricerca: Quezon City fu capitale delle Filippine dal 1948 al 1976; molte funzioni del governo nazionale restarono però a Manila, dove la sede del governo tornò nel 1976. I testi delle leggi non sono stati letti; non è stato accertato dove sedessero di fatto presidente e Congresso nel 1960.",
+      "CAPITALE_LAO": "Capitale del Laos al 31 dicembre 1960. (1) Encyclopaedia Britannica, voce «Louangphrabang» (https://www.britannica.com/place/Louangphrabang), pagina letta l'11 novembre 2026 da un assistente di ricerca: Luang Prabang restò la residenza reale e il centro religioso del Laos, mentre Vientiane fu fatta capitale amministrativa. (2) Keesing's Contemporary Archives, ottobre 1960 (copia su web.stanford.edu: https://web.stanford.edu/group/tomzgroup/pmwiki/uploads/1350-1960-10-06-Keesings-a-JLW.pdf), pagina letta l'11 novembre 2026 da un assistente di ricerca: il nuovo governo laotiano prestò giuramento a Vientiane il 2 settembre 1960. Nessuna pagina letta copre i combattimenti di Vientiane del dicembre 1960; non è stato accertato quando Vientiane divenne capitale amministrativa.",
+      "CAPITALE_ISR": "Capitale di Israele al 31 dicembre 1960. US Department of State, Office of the Historian, Foreign Relations of the United States 1958-1960, volume XIII, documento 65 del 20 febbraio 1959 (https://history.state.gov/historicaldocuments/frus1958-60v13/d65), pagina letta l'11 novembre 2026 da un assistente di ricerca: dice che la sede del governo israeliano si era spostata a Gerusalemme, che l'ambasciata americana e la maggior parte delle altre missioni diplomatiche restavano a Tel Aviv e che la questione di Gerusalemme andava risolta tenendo conto dell'interesse internazionale per la città. Documento d'epoca (1959). Non sono state lette pagine sulla proclamazione di Gerusalemme capitale da parte di Israele né sulla sede della Knesset nel 1960.",
+      "CAPITALE_YEM": "Capitale del Regno del Yemen (lo Yemen del nord, sotto l'imam Ahmad) al 31 dicembre 1960. (1) Encyclopaedia Britannica, voce «Sanaa» (https://www.britannica.com/place/Sanaa), pagina letta il 12 novembre 2026: sotto l'imam Ahmad la capitale fu spostata a Taiz; Sanaa tornò capitale con la rivoluzione del 1962. (2) Wikipedia (inglese), voce «Mutawakkilite Kingdom of Yemen» (copia archiviata il 29 ottobre 2021: https://webcf.waybackmachine.org/web/20211029031610/https://en.wikipedia.org/wiki/Mutawakkilite_Kingdom_of_Yemen), pagina letta l'11 novembre 2026 da un assistente di ricerca: la capitale fu Sanaa fino al 1948, poi Taiz. Non è stato accertato se Sanaa abbia conservato un ruolo formale dopo il 1948, né dove avessero sede le legazioni straniere.",
+      "CAPITALE_BRB": "Capitali delle due colonie britanniche che il prototipo tratta come una sola unità. (1) Wikipedia (inglese), voce «Crown Colony of Sarawak» (https://en.wikipedia.org/wiki/Crown_Colony_of_Sarawak), pagina letta il 12 novembre 2026: la scheda indica Kuching come capitale. (2) Wikipedia (inglese), voce «Crown Colony of North Borneo» (https://en.wikipedia.org/wiki/Crown_Colony_of_North_Borneo), pagina letta il 12 novembre 2026: la scheda indica Jesselton come capitale; la voce non dice quando lo divenne. (3) Encyclopaedia Britannica, voce «Kota Kinabalu» (https://www.britannica.com/place/Kota-Kinabalu), pagina letta l'11 novembre 2026 da un assistente di ricerca: il sito di Jesselton (oggi Kota Kinabalu) fu scelto nel 1946 per la nuova capitale del Borneo Settentrionale Britannico. Fonti secondarie.",
+      "CAPITALE_BTN": "Capitale del Bhutan al 31 dicembre 1960: fonte consultata, ma non sufficiente per segnarla verificata. Wikipedia (inglese), voce «Thimphu» (https://en.wikipedia.org/wiki/Thimphu), pagina letta il 12 novembre 2026: l'antica capitale Punakha fu sostituita da Thimphu nel 1955; nel 1961 Thimphu fu dichiarata ufficialmente capitale dal terzo re. La stessa voce dà anche il 1952 per la decisione di spostare la capitale: le date non coincidono. Una sola fonte secondaria; nessuna fonte ufficiale del Bhutan è stata letta."
     },
-    "origin": "Valori copiati senza modifiche dalla tabella degli Stati che la pagina aveva scritta nel codice fino alla versione 29. Nella versione 30 la pagina li legge da questo file."
+    "origin": "Valori copiati senza modifiche dalla tabella degli Stati che la pagina aveva scritta nel codice fino alla versione 29. Nella versione 30 la pagina li legge da questo file. Nella versione 31 otto capitali (Paesi Bassi, Germania Ovest, Germania Est, Filippine, Laos, Israele, Yemen, Borneo Britannico) sono state controllate su fonti e segnate verificate, e quella del Bhutan è stata riscritta con le fonti consultate ma resta non verificata; tutto il resto è ancora come nella versione 29.",
+    "relations": {
+      "verified": false,
+      "basis": "Valori di partenza delle relazioni fra gli Stati al 31 dicembre 1960. Sono una stima del prototipo, non dati storici: nessuna coppia è stata controllata su una fonte. Si calcolano solo da tre cose: il blocco di appartenenza (ricavato dalle etichette di alleanza, a loro volta non verificate), l'appartenenza all'Unione Sovietica e il legame di una colonia o di un protettorato con la sua madrepatria. Ogni valore è un numero intero da -100 a +100: da -100 a 0 relazioni ostili o fredde, da +1 a +100 relazioni amichevoli.",
+      "blocs": {
+        "west": {"label": "Blocco occidentale", "alliances": ["NATO", "CENTO", "SEATO", "SEATO e CENTO", "Alleata USA", "Alleata del Regno Unito"]},
+        "east": {"label": "Blocco orientale", "alliances": ["Patto di Varsavia", "Blocco comunista"]},
+        "neutral": {"label": "Non allineati", "alliances": ["Non allineata"]},
+        "colonial": {"label": "Colonie e protettorati", "alliances": ["Colonia britannica", "Colonia portoghese", "Protettorato britannico"]},
+        "unknown": {"label": "Alleanza da verificare", "alliances": ["da verificare"]}
+      },
+      "bloc_values": {
+        "colonial|colonial": 0, "colonial|east": -10, "colonial|neutral": 0, "colonial|unknown": 0, "colonial|west": 10,
+        "east|east": 45, "east|neutral": 0, "east|unknown": 0, "east|west": -60,
+        "neutral|neutral": 10, "neutral|unknown": 0, "neutral|west": 0,
+        "unknown|unknown": 0, "unknown|west": 0,
+        "west|west": 35
+      },
+      "groups": [
+        {"id": "urss", "label": "Unione Sovietica e repubbliche sovietiche", "members": ["URSS", "UKR", "BLR", "MDA", "EST", "LVA", "LTU", "GEO", "ARM", "AZE", "KAZ", "UZB", "TKM", "TJK", "KGZ"], "value": 80}
+      ],
+      "metropoles": {"Colonia britannica": "GBR", "Protettorato britannico": "GBR", "Colonia portoghese": "PRT"},
+      "metropole_value": 60
+    }
   },
   "states": [
     {"id": "FRA", "name": "Francia", "capital": "Parigi", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "NATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#3b6ea5", "playable": true, "flags": [], "note": null},
     {"id": "BEL", "name": "Belgio", "capital": "Bruxelles", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "NATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#5b8fc7", "playable": true, "flags": [], "note": null},
-    {"id": "NLD", "name": "Paesi Bassi", "capital": "Amsterdam", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "NATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#7aa8d8", "playable": true, "flags": [], "note": null},
+    {"id": "NLD", "name": "Paesi Bassi", "capital": "Amsterdam (capitale riconosciuta dal 1814; governo e parlamento all'Aia)", "capital_verified": true, "capital_source_id": "CAPITALE_NLD", "alliance": "NATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#7aa8d8", "playable": true, "flags": [], "note": null},
     {"id": "LUX", "name": "Lussemburgo", "capital": "Lussemburgo", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "NATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#2d5580", "playable": true, "flags": [], "note": null},
     {"id": "DNK", "name": "Danimarca", "capital": "Copenaghen", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "NATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#4a7fb5", "playable": true, "flags": [], "note": null},
-    {"id": "FRG", "name": "Germania Ovest", "capital": "Bonn", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "NATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#6ba3d6", "playable": true, "flags": [], "note": null},
-    {"id": "GDR", "name": "Germania Est", "capital": "Berlino Est", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Patto di Varsavia", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#8a3830", "playable": true, "flags": [], "note": null},
+    {"id": "FRG", "name": "Germania Ovest", "capital": "Bonn (capitale provvisoria dal 1949)", "capital_verified": true, "capital_source_id": "CAPITALE_FRG", "alliance": "NATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#6ba3d6", "playable": true, "flags": [], "note": null},
+    {"id": "GDR", "name": "Germania Est", "capital": "Berlino Est (capitale per la RDT; non riconosciuta dalle potenze occidentali)", "capital_verified": true, "capital_source_id": "CAPITALE_GDR", "alliance": "Patto di Varsavia", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#8a3830", "playable": true, "flags": [], "note": null},
     {"id": "POL", "name": "Polonia", "capital": "Varsavia", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Patto di Varsavia", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#a5453b", "playable": true, "flags": [], "note": null},
     {"id": "TCH", "name": "Cecoslovacchia", "capital": "Praga", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Patto di Varsavia", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#c06b5f", "playable": true, "flags": [], "note": null},
     {"id": "AUT", "name": "Austria", "capital": "Vienna", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#7a9b6a", "playable": true, "flags": [], "note": null},
@@ -2965,10 +3029,10 @@ window.MAP_SVG = {
     {"id": "IRQ", "name": "Iraq", "capital": "Baghdad", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#75b561", "playable": true, "flags": [], "note": null},
     {"id": "SYR", "name": "Siria", "capital": "Damasco", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#699463", "playable": true, "flags": [], "note": null},
     {"id": "LBN", "name": "Libano", "capital": "Beirut", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#8ba660", "playable": true, "flags": [], "note": null},
-    {"id": "ISR", "name": "Israele", "capital": "Gerusalemme (status contestato)", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#a2bf87", "playable": true, "flags": [], "note": null},
+    {"id": "ISR", "name": "Israele", "capital": "Gerusalemme (sede del governo; status contestato; ambasciate a Tel Aviv)", "capital_verified": true, "capital_source_id": "CAPITALE_ISR", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#a2bf87", "playable": true, "flags": [], "note": null},
     {"id": "JOR", "name": "Giordania", "capital": "Amman", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#8a9a5c", "playable": true, "flags": [], "note": null},
     {"id": "SAU", "name": "Arabia Saudita", "capital": "Riyad", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#afba8c", "playable": true, "flags": [], "note": null},
-    {"id": "YEM", "name": "Yemen", "capital": "Sana'a", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#8bb76f", "playable": true, "flags": [], "note": null},
+    {"id": "YEM", "name": "Yemen", "capital": "Taiz (capitale dal 1948 al 1962; Sana'a prima e dopo)", "capital_verified": true, "capital_source_id": "CAPITALE_YEM", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#8bb76f", "playable": true, "flags": [], "note": null},
     {"id": "OMN", "name": "Oman", "capital": "Mascate", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "da verificare", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#858b8e", "playable": true, "flags": ["alleanza_da_verificare"], "note": null},
     {"id": "ARE", "name": "Stati della Tregua (Emirati Arabi Uniti)", "capital": "da verificare", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Protettorato britannico", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#9b896f", "playable": true, "flags": ["capitale_da_verificare"], "note": null},
     {"id": "QAT", "name": "Qatar", "capital": "Doha", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Protettorato britannico", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#b1a680", "playable": true, "flags": [], "note": null},
@@ -2979,7 +3043,7 @@ window.MAP_SVG = {
     {"id": "PAK", "name": "Pakistan", "capital": "Rawalpindi (capitale provvisoria dal 1959 — da verificare)", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "SEATO e CENTO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#3c6f9b", "playable": true, "flags": ["capitale_da_verificare"], "note": null},
     {"id": "IND", "name": "India", "capital": "Nuova Delhi", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#7ba350", "playable": true, "flags": [], "note": null},
     {"id": "NPL", "name": "Nepal", "capital": "Kathmandu", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#8baf68", "playable": true, "flags": [], "note": null},
-    {"id": "BTN", "name": "Bhutan", "capital": "Thimphu (da verificare)", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#77ac5a", "playable": true, "flags": ["capitale_da_verificare"], "note": null},
+    {"id": "BTN", "name": "Bhutan", "capital": "Thimphu (capitale di fatto dal 1955; ufficiale dal 1961)", "capital_verified": false, "capital_source_id": "CAPITALE_BTN", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#77ac5a", "playable": true, "flags": [], "note": null},
     {"id": "LKA", "name": "Ceylon", "capital": "Colombo", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#acb285", "playable": true, "flags": [], "note": null},
     {"id": "CHN", "name": "Cina", "capital": "Pechino", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Blocco comunista", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#b3342f", "playable": true, "flags": [], "note": null},
     {"id": "TWN", "name": "Repubblica di Cina (Taiwan)", "capital": "Taipei", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Alleata USA", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#506a95", "playable": true, "flags": [], "note": null},
@@ -2991,16 +3055,16 @@ window.MAP_SVG = {
     {"id": "JPN", "name": "Giappone", "capital": "Tokyo", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Alleata USA", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#4a78b8", "playable": true, "flags": [], "note": null},
     {"id": "THA", "name": "Thailandia", "capital": "Bangkok", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "SEATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#3e5a80", "playable": true, "flags": [], "note": null},
     {"id": "MMR", "name": "Birmania", "capital": "Rangoon (oggi Yangon)", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#5e9d4a", "playable": true, "flags": [], "note": null},
-    {"id": "LAO", "name": "Laos", "capital": "Vientiane", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#628f47", "playable": true, "flags": [], "note": null},
+    {"id": "LAO", "name": "Laos", "capital": "Vientiane (capitale amministrativa; Luang Prabang residenza reale)", "capital_verified": true, "capital_source_id": "CAPITALE_LAO", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#628f47", "playable": true, "flags": [], "note": null},
     {"id": "KHM", "name": "Cambogia", "capital": "Phnom Penh", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#83a97e", "playable": true, "flags": [], "note": null},
     {"id": "VNN", "name": "Vietnam del Nord", "capital": "Hanoi", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Blocco comunista", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#7e2728", "playable": true, "flags": [], "note": null},
     {"id": "VNS", "name": "Vietnam del Sud", "capital": "Saigon", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Alleata USA", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#304674", "playable": true, "flags": [], "note": null},
     {"id": "MYS", "name": "Malaya (Federazione della Malesia)", "capital": "Kuala Lumpur", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Alleata del Regno Unito", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#3c5d75", "playable": true, "flags": [], "note": null},
-    {"id": "BRB", "name": "Borneo Britannico (Sarawak e Nord Borneo)", "capital": "da verificare", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Colonia britannica", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#c0b398", "playable": true, "flags": ["capitale_da_verificare"], "note": null},
+    {"id": "BRB", "name": "Borneo Britannico (Sarawak e Nord Borneo)", "capital": "Kuching (Sarawak); Jesselton (Borneo Settentrionale)", "capital_verified": true, "capital_source_id": "CAPITALE_BRB", "alliance": "Colonia britannica", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#c0b398", "playable": true, "flags": [], "note": null},
     {"id": "BRN", "name": "Brunei", "capital": "Brunei Town (oggi Bandar Seri Begawan)", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Protettorato britannico", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#a29a74", "playable": true, "flags": [], "note": null},
     {"id": "SGP", "name": "Singapore", "capital": "Singapore", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Colonia britannica", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#bdb39b", "playable": true, "flags": [], "note": null},
     {"id": "IDN", "name": "Indonesia", "capital": "Giacarta", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Non allineata", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#a1b77f", "playable": true, "flags": [], "note": null},
-    {"id": "PHL", "name": "Filippine", "capital": "Manila", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "SEATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#4d7eb2", "playable": true, "flags": [], "note": null},
+    {"id": "PHL", "name": "Filippine", "capital": "Quezon City (capitale ufficiale dal 1948 al 1976; molte funzioni di governo restavano a Manila)", "capital_verified": true, "capital_source_id": "CAPITALE_PHL", "alliance": "SEATO", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#4d7eb2", "playable": true, "flags": [], "note": null},
     {"id": "TLS", "name": "Timor Portoghese", "capital": "Dili", "capital_verified": false, "capital_source_id": "PROTOTYPE_LABEL", "alliance": "Colonia portoghese", "alliance_verified": false, "alliance_source_id": "PROTOTYPE_LABEL", "color": "#ae9368", "playable": true, "flags": [], "note": null}
   ]
 }
@@ -3022,6 +3086,41 @@ window.MAP_SVG = {
   // Without the states the page cannot work (every territory belongs to one): a copy that cannot be read stops the page, with a message.
   let STATES = { meta: {}, states: [] };
   let statesLoadError = null;                    // why the data could not be read, or null
+  // The starting values of the relations between the states are in the same file (meta.relations): a value from -100 to +100 for every pair,
+  // worked out from blocs, groups and mother countries. Every pair gets its value from this description, so it is checked here, as the states are.
+  function checkRelationsSpec(rel, states) {
+    const has = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+    const isObj = o => !!o && typeof o === 'object' && !Array.isArray(o);
+    const isRel = v => Number.isInteger(v) && v >= -100 && v <= 100;
+    if (!isObj(rel)) throw new Error("nel file dei dati manca «relations», i valori di partenza delle relazioni");
+    if (typeof rel.verified !== 'boolean') throw new Error('«relations.verified» manca o non è vero/falso');
+    if (typeof rel.basis !== 'string' || !rel.basis) throw new Error('«relations.basis» manca: dice da dove vengono i valori di partenza');
+    if (!isObj(rel.blocs) || !Object.keys(rel.blocs).length) throw new Error('«relations.blocs» manca o è vuoto');
+    const blocOfAlliance = {};
+    for (const id in rel.blocs) {
+      const b = rel.blocs[id];
+      if (!isObj(b) || typeof b.label !== 'string' || !Array.isArray(b.alliances)) throw new Error('il blocco «' + id + '» delle relazioni non è valido');
+      b.alliances.forEach(a => {
+        if (has(blocOfAlliance, a)) throw new Error("l'alleanza «" + a + '» sta in due blocchi delle relazioni');
+        blocOfAlliance[a] = id;
+      });
+    }
+    states.forEach(s => { if (!has(blocOfAlliance, s.alliance)) throw new Error("l'alleanza «" + s.alliance + '» di ' + s.id + ' non sta in nessun blocco delle relazioni'); });
+    if (!isObj(rel.bloc_values)) throw new Error('«relations.bloc_values» manca');
+    const ids = Object.keys(rel.blocs).sort();
+    for (let i = 0; i < ids.length; i++) for (let j = i; j < ids.length; j++) {
+      const k = ids[i] + '|' + ids[j];
+      if (!has(rel.bloc_values, k) || !isRel(rel.bloc_values[k])) throw new Error('il valore «' + k + '» fra blocchi manca o non è un intero da -100 a 100');
+    }
+    const known = {};
+    states.forEach(s => { known[s.id] = true; });
+    if (!Array.isArray(rel.groups)) throw new Error('«relations.groups» manca');
+    rel.groups.forEach(g => {
+      if (!isObj(g) || !Array.isArray(g.members) || !isRel(g.value) || g.members.some(m => typeof m !== 'string' || !has(known, m))) throw new Error('un gruppo delle relazioni non è valido');
+    });
+    if (!isObj(rel.metropoles) || !Object.keys(rel.metropoles).every(a => has(blocOfAlliance, a) && has(known, rel.metropoles[a]))) throw new Error('«relations.metropoles» non è valido');
+    if (!isRel(rel.metropole_value)) throw new Error('«relations.metropole_value» non è un intero da -100 a 100');
+  }
   try {
     const node = el('states-1960-data');
     if (!node) throw new Error('nella pagina manca il blocco dei dati degli Stati');
@@ -3036,6 +3135,7 @@ window.MAP_SVG = {
       if (seen[s.id]) throw new Error('lo Stato «' + s.id + '» compare due volte');
       seen[s.id] = true;
     });
+    checkRelationsSpec(STATES.meta.relations, STATES.states);
   } catch (e) {
     statesLoadError = e.message;
     console.error('Dati degli Stati non letti: ' + e.message);
@@ -5651,6 +5751,7 @@ window.MAP_SVG = {
     if (R) el('pp-type').textContent = R.type;
     el('pp-capital').textContent = capoluogoText(p);
     fillStateCard(p);
+    fillRelationRow(p);                         // the relation of the player with the owner (only in a running game on the map)
     // Population: the province's own figure if it has one (a state made of a single province); otherwise only the figure of the
     // state it belonged to on 31 Dec 1960 (or, for the divisions of Pakistan, of the wing they belong to), never a share of it.
     // Source, verification, status, perimeter and warnings of that figure come from the data file (see fillPopulationCard).
@@ -6458,6 +6559,8 @@ window.MAP_SVG = {
       pending: [],                      // the orders sent and waiting for the time to advance (strings)
       turn: 0,                          // how many times the time has advanced (it rotates the nations given room in the story)
       stats: { stabilita: 50, economia: 50, esercito: 50, prestigio: 50 },
+      rel: {},                          // relations that differ from their starting value: {"AAA|BBB": -100..100} (see «relations between the states»)
+      relClock: 0,                      // months of time passed but not yet counted for the slow return of the relations (a fraction of a month)
       diplo: { target: '', history: [], bubbles: [] }
     };
   }
@@ -6489,8 +6592,9 @@ window.MAP_SVG = {
   }
 
   // ---- log entries are data (so a game can be saved and restored) ------
-  // k: a = player action, t = turn result, n = what the other nations did, v = advisor, g = map/game notice, x = transient notice (not saved)
+  // k: a = player action, t = turn result, n = what the other nations did, v = advisor, g = map/game notice, r = changes of the relations, x = transient notice (not saved)
   function renderLogEntry(e) {
+    if (e.k === 'r') return `<div class="entry-rel">🤝 <b>Relazioni</b><br>${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
     if (e.k === 'a') return `<div class="entry-action">✍️ ${escapeHtml(e.text)}</div>`;
     if (e.k === 't') return `<div class="entry-year">${escapeHtml(e.year)}</div>${e.headline ? `<div class="entry-headline">${escapeHtml(e.headline)}</div>` : ''}<div class="entry-narr">${escapeHtml(e.narr)}</div>`;
     if (e.k === 'n') return `<div class="entry-others">🌍 <b>Le altre nazioni</b><br>${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
@@ -6602,6 +6706,7 @@ window.MAP_SVG = {
     el('nationLabel').textContent = state.nation;
     el('yearLabel').textContent = state.year;
     renderStats();
+    renderRelations();                                  // only in a game on the map
     gameEl.classList.remove('hidden');
     el('gameTitle').setAttribute('aria-level', mode === 'free' ? '1' : '2');     // the page has one h1 at a time
     updateModeUI();                                     // a game is running: the editor is off
@@ -6705,6 +6810,265 @@ window.MAP_SVG = {
     s += `Se, e solo se, la narrazione descrive un vero passaggio di sovranità su un territorio (conquista, annessione, secessione, cessione, unificazione), elencalo in "cambi_territoriali" con l'ID della provincia e il codice del nuovo proprietario, usando SOLO gli ID elencati sopra: al massimo ${MAX_CHANGES} per turno e sempre coerenti con la narrazione. Ogni provincia ceduta deve confinare con un territorio che il nuovo proprietario già possiede o controlla, altrimenti il cambio viene ignorato: per annessioni ampie procedi per tappe, dal confine verso l'interno. Altrimenti "cambi_territoriali" deve essere un array vuoto.\n`;
     s += `Se una provincia viene solo occupata (il proprietario legittimo resta lo stesso) o torna sotto il controllo del suo proprietario, usa invece "cambi_controllo" con l'ID e il codice del nuovo controllore: stesse regole di confine, tranne la restituzione al proprietario, che è sempre ammessa. Altrimenti "cambi_controllo" deve essere un array vuoto.\n`;
     return s;
+  }
+
+  /* ---- relations between the states -------------------------------------------------------------------------
+     Every pair of states has a whole number from -100 to +100: from -100 to 0 hostile or cold relations, from +1 to +100 friendly.
+     The starting values (31 December 1960) are a provisional estimate written in the data file (meta.relations): they come from the blocs,
+     from the Soviet Union and its republics and from the link of a colony with its mother country, not from verified facts.
+     During a game they change: by what the engine reports ("relazioni"), by the territories that change hands (a rule of the game, not
+     history) and, slowly, back towards the starting value. Only the pairs that differ from the start are kept (state.rel).       */
+  const REL = STATES.meta.relations;
+  const REL_PROVISIONAL = REL.verified !== true;      // the data file says whether the starting values were checked
+  const REL_MIN = -100, REL_MAX = 100;
+  const MAX_REL_CHANGES = 12, REL_STEP_MAX = 30;      // entries read per turn / the most one entry can move a pair
+  // what a turn's territorial changes cost a pair of states: the first territory, then each further one, and the most per turn
+  const REL_CONQUEST = { first: -10, extra: -2, cap: -20 }, REL_OCCUPATION = { first: -6, extra: -1, cap: -12 };
+  const REL_DRIFT = 0.04;                             // each month a gap from the starting value shrinks by 4% (by one point at least)
+  const JUMP_MONTHS = { '1 settimana': 0.25, '1 mese': 1, '6 mesi': 6, '1 anno': 12 };
+  const REL_BANDS = [
+    [-100, -76, 'Ostilità aperta'], [-75, -51, 'Ostili'], [-50, -26, 'Tese'], [-25, 0, 'Fredde'],
+    [1, 25, 'Cordiali'], [26, 50, 'Amichevoli'], [51, 75, 'Strette'], [76, 100, 'Molto strette']
+  ];
+  const REL_BLOC = Object.create(null);               // alliance label -> bloc
+  for (const id in REL.blocs) REL.blocs[id].alliances.forEach(a => { REL_BLOC[a] = id; });
+  const REL_GROUPS = REL.groups.map(g => ({ value: g.value, members: new Set(g.members) }));
+
+  const clampRel = v => Math.max(REL_MIN, Math.min(REL_MAX, Math.round(v)));
+  const relKey = (a, b) => (a < b ? a + '|' + b : b + '|' + a);       // the same key for (a, b) and (b, a)
+  // The starting value of a pair: the group they both belong to, else the mother country of a colony, else the two blocs.
+  function relBaseline(a, b) {
+    if (a === b || !own(countries, a) || !own(countries, b)) return 0;
+    for (const g of REL_GROUPS) if (g.members.has(a) && g.members.has(b)) return g.value;
+    const A = countries[a].alliance, B = countries[b].alliance;
+    if ((own(REL.metropoles, A) && REL.metropoles[A] === b) || (own(REL.metropoles, B) && REL.metropoles[B] === a)) return REL.metropole_value;
+    const x = REL_BLOC[A], y = REL_BLOC[B];
+    return REL.bloc_values[x <= y ? x + '|' + y : y + '|' + x];
+  }
+  const relGet = (a, b) => (a === b ? 0 : own(state.rel, relKey(a, b)) ? state.rel[relKey(a, b)] : relBaseline(a, b));
+  function relSet(a, b, v) {
+    if (a === b || !own(countries, a) || !own(countries, b)) return;
+    const key = relKey(a, b), n = clampRel(v);
+    if (n === relBaseline(a, b)) delete state.rel[key]; else state.rel[key] = n;      // a pair back at its starting value is not kept
+  }
+  const relAdd = (a, b, d) => relSet(a, b, relGet(a, b) + d);
+  function relBand(v) { for (const [lo, hi, name] of REL_BANDS) if (v >= lo && v <= hi) return name; return ''; }
+  const fmtRel = v => (v > 0 ? '+' + v : v < 0 ? '−' + (-v) : '0');      // always with its sign, the real minus sign for the negatives
+  const relText = v => (v > 0 ? '+' + v : String(v));                          // the same for the engine, with a plain hyphen
+  const relByName = (x, y) => (x.name < y.name ? -1 : x.name > y.name ? 1 : 0);
+  const relByCode = (x, y) => (x.c < y.c ? -1 : x.c > y.c ? 1 : 0);
+
+  // How many territories each state owns: a state that owns none no longer exists, and the big ones matter most when the list has to be short.
+  const provinceCounts = () => {
+    const n = Object.create(null);
+    for (const id in provinces) n[provinces[id].owner] = (n[provinces[id].owner] || 0) + 1;
+    return n;
+  };
+  // How big a state is, to choose among equals (the closest, the most hostile): its population in 1960 when the population file gives a single
+  // figure (only to put the states in order, never shown), then the number of territories it owns on the map, then its code.
+  const relPop = c => { const v = countries[c].population; return typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0; };
+  const relBySize = (x, y) => y.pop - x.pop || y.n - x.n || relByCode(x, y);
+  // The other states that still exist, with their relation to the player: value, gap from the starting value, size.
+  function relOthers() {
+    const player = selectedCountryId, counts = provinceCounts();
+    return Object.keys(countries).filter(c => c !== player && counts[c]).map(c => {
+      const v = relGet(player, c);
+      return { c, name: countries[c].name, v, d: v - relBaseline(player, c), n: counts[c], pop: relPop(c) };
+    });
+  }
+
+  // What the engine is told. The player's relations that matter (the five closest and the five most hostile states, the most populous first among
+  // equals; the ones that moved; the states named in the orders and in the story; the ones given room this turn), then the other pairs that moved.
+  // Names come with their codes: the answer uses codes.
+  function relationsContext(extraText, spotCodes) {
+    if (!mapGameStarted || !selectedCountryId) return '';
+    const P = selectedCountryId, rows = relOthers(), picked = new Map();
+    const add = r => { if (r) picked.set(r.c, r); };
+    rows.filter(r => r.v >= 26).sort((x, y) => y.v - x.v || relBySize(x, y)).slice(0, 5).forEach(add);
+    rows.filter(r => r.v <= -26).sort((x, y) => x.v - y.v || relBySize(x, y)).slice(0, 5).forEach(add);
+    rows.filter(r => Math.abs(r.d) >= 5).sort((x, y) => Math.abs(y.d) - Math.abs(x.d) || relBySize(x, y)).slice(0, 8).forEach(add);
+    mentionedCountries(extraText).slice(0, 4).concat(spotCodes || []).forEach(c => add(rows.find(r => r.c === c)));
+    const list = [...picked.values()].sort((x, y) => y.v - x.v || relByName(x, y)).slice(0, 30).map(r => `${r.name} (${r.c}) ${relText(r.v)}`);
+    let s = `Relazioni fra gli Stati, da -100 a +100 (da -100 a 0 ostili o fredde, da +1 a +100 amichevoli${REL_PROVISIONAL ? '; valori di partenza: stima provvisoria, non dati storici' : ''}).\n`;
+    s += `Relazioni di ${countries[P].name} (valore attuale): ${list.length ? list.join('; ') : 'nessuna'}.\n`;
+    const alive = provinceCounts();
+    const moved = Object.keys(state.rel).map(k => { const [a, b] = k.split('|'); return { a, b, v: state.rel[k], base: relBaseline(a, b) }; })
+      .filter(x => x.a !== P && x.b !== P && alive[x.a] && alive[x.b] && Math.abs(x.v - x.base) >= 5)
+      .sort((x, y) => Math.abs(y.v - y.base) - Math.abs(x.v - x.base) || (x.a + x.b < y.a + y.b ? -1 : 1)).slice(0, 20)
+      .map(x => `${countries[x.a].name} (${x.a}) – ${countries[x.b].name} (${x.b}): ${relText(x.v)} (di partenza ${relText(x.base)})`);
+    if (moved.length) s += `Altre coppie cambiate rispetto alla partenza (valore attuale): ${moved.join('; ')}.\n`;
+    return s;
+  }
+  // How the engine reports a change of relations, and what the game does by itself.
+  function relationsRules() {
+    return `Relazioni: se un fatto cambia davvero i rapporti fra due Stati (accordo, alleanza, aiuto, crisi, aggressione, rottura), elencalo in "relazioni" come {"nazione_a":"CODICE","nazione_b":"CODICE","variazione":intero da -${REL_STEP_MAX} a ${REL_STEP_MAX},"motivo":"frase breve"}: solo la variazione (positiva se migliorano, negativa se peggiorano), con i codici paesi elencati sopra, al massimo ${MAX_REL_CHANGES} voci (di norma da 0 a 5), coerenti con la narrazione. Passaggi di sovranità e occupazioni peggiorano già da soli i rapporti: non ripeterli (se concordati, compensa con una variazione positiva). Col tempo i valori tornano verso quello di partenza. Rapporti molto ostili frenano la collaborazione, molto stretti la favoriscono, ma le svolte restano possibili. Se non cambia nulla, "relazioni" è un array vuoto.\n`;
+  }
+  // A few words for the advisor, and for the first message of a talk: the closest and the most hostile states / the relation with the state named.
+  function relationsSummary() {
+    if (!mapGameStarted || !selectedCountryId) return '';
+    const rows = relOthers();
+    const pick = (keep, cmp) => rows.filter(keep).sort(cmp).slice(0, 3).map(r => `${r.name} ${relText(r.v)}`).join(', ');
+    const best = pick(r => r.v > 0, (x, y) => y.v - x.v || relBySize(x, y)), worst = pick(r => r.v < 0, (x, y) => x.v - y.v || relBySize(x, y));
+    return ` Relazioni, da -100 a +100: più vicini ${best || 'nessuno'}; più ostili ${worst || 'nessuno'}.`;
+  }
+  function relationsWith(text) {
+    if (!mapGameStarted || !selectedCountryId) return '';
+    const P = selectedCountryId;
+    const list = mentionedCountries(text).slice(0, 2).map(c => `${countries[c].name} ${relText(relGet(P, c))} (${relBand(relGet(P, c))})`);
+    return list.length ? ` Relazioni attuali con ${countries[P].name}, da -100 a +100: ${list.join('; ')}.` : '';
+  }
+
+  // The engine's changes: [{nazione_a, nazione_b, variazione, motivo}]. Every entry is checked (two different states of the map, a whole number that
+  // is not zero, at most REL_STEP_MAX each way) and what is not valid is left out and counted. Returns the events (to be told) and how many were refused.
+  function applyRelationChanges(list) {
+    const res = { events: [], refused: 0 };
+    if (!Array.isArray(list)) return res;
+    res.refused = Math.max(0, list.length - MAX_REL_CHANGES);
+    const code = v => { const c = typeof v === 'string' ? v.trim().toUpperCase() : ''; return own(countries, c) ? c : null; };
+    const pairs = new Map();
+    for (const item of list.slice(0, MAX_REL_CHANGES)) {
+      const ok = !!item && typeof item === 'object' && !Array.isArray(item);
+      const a = ok ? code(item.nazione_a) : null, b = ok ? code(item.nazione_b) : null;
+      let n = ok ? item.variazione : NaN;
+      if (typeof n === 'string') n = Number(n.replace('−', '-'));
+      if (!a || !b || a === b || typeof n !== 'number' || !Number.isFinite(n)) { res.refused++; continue; }
+      n = Math.round(n);
+      if (n === 0) continue;                                           // no change: nothing to tell
+      const key = relKey(a, b), why = cleanText(pickKey(item, 'motivo', 'causa', 'perche'), 160);
+      const cur = pairs.get(key);
+      if (cur) { cur.delta += n; if (!cur.why) cur.why = why; } else pairs.set(key, { a, b, delta: n, why });
+    }
+    pairs.forEach(p => {
+      relAdd(p.a, p.b, Math.max(-REL_STEP_MAX, Math.min(REL_STEP_MAX, p.delta)));
+      res.events.push({ a: p.a, b: p.b, why: p.why });
+    });
+    return res;
+  }
+  function territorySnapshot() {
+    const s = {};
+    for (const id in provinces) s[id] = [provinces[id].owner, provinces[id].controller];
+    return s;
+  }
+  // What the territorial changes of a turn cost the relations, pair by pair: whoever takes a territory from another state, or occupies it, is
+  // resented. Found by comparing the map before and after the turn, so it does not depend on how each change was made. A rule of the game.
+  function territoryRelationEffects(before) {
+    const conquests = new Map(), occupations = new Map();
+    const count = (m, a, b) => { const k = relKey(a, b), e = m.get(k) || { a, b, n: 0 }; e.n++; m.set(k, e); };
+    for (const id in provinces) {
+      const was = before[id], p = provinces[id];
+      if (!was) continue;
+      if (p.owner !== was[0]) count(conquests, was[0], p.owner);                                            // the sovereignty passed to another state
+      if (p.controller !== was[1] && p.controller !== p.owner) count(occupations, p.owner, p.controller);   // someone else than the owner holds it now
+    }
+    const events = [];
+    const apply = (m, rule, label) => m.forEach(e => {
+      relAdd(e.a, e.b, Math.max(rule.cap, rule.first + rule.extra * (e.n - 1)));
+      events.push({ a: e.a, b: e.b, why: `${label} (${e.n} ${e.n === 1 ? 'territorio' : 'territori'})` });
+    });
+    apply(conquests, REL_CONQUEST, 'cambio di sovranità');
+    apply(occupations, REL_OCCUPATION, 'occupazione');
+    return events;
+  }
+  // Time heals: each month a gap from the starting value shrinks by REL_DRIFT (by one point at least). A jump shorter than a month is
+  // kept in state.relClock until the months add up, so a game played in weeks drifts too.
+  function driftRelations(jump) {
+    state.relClock = (state.relClock || 0) + (own(JUMP_MONTHS, jump) ? JUMP_MONTHS[jump] : 1);
+    const months = Math.floor(state.relClock);
+    state.relClock -= months;
+    for (let m = 0; m < months; m++) {
+      for (const key in state.rel) {
+        const [a, b] = key.split('|'), base = relBaseline(a, b), gap = state.rel[key] - base;
+        const step = Math.min(Math.abs(gap), Math.max(1, Math.ceil(Math.abs(gap) * REL_DRIFT)));
+        const next = state.rel[key] - Math.sign(gap) * step;
+        if (next === base) delete state.rel[key]; else state.rel[key] = next;
+      }
+    }
+  }
+  // The lines of the log for one turn: one for each pair moved by an event (not by the slow drift), from its value at the start of the turn.
+  function relationLines(start, events, refused) {
+    const pairs = new Map();
+    events.forEach(ev => {
+      const k = relKey(ev.a, ev.b);
+      if (!pairs.has(k)) pairs.set(k, { a: ev.a, b: ev.b, why: [] });
+      if (ev.why) pairs.get(k).why.push(ev.why);
+    });
+    const P = selectedCountryId, rows = [];
+    pairs.forEach((p, k) => {
+      const from = own(start, k) ? start[k] : relBaseline(p.a, p.b), to = relGet(p.a, p.b);
+      if (from === to) return;
+      const [x, y] = p.b === P ? [p.b, p.a] : [p.a, p.b];                // the player's state first
+      rows.push({ gap: Math.abs(to - from), text: `${countries[x].name} – ${countries[y].name}: ${fmtRel(from)} → ${fmtRel(to)} (${relBand(to)})${p.why.length ? ' — ' + p.why.join('; ') : ''}` });
+    });
+    rows.sort((m, n) => n.gap - m.gap);
+    const out = rows.map(r => r.text);
+    if (refused) out.push(`⚠️ Variazioni di relazione ignorate: ${refused} (Stati o valori non validi, oppure oltre il massimo di ${MAX_REL_CHANGES} per turno)`);
+    return out;
+  }
+  // In a save: only the pairs that differ from the starting value. A value that is not a whole number from -100 to +100, a key that is not a
+  // sorted pair of two states of the map, or a value equal to the start is left out, whatever the document says.
+  function relationsForSave() {
+    const out = {};
+    Object.keys(state.rel).sort().forEach(k => { out[k] = state.rel[k]; });
+    return out;
+  }
+  function cleanRelationsSave(raw) {
+    const out = {};
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
+    let n = 0;
+    for (const key in raw) {
+      if (++n > 4000) break;                                             // there are 3,403 pairs at most
+      const m = /^([A-Z]{3,4})\|([A-Z]{3,4})$/.exec(key);
+      if (!m || m[1] >= m[2] || !own(countries, m[1]) || !own(countries, m[2])) continue;
+      const v = raw[key];
+      if (typeof v === 'number' && Number.isInteger(v) && v >= REL_MIN && v <= REL_MAX && v !== relBaseline(m[1], m[2])) out[key] = v;
+    }
+    return out;
+  }
+
+  // ---- what the player sees: the panel «Relazioni» and the row on the card of a territory ----
+  const relVisible = () => gameMode === 'fixed' && mapGameStarted && !!selectedCountryId;
+  function relItem(r) {
+    const li = document.createElement('li');
+    li.className = 'rel-item';
+    const name = document.createElement('span'); name.className = 'rel-name'; name.textContent = r.name;
+    const val = document.createElement('span'); val.className = 'rel-val'; val.textContent = fmtRel(r.v);
+    const sub = document.createElement('span'); sub.className = 'rel-sub';
+    sub.textContent = relBand(r.v) + (r.d ? " · dall'inizio " + fmtRel(r.d) : '');
+    const bar = document.createElement('span'); bar.className = 'rel-bar'; bar.setAttribute('aria-hidden', 'true');
+    const fill = document.createElement('i'); fill.className = r.v < 0 ? 'neg' : 'pos'; fill.style.width = (Math.abs(r.v) / 2) + '%';
+    bar.appendChild(fill);
+    li.append(name, val, sub, bar);
+    return li;
+  }
+  function renderRelations() {
+    const on = relVisible();
+    el('relPanel').classList.toggle('hidden', !on);
+    if (!on) { el('relList').textContent = ''; fillRelationRow(selectedProvinceId ? provinces[selectedProvinceId] : null); return; }
+    const rows = relOthers();
+    const moved = (x, y) => Math.abs(y.d) - Math.abs(x.d);              // among equal values, the ones that moved most come first
+    rows.sort((x, y) => y.v - x.v || moved(x, y) || relByName(x, y));
+    const gist = (label, list) => label + ': ' + (list.length ? list.map(r => r.name + ' ' + fmtRel(r.v)).join(' · ') : 'nessuna');
+    // the two short lines: among equal values the ones that moved most, then the most populous (the full list below stays in alphabetical order)
+    setTextIf('relBest', gist('Più vicine', rows.filter(r => r.v > 0).sort((x, y) => y.v - x.v || moved(x, y) || relBySize(x, y)).slice(0, 3)));
+    setTextIf('relWorst', gist('Più ostili', rows.filter(r => r.v < 0).sort((x, y) => x.v - y.v || moved(x, y) || relBySize(x, y)).slice(0, 3)));
+    setTextIf('relSummary', `Tutte le relazioni (${rows.length})`);
+    setTextIf('relNote', 'Valore da −100 a +100 fra la tua nazione e ogni altro Stato: da −100 a 0 relazioni ostili o fredde, da +1 a +100 amichevoli. '
+      + (REL_PROVISIONAL ? 'I valori di partenza sono una stima provvisoria del prototipo, non dati storici. ' : 'I valori di partenza sono segnati come verificati nel file dei dati. ')
+      + 'Cambiano per gli eventi della storia e per i territori che passano di mano; col tempo tornano lentamente verso il valore di partenza.');
+    setTextIf('relBasis', REL.basis);
+    const list = el('relList'), frag = document.createDocumentFragment();
+    rows.forEach(r => frag.appendChild(relItem(r)));
+    list.textContent = '';
+    list.appendChild(frag);
+    fillRelationRow(selectedProvinceId ? provinces[selectedProvinceId] : null);
+  }
+  // The row «Relazione con il proprietario» of the card: only in a running game, for a territory that is not the player's own.
+  function fillRelationRow(p) {
+    const show = relVisible() && !!p && p.owner !== selectedCountryId && own(countries, p.owner);
+    el('pp-rel-row').classList.toggle('hidden', !show);
+    if (!show) return;
+    const v = relGet(selectedCountryId, p.owner);
+    setTextIf('pp-rel', fmtRel(v) + ' · ' + relBand(v) + (REL_PROVISIONAL ? ' (provvisorio)' : ''));
   }
 
   function flashProvince(id) {
@@ -6826,6 +7190,7 @@ window.MAP_SVG = {
     renderQueue();
     el('tabActions').onclick();
     renderStats();
+    renderRelations();                                  // no game: the panel is hidden and the new state has no relations of its own
     setGameButtons(!!sample);
     thinkingEl.classList.add('hidden');
     gameEl.classList.add('hidden');
@@ -6932,15 +7297,16 @@ window.MAP_SVG = {
 
   // The nations the engine is asked to give room to this time, so that the smaller states act too and not only the big
   // powers. The list rotates with the turn number and uses no randomness: the same game always gives the same list.
-  function spotlightNations(n) {
+  function spotlightCodes(n) {
     const owners = new Set(Object.keys(provinces).map(id => provinces[id].owner));
     const hash = s => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
     return Object.keys(countries)
       .filter(c => c !== selectedCountryId && owners.has(c) && !/^colonia/i.test(countries[c].alliance || ''))
       .map(c => ({ c, h: hash(state.turn + '|' + c) }))
       .sort((a, b) => a.h - b.h || (a.c < b.c ? -1 : 1))
-      .slice(0, n).map(x => countries[x.c].name);
+      .slice(0, n).map(x => x.c);
   }
+  const spotlightNations = n => spotlightCodes(n).map(c => countries[c].name);
   // What the other nations did, as the engine reports it ([{nazione, mossa}] or plain sentences): checked and shortened
   // before it is shown. Anything that is not a move is ignored.
   function otherMoveLines(list) {
@@ -6959,12 +7325,14 @@ window.MAP_SVG = {
   // invitation to the other nations to act freely, and the shape of the answer.
   function turnPrompt(actions, jump, mapMode) {
     const s = state.stats;
-    const mapPart = mapMode ? territoryContext() + "\n" + territoryRules(actions.join(' ') + ' ' + (state.worldSummary || '')) + markerRules() : "";
-    const schemaExtra = mapMode ? ', "cambi_territoriali": [{"provincia": "ID", "nuovo_proprietario": "CODICE"}], "cambi_controllo": [{"provincia": "ID", "nuovo_controllore": "CODICE"}], ' + markerSchema : '';
+    const spotCodes = mapMode ? spotlightCodes(3) : [];
+    const extraText = actions.join(' ') + ' ' + (state.worldSummary || '');
+    const mapPart = mapMode ? territoryContext() + "\n" + territoryRules(extraText) + relationsContext(extraText, spotCodes) + relationsRules() + markerRules() : "";
+    const schemaExtra = mapMode ? ', "cambi_territoriali": [{"provincia": "ID", "nuovo_proprietario": "CODICE"}], "cambi_controllo": [{"provincia": "ID", "nuovo_controllore": "CODICE"}], "relazioni": [{"nazione_a": "CODICE", "nazione_b": "CODICE", "variazione": numero intero da -' + REL_STEP_MAX + ' a ' + REL_STEP_MAX + ', "motivo": "frase breve"}], ' + markerSchema : '';
     const orders = actions.length
       ? `Nel frattempo il giocatore dà ${actions.length === 1 ? "quest'ordine" : `questi ${actions.length} ordini, uno per riga`}:\n${actions.map((a, i) => `${i + 1}. "${a}"`).join('\n')}\nEsegui ogni ordine con realismo: può riuscire, riuscire solo in parte o fallire, secondo i mezzi del paese e la situazione.`
       : "Nel frattempo il giocatore non dà ordini nuovi: il suo governo prosegue l'ordinaria amministrazione e il mondo va avanti.";
-    const spot = mapMode ? spotlightNations(3) : [];
+    const spot = spotCodes.map(c => countries[c].name);
     const others = `Nello stesso periodo anche le altre nazioni agiscono liberamente, di propria iniziativa e non solo in risposta al giocatore: ognuna segue i propri interessi, le proprie alleanze e rivalità, in modo plausibile per la sua situazione e per la storia alternativa formatasi finora (diplomazia, accordi, crisi, riforme, riarmo, aiuti, colpi di stato, conflitti…). Fai agire da 3 a 6 nazioni diverse, non solo le superpotenze${spot.length ? `; dai spazio anche a: ${spot.join(', ')}` : ''}. Le loro mosse contano davvero: se toccano il giocatore o i suoi vicini devono vedersi nella narrazione e nelle statistiche${mapMode ? ', e se cambiano chi possiede o controlla un territorio vanno elencate nei cambi territoriali' : ''}. Riportale in "mosse_altre_nazioni", una frase ciascuna.`;
     return `Sei il motore di gioco di un sandbox di storia alternativa. Il giocatore guida: ${state.nation}. Data attuale: ${state.year}. Premessa: ${state.premise || "nessuna, segui la storia reale finché il giocatore non la devia"}.
 ${mapPart}Stato del mondo finora: ${state.worldSummary || "(inizio partita, nessun evento ancora)"}
@@ -7014,8 +7382,16 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
       const moves = otherMoveLines(r.mosse_altre_nazioni);
       if (moves.length) addLog({ k: 'n', lines: moves });
       if (mapMode) {
+        const relStart = Object.assign({}, state.rel);          // the relations as they were before this turn
+        driftRelations(jump);                                   // time passes: the gaps from the starting values shrink a little
+        const before = territorySnapshot();
         const lines = applyTerritoryChanges(r.cambi_territoriali).concat(applyControlChanges(r.cambi_controllo), applyMarkerChanges(r.segnaposto));
         if (lines.length) addLog({ k: 'g', lines });
+        // what the territories that changed hands cost the relations (a rule of the game), then what the engine reports
+        const asked = applyRelationChanges(r.relazioni);
+        const relLines = relationLines(relStart, territoryRelationEffects(before).concat(asked.events), asked.refused);
+        if (relLines.length) addLog({ k: 'r', lines: relLines });
+        renderRelations();
         checkGameOver();
       }
     } catch (e) {
@@ -7042,7 +7418,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     thinkingEl.classList.remove('hidden');
     announce('Il Consigliere sta preparando un consiglio…');
     const s = state.stats;
-    const prompt = `Sei un consigliere storico per chi guida ${state.nation} nell'anno ${state.year}. ${territoryContext()} Stato del mondo: ${state.worldSummary || "inizio partita"}. Statistiche: Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.${state.pending.length ? ` Il giocatore ha già deciso queste azioni per il prossimo periodo (non ripeterle: puoi integrarle o correggerle): ${state.pending.join('; ')}.` : ''} Dai un breve consiglio strategico (2-3 frasi) su cosa potrebbe fare ora, in italiano.`;
+    const prompt = `Sei un consigliere storico per chi guida ${state.nation} nell'anno ${state.year}. ${territoryContext()}${relationsSummary()} Stato del mondo: ${state.worldSummary || "inizio partita"}. Statistiche: Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.${state.pending.length ? ` Il giocatore ha già deciso queste azioni per il prossimo periodo (non ripeterle: puoi integrarle o correggerle): ${state.pending.join('; ')}.` : ''} Dai un breve consiglio strategico (2-3 frasi) su cosa potrebbe fare ora, in italiano.`;
     try {
       const res = await sample(prompt, { cache: false });
       if (requestSession !== gameSession) return;
@@ -7101,7 +7477,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
 
     const isFirst = state.diplo.history.length === 0;
     const content = isFirst
-      ? `Sei ${state.diplo.target}, una figura di potere straniera, nell'anno ${state.year}. Il tuo interlocutore guida ${state.nation}. Contesto della partita: ${state.worldSummary || "inizio partita"}. ${territoryContext()} Rispondi sempre in character, in italiano, con 2-4 frasi per turno, restando coerente col contesto storico.\n\n${msg}`
+      ? `Sei ${state.diplo.target}, una figura di potere straniera, nell'anno ${state.year}. Il tuo interlocutore guida ${state.nation}. Contesto della partita: ${state.worldSummary || "inizio partita"}. ${territoryContext()}${relationsWith(state.diplo.target)} Rispondi sempre in character, in italiano, con 2-4 frasi per turno, restando coerente col contesto storico.\n\n${msg}`
       : msg;
     state.diplo.history.push({ role: 'user', content });
 
@@ -7154,6 +7530,11 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
           bubbles: state.diplo.bubbles.slice(-30)
         }
       };
+      if (gameMode === 'fixed') {                                // the relations: only the pairs that differ from the start, and the time not yet counted
+        const rels = relationsForSave();
+        if (Object.keys(rels).length) payload.game.relations = rels;
+        if (state.relClock > 0) payload.game.relClock = state.relClock;
+      }
     }
     return payload;
   }
@@ -7223,9 +7604,13 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     // the orders waiting (saves from before the split of «Agisci e avanza» have none) and the number of times the time advanced
     out.pending = list(g.pending).filter(a => typeof a === 'string').map(cleanAction).filter(Boolean).slice(0, MAX_PENDING);
     out.turn = Number.isFinite(Number(g.turn)) ? Math.max(0, Math.min(1000000, Math.floor(Number(g.turn)))) : 0;
+    // the relations (saves from before them have none: every pair is at its starting value) and the time not yet counted for their slow return
+    out.relations = g.mode === 'fixed' ? cleanRelationsSave(g.relations) : {};
+    const clock = Number(g.relClock);
+    out.relClock = g.mode === 'fixed' && Number.isFinite(clock) && clock > 0 && clock < 1 ? Math.floor(clock * 4) / 4 : 0;
     out.log = list(g.log).filter(e => e && typeof e === 'object' && typeof e.k === 'string').slice(-200).map(e =>
       e.k === 't' ? { k: 't', year: str(e.year), headline: str(e.headline), narr: str(e.narr) }
-      : e.k === 'g' || e.k === 'n' ? { k: e.k, lines: list(e.lines).slice(0, 60).map(str).filter(l => l.trim()) }
+      : e.k === 'g' || e.k === 'n' || e.k === 'r' ? { k: e.k, lines: list(e.lines).slice(0, 60).map(str).filter(l => l.trim()) }
       : { k: e.k, text: str(e.text) }).filter(e => !(e.lines && !e.lines.length));      // a block of lines with no line is not shown
     if (g.diplo && typeof g.diplo === 'object') out.diplo = {
       target: str(g.diplo.target),
@@ -7270,6 +7655,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     state.log = Array.isArray(g.log) ? g.log.filter(e => e && typeof e.k === 'string') : [];
     state.pending = Array.isArray(g.pending) ? g.pending : [];
     state.turn = Number.isFinite(g.turn) ? g.turn : 0;
+    state.rel = g.relations || {}; state.relClock = g.relClock || 0;
     if (g.diplo) state.diplo = {
       target: String(g.diplo.target || ''),
       history: Array.isArray(g.diplo.history) ? g.diplo.history : [],

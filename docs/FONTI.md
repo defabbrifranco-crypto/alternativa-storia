@@ -40,11 +40,42 @@ Qui sono schedati i casi che la versione precedente di questo registro già cita
 
 Vietnam del Nord (16.600.000), Vietnam del Sud (15.000.000), Yemen del Sud (1.000.000), Libano (1.900.000), Emirati della Costa dei Pirati (90.000), Maldive (90.000), Palestina (1.200.000): cifre tonde, trattate come stime.
 
+## Capitali degli Stati
+
+Le capitali dei 83 Stati della pagina stanno in `src/data/states_1960.json`. Fino alla versione 29 erano etichette scritte dal prototipo, senza una fonte. Nella versione 31 otto sono state controllate su fonti consultate l'11 e il 12 novembre 2026 e sono segnate «verificate»; per ognuna il file registra, in `meta.sources`, l'indirizzo delle pagine lette, la data di lettura e che cosa dicono. In due casi il controllo ha cambiato il valore (Filippine e Yemen).
+
+«Verificata» qui vuol dire: scritta da almeno due fonti che concordano, oppure da un documento d'epoca. Le fonti sono secondarie (enciclopedie, siti istituzionali, Wikipedia) e un documento del Dipartimento di Stato americano del 1959; nessuna è d'archivio. **Alcune pagine non le ha lette chi ha scritto il file ma un assistente di ricerca**: ogni registrazione lo dice («letta da un assistente di ricerca») e le frasi che ne sono state riportate sono frammenti brevi, non riaperti uno per uno.
+
+| Stato | Capitale nel file | Che cosa dicono le fonti | Che cosa non è stato accertato |
+|---|---|---|---|
+| Paesi Bassi | Amsterdam (capitale riconosciuta dal 1814; governo e parlamento all'Aia) | Wikipedia: Amsterdam è riconosciuta come capitale dal 1814; la sede del governo e del parlamento è L'Aia. NH Nieuws: per secoli la città del governo fu L'Aia; la Costituzione ha fissato per iscritto la capitale solo nel 1983 | Il testo della Costituzione in vigore nel 1960 |
+| Germania Ovest | Bonn (capitale provvisoria dal 1949) | Bundestag: Bonn restò per molti anni la capitale federale provvisoria e il «segnaposto» di Berlino. berlin.de: il 10 maggio 1949 il Consiglio parlamentare indicò Bonn come capitale provvisoria | Il testo della decisione del 1949 |
+| Germania Est | Berlino Est (capitale per la RDT; non riconosciuta dalle potenze occidentali) | Costituzione della RDT del 7 ottobre 1949, articolo 2: la capitale è Berlino. Wikipedia: le potenze occidentali non riconobbero Berlino Est come capitale | Il mancato riconoscimento poggia su una sola fonte secondaria |
+| Filippine | Quezon City (capitale ufficiale dal 1948 al 1976; molte funzioni di governo restavano a Manila). **Era «Manila»** | Sito della Città di Quezon: la legge n. 333 del 17 luglio 1948 fece di Quezon City la capitale; il decreto n. 940 del 24 giugno 1976 restituì il ruolo a Manila. Britannica: capitale dal 1948 al 1976, ma molte funzioni di governo restarono a Manila | I testi delle leggi; dove sedessero di fatto presidente e Congresso nel 1960 |
+| Laos | Vientiane (capitale amministrativa; Luang Prabang residenza reale) | Britannica: Luang Prabang restò residenza reale e centro religioso, Vientiane fu fatta capitale amministrativa. Keesing's (ottobre 1960): il governo prestò giuramento a Vientiane il 2 settembre 1960 | Nessuna pagina letta copre i combattimenti di Vientiane del dicembre 1960; non si sa quando Vientiane divenne capitale amministrativa |
+| Israele | Gerusalemme (sede del governo; status contestato; ambasciate a Tel Aviv) | Documento del Dipartimento di Stato americano del 20 febbraio 1959 (FRUS 1958-1960, volume XIII, documento 65): la sede del governo israeliano si era spostata a Gerusalemme; l'ambasciata americana e quasi tutte le altre missioni restavano a Tel Aviv | La proclamazione di Gerusalemme capitale e la sede della Knesset nel 1960 non sono state lette |
+| Yemen | Taiz (capitale dal 1948 al 1962; Sana'a prima e dopo). **Era «Sana'a»** | Britannica (voce «Sanaa»): sotto l'imam Ahmad la capitale fu spostata a Taiz; Sanaa tornò capitale con la rivoluzione del 1962. Wikipedia: capitale Sanaa fino al 1948, poi Taiz | Se Sana'a conservò un ruolo formale dopo il 1948; dove stessero le legazioni straniere |
+| Borneo Britannico | Kuching (Sarawak); Jesselton (Borneo Settentrionale) | Wikipedia: le schede delle due colonie indicano Kuching e Jesselton come capitali. Britannica: il sito di Jesselton fu scelto nel 1946 per la nuova capitale del Borneo Settentrionale | Quando Jesselton divenne capitale. Sono due colonie distinte, che il prototipo tratta come una sola unità |
+
+Cercate e non concluse. Restano «non verificate»; la ricerca è scritta qui perché non vada rifatta.
+
+| Stato | Nel file | Che cosa si è trovato | Perché non basta |
+|---|---|---|---|
+| Bhutan | Thimphu (capitale di fatto dal 1955; ufficiale dal 1961) | Wikipedia, voce «Thimphu» (12 novembre 2026): Thimphu sostituì Punakha nel 1955 e fu dichiarata ufficialmente capitale nel 1961 | Una sola fonte secondaria, che dà anche il 1952 per la decisione: le date non coincidono. Nessuna fonte ufficiale letta. La fonte è registrata nel file (`CAPITALE_BTN`) |
+| Pakistan | Rawalpindi (capitale provvisoria dal 1959 — da verificare) | Wikipedia, voce «List of capitals in Pakistan», e Britannica, voce «Islamabad» (12 novembre 2026): Karachi fu la sede del governo fino al 1959, Rawalpindi fu capitale provvisoria, Islamabad è capitale ufficiale dal 1967 | Nessuna delle due pagine dà le date di Rawalpindi |
+| Repubblica di Cina (Taiwan) | Taipei | Wikipedia, voce «1949 in Taiwan» (12 novembre 2026): nel dicembre 1949 il governo si trasferì a Taipei come capitale di fatto | Una sola pagina; non è stato accertato lo status di Nanchino |
+| Siria | Damasco | Wikipedia, voce «United Arab Republic» (11 novembre 2026, letta da un assistente): la capitale della RAU è Il Cairo | Nessuna pagina letta dice quale fosse la capitale della regione siriana al 31 dicembre 1960 |
+| Arabia Saudita | Riyad | history.state.gov (l'ambasciata americana restò a Gedda fino al 1984) e Aramco World, 1980 (Riad è la capitale ma non ha ambasciate): pagine lette l'11 novembre 2026 da un assistente | Nessuna pagina data lo stato di capitale di Riad al 1960 |
+| Oman | Mascate | countrystudies.us: dopo il 1958 il sultano Said bin Taimur risiedeva ad Al Hisn, presso Salalah. Mascate compare come capitale solo nella scheda di una copia di Wikipedia (11 novembre 2026, letta da un assistente) | Nessuna frase letta dice che Mascate fosse la capitale al 31 dicembre 1960; non è stato accertato se il sultano governasse da Salalah |
+| Stati della Tregua (Emirati Arabi Uniti) | da verificare | Wikipedia (11 novembre 2026, letta da un assistente): l'agente politico britannico stava a Dubai dal 20 maggio 1953 (prima a Sharjah); il Consiglio degli Stati della Tregua era presieduto dall'agente politico; la scheda della voce indica Abu Dhabi come capitale | Nessuna pagina dice che non ci fosse una capitale comune; la scheda che indica Abu Dhabi non è confermata altrove |
+
+Le altre 68 capitali non sono ancora state cercate: sono quelle senza un dubbio evidente (Parigi, Roma, Mosca...), ma restano «non verificate» finché non hanno una fonte registrata.
+
 ## Da fare
 
 - Sostituire JetPunk con la fonte primaria ONU.
 - Reperire la fonte del secondo CSV.
 - Compilare con fonte i 32 status mancanti (record europei), controllare Cina, Coree, Vietnam, Mongolia e Palestina e confermare l'Oman su fonti primarie.
 - Confrontare con la fonte il perimetro dell'ala occidentale del Pakistan (`PAK_W`).
-- Controllare con una fonte, una per una, capitali, alleanze e note degli Stati della pagina: l'elenco, con il livello di ciascuno, è in [`DATI-INCORPORATI.md`](DATI-INCORPORATI.md). Per ogni capitale o alleanza controllata si registra la fonte (con la data di consultazione) in `meta.sources` di `src/data/states_1960.json`, si mette `capital_verified` o `alliance_verified` a `true` con l'identificativo della fonte, poi si lancia `npm run dati:incorpora`. La costruzione della mappa è in [`CONFINI-MAPPA.md`](CONFINI-MAPPA.md).
+- Controllare con una fonte, una per una, le capitali rimaste (75 su 83), le alleanze e le note degli Stati della pagina (otto capitali sono già verificate: vedi sopra): l'elenco, con il livello di ciascuno, è in [`DATI-INCORPORATI.md`](DATI-INCORPORATI.md). Per ogni capitale o alleanza controllata si registra la fonte (con la data di consultazione) in `meta.sources` di `src/data/states_1960.json`, si mette `capital_verified` o `alliance_verified` a `true` con l'identificativo della fonte, poi si lancia `npm run dati:incorpora`. La costruzione della mappa è in [`CONFINI-MAPPA.md`](CONFINI-MAPPA.md).
 - Chiarire le condizioni d'uso delle fonti dei numeri (sono accertate per nessuna delle quattro): [`LICENZA-DATI.md`](LICENZA-DATI.md).

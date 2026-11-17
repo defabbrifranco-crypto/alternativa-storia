@@ -7,6 +7,7 @@ Guide e documentazione del progetto. Per una panoramica vedi il [README](../READ
 | Documento | Di cosa parla |
 |---|---|
 | [`TURNO-E-AZIONI.md`](TURNO-E-AZIONI.md) | Il turno: la casella delle azioni con «Invia», il pulsante «Avanza» e le altre nazioni che agiscono |
+| [`RELAZIONI.md`](RELAZIONI.md) | Le relazioni fra gli Stati, da −100 a +100: scala e fasce, valori di partenza (una stima, non dati storici), come cambiano nel gioco, che cosa si vede, limiti |
 | [`EDITOR-SCENARIO.md`](EDITOR-SCENARIO.md) | Modalità Gioco ed Editor scenario; lo scenario come file; verifica dei dati di partenza (Siria, Cipro, repubbliche sovietiche) |
 | [`USO-FUORI-DA-CLAUDE.md`](USO-FUORI-DA-CLAUDE.md) | Salvataggi nel browser, esportazione e importazione, modalità manuale |
 | [`ACCESSIBILITA.md`](ACCESSIBILITA.md) | Uso con la sola tastiera e con un lettore di schermo; procedura di prova a mano |

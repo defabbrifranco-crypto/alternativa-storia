@@ -2,6 +2,9 @@
 // Nome, capitale, alleanza, colore e giocabilità di ogni Stato, e per ogni capitale e ogni alleanza se è stata verificata e su quale fonte.
 // Si controlla che il file rispetti il suo schema, che nessun valore sia segnato «verificato» senza una fonte vera e che i testi dicano la stessa
 // cosa dei flag. La copia nella pagina e la scheda del territorio si provano in tests/stati-pagina.test.js e tests/browser/t17_stati.js.
+// Dalla versione 32 il file ha anche meta.relations: la regola da cui si calcolano i valori di partenza delle relazioni fra gli Stati (da -100 a +100).
+// Sono una stima del prototipo, non dati storici: qui si controlla che la regola sia completa e coerente con gli Stati e che non si dichiari «verificata».
+// Il comportamento in partita si prova in tests/browser/t18_relazioni.js.
 // Esegui con: node --test
 const test = require('node:test');
 const assert = require('node:assert');
@@ -94,13 +97,47 @@ test('nessuna capitale e nessuna alleanza è segnata «verificata» con la fonte
   assert.ok(fs.existsSync(path.join(root, 'tests', 'stati.test.js')), 'il file della prova citata in meta.verification_policy non esiste');
 });
 
+// Una capitale o un'alleanza segnata «verificata» deve avere una fonte che si può andare a rileggere: un indirizzo e la data in cui la pagina è
+// stata letta, scritta come «pagina letta il 12 novembre 2026» (una data qualunque nel testo, come «al 31 dicembre 1960», non basta).
+// Il criterio di docs/METODOLOGIA.md è: due fonti che concordano, oppure un documento d'epoca. Qui si controlla solo il minimo che una macchina
+// può vedere: almeno due indirizzi, oppure la dicitura «Documento d'epoca». Se le fonti dicono davvero la cosa giusta lo decide chi le legge.
+// Lo stesso vale per ogni fonte registrata che non sia l'etichetta del prototipo, anche se il dato resta «non verificato» (è una fonte consultata):
+// per quelle bastano un indirizzo e una data di lettura.
+const MESE = '(?:gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)';
+const LETTURE = new RegExp(`\\blett[ao] (?:il |l')\\d{1,2} ${MESE} \\d{4}\\b`, 'g');
+const INDIRIZZI = /https?:\/\/\S+/g;
+// Ogni pagina citata ha il suo indirizzo e la sua data di lettura (di una pagina con una copia archiviata si cita un solo indirizzo).
+function indirizziELetture(descrizione) {
+  return { indirizzi: (descrizione.match(INDIRIZZI) || []).length, letture: (descrizione.match(LETTURE) || []).length };
+}
+test('ogni dato segnato «verificato» ha una fonte vera: indirizzi, data di lettura, due fonti o un documento d\'epoca, e un testo che non dice «da verificare»', () => {
+  for (const s of data.states) {
+    for (const [campo, verificato, fonte, testo] of [['capitale', s.capital_verified, s.capital_source_id, s.capital], ['alleanza', s.alliance_verified, s.alliance_source_id, s.alliance]]) {
+      if (!verificato) continue;
+      const descrizione = data.meta.sources[fonte];
+      assert.strictEqual(typeof descrizione, 'string', `${s.id}: ${campo} verificata ma la fonte «${fonte}» non è registrata`);
+      const { indirizzi, letture } = indirizziELetture(descrizione);
+      assert.ok(indirizzi >= 1, `${s.id}: la fonte della ${campo} verificata non ha nessun indirizzo`);
+      assert.ok(letture >= indirizzi, `${s.id}: la fonte della ${campo} verificata ha ${indirizzi} indirizzi ma solo ${letture} date di lettura («pagina letta il …»): ogni pagina deve dire quando è stata letta`);
+      assert.ok(indirizzi >= 2 || /documento d'epoca/i.test(descrizione), `${s.id}: la ${campo} verificata ha una sola fonte e non è un documento d'epoca: ne servono due che concordano (docs/METODOLOGIA.md)`);
+      assert.ok(!daVerificare(testo), `${s.id}: la ${campo} «${testo}» è segnata verificata ma dice «da verificare»`);
+    }
+  }
+  for (const [id, descrizione] of Object.entries(data.meta.sources)) {
+    if (id === PROTOTIPO) continue;
+    const { indirizzi, letture } = indirizziELetture(descrizione);
+    assert.ok(indirizzi >= 1, `la fonte ${id} non ha nessun indirizzo`);
+    assert.ok(letture >= indirizzi, `la fonte ${id} ha ${indirizzi} indirizzi ma solo ${letture} date di lettura («pagina letta il …»)`);
+  }
+});
+
 test('i flag dicono la stessa cosa dei testi: «da verificare» nel testo se e solo se c\'è il flag', () => {
   for (const s of data.states) {
     assert.strictEqual(s.flags.includes('capitale_da_verificare'), daVerificare(s.capital), `${s.id}: il flag capitale_da_verificare e il testo «${s.capital}» non coincidono`);
     assert.strictEqual(s.flags.includes('alleanza_da_verificare'), daVerificare(s.alliance), `${s.id}: il flag alleanza_da_verificare e il testo «${s.alliance}» non coincidono`);
   }
   const con = data.states.filter(s => s.flags.length).map(s => s.id).sort();
-  assert.deepStrictEqual(con, ['ARE', 'BRB', 'BTN', 'CYP', 'OMN', 'PAK'], 'gli Stati con un\'avvertenza sono cambiati: aggiornare questa prova e docs/DATI-INCORPORATI.md');
+  assert.deepStrictEqual(con, ['ARE', 'CYP', 'OMN', 'PAK'], 'gli Stati con un\'avvertenza sono cambiati: aggiornare questa prova e docs/DATI-INCORPORATI.md');
 });
 
 test('gli identificativi sono univoci, i nomi e i colori sono tutti diversi', () => {
@@ -134,4 +171,95 @@ test('i testi del file sono in italiano con gli accenti (la pagina li mostra cos
   })(data, '');
   assert.ok(testi.length > 300, 'la prova sta guardando pochi testi');
   for (const [p, t] of testi) for (const re of sbagliati) assert.ok(!re.test(t), `${p}: il testo sembra scritto senza accenti («${(re.exec(t) || [''])[0]}»): «${t.slice(0, 90)}…»`);
+});
+
+// ---- le relazioni fra gli Stati (versione 32): meta.relations ------------------------------------------------------------
+const REL = data.meta.relations;
+const ID_STATI = new Set(data.states.map(s => s.id));
+const ALLEANZE = new Set(data.states.map(s => s.alliance));
+const ammesso = v => Number.isInteger(v) && v >= -100 && v <= 100;
+const bloccoDi = {};
+for (const [b, o] of Object.entries(REL.blocs)) for (const a of o.alliances) (bloccoDi[a] = bloccoDi[a] || []).push(b);
+// Il valore di partenza di una coppia, calcolato qui con la stessa regola scritta nel file (gruppo, poi madrepatria, poi i due blocchi)
+function valorePartenza(a, b) {
+  if (a === b) return 0;
+  for (const g of REL.groups) if (g.members.includes(a) && g.members.includes(b)) return g.value;
+  const A = data.states.find(s => s.id === a).alliance, B = data.states.find(s => s.id === b).alliance;
+  if (REL.metropoles[A] === b || REL.metropoles[B] === a) return REL.metropole_value;
+  return REL.bloc_values[[bloccoDi[A][0], bloccoDi[B][0]].sort().join('|')];
+}
+
+test('le relazioni di partenza non sono segnate «verificate» e il testo dice che sono una stima, non dati storici', () => {
+  assert.strictEqual(REL.verified, false, 'nessuna coppia ha una fonte: meta.relations.verified deve restare false (se un giorno ci sarà una fonte, la prova e docs/RELAZIONI.md si riscrivono insieme al file)');
+  assert.match(REL.basis, /stima del prototipo, non dati storici/, 'meta.relations.basis deve dire che i valori sono una stima e non dati storici');
+  assert.match(REL.basis, /nessuna coppia è stata controllata su una fonte/, 'meta.relations.basis deve dire che nessuna coppia è stata controllata');
+  assert.match(REL.basis, /da -100 a \+100/, 'meta.relations.basis deve dire la scala');
+});
+
+test('ogni alleanza degli Stati sta in uno e un solo blocco delle relazioni, e ogni etichetta dei blocchi è usata da qualcuno', () => {
+  assert.ok(Object.keys(REL.blocs).length >= 3, 'i blocchi sono pochi');
+  for (const a of ALLEANZE) assert.strictEqual((bloccoDi[a] || []).length, 1, `l'alleanza «${a}» deve stare in un solo blocco (sta in: ${(bloccoDi[a] || []).join(', ') || 'nessuno'})`);
+  for (const a of Object.keys(bloccoDi)) assert.ok(ALLEANZE.has(a), `l'etichetta «${a}» è in un blocco ma nessuno Stato la usa`);
+});
+
+test('i valori fra blocchi: una voce per ogni coppia di blocchi (anche un blocco con se stesso), interi da -100 a +100, e nessuna voce in più', () => {
+  const blocchi = Object.keys(REL.blocs).sort(), attese = [];
+  for (let i = 0; i < blocchi.length; i++) for (let j = i; j < blocchi.length; j++) attese.push(blocchi[i] + '|' + blocchi[j]);
+  assert.deepStrictEqual(Object.keys(REL.bloc_values).sort(), attese.sort(), 'le voci di bloc_values devono essere le coppie dei blocchi, con i nomi in ordine alfabetico');
+  for (const [k, v] of Object.entries(REL.bloc_values)) assert.ok(ammesso(v), `bloc_values[${k}] = ${v}: deve essere un intero da -100 a +100`);
+});
+
+test('gruppi e madrepatrie: Stati che esistono, nessuno in due gruppi, valori interi da -100 a +100', () => {
+  const idGruppi = new Set(), visti = new Set();
+  for (const g of REL.groups) {
+    assert.ok(!idGruppi.has(g.id), `il gruppo «${g.id}» è ripetuto`);
+    idGruppi.add(g.id);
+    assert.ok(g.members.length >= 2, `il gruppo «${g.id}» ha meno di due Stati`);
+    assert.strictEqual(new Set(g.members).size, g.members.length, `il gruppo «${g.id}» ripete uno Stato`);
+    for (const m of g.members) {
+      assert.ok(ID_STATI.has(m), `il gruppo «${g.id}» nomina «${m}», che non è nel file`);
+      assert.ok(!visti.has(m), `lo Stato «${m}» è in due gruppi: non si saprebbe quale valore vale`);
+      visti.add(m);
+    }
+    assert.ok(ammesso(g.value), `il gruppo «${g.id}» ha il valore ${g.value}: deve essere un intero da -100 a +100`);
+  }
+  for (const [etichetta, madre] of Object.entries(REL.metropoles)) {
+    assert.ok(ALLEANZE.has(etichetta), `«${etichetta}» è fra le madrepatrie ma nessuno Stato la usa come alleanza`);
+    assert.ok(ID_STATI.has(madre), `la madrepatria «${madre}» di «${etichetta}» non è nel file`);
+  }
+  assert.ok(ammesso(REL.metropole_value), `metropole_value ${REL.metropole_value}: deve essere un intero da -100 a +100`);
+  assert.deepStrictEqual(data.states.filter(s => REL.metropoles[s.alliance] === s.id).map(s => s.id), [], 'uno Stato risulta madrepatria di se stesso');
+});
+
+test('ogni coppia di Stati ha un valore di partenza intero da -100 a +100, uguale nei due versi, e la scala usa tutti e due i lati', () => {
+  const ids = data.states.map(s => s.id), valori = [];
+  for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+    const v = valorePartenza(ids[i], ids[j]);
+    assert.ok(ammesso(v), `${ids[i]}|${ids[j]}: ${v} non è un intero da -100 a +100`);
+    assert.strictEqual(valorePartenza(ids[j], ids[i]), v, `${ids[i]}|${ids[j]}: il valore cambia se si scambiano gli Stati`);
+    valori.push(v);
+  }
+  assert.strictEqual(valori.length, ids.length * (ids.length - 1) / 2);
+  assert.ok(valori.some(v => v < 0) && valori.some(v => v === 0) && valori.some(v => v > 0), 'la scala deve avere valori negativi, zero e positivi');
+  // alcuni valori, scritti a mano: se il file o la regola cambiano, bisogna accorgersene
+  assert.strictEqual(valorePartenza('FRA', 'ITA'), 35);
+  assert.strictEqual(valorePartenza('ITA', 'URSS'), -60);
+  assert.strictEqual(valorePartenza('UKR', 'URSS'), 80);
+  assert.strictEqual(valorePartenza('GBR', 'HKG'), 60);
+  assert.strictEqual(valorePartenza('ITA', 'YUG'), 0);
+});
+
+test('lo schema si accorge dei guasti nelle relazioni', () => {
+  const guasta = f => { const copia = JSON.parse(JSON.stringify(data)); f(copia); const e = []; valida(copia, schema, 'file', e); return e; };
+  assert.ok(guasta(d => { delete d.meta.relations; }).length > 0, 'manca meta.relations: non notato');
+  assert.ok(guasta(d => { delete d.meta.relations.bloc_values; }).length > 0, 'manca bloc_values: non notato');
+  assert.ok(guasta(d => { d.meta.relations.verified = 'no'; }).length > 0, 'verified non booleano: non notato');
+  assert.ok(guasta(d => { d.meta.relations.basis = ''; }).length > 0, 'basis vuoto: non notato');
+  assert.ok(guasta(d => { d.meta.relations.bloc_values['east|west'] = -60.5; }).length > 0, 'valore con la virgola: non notato');
+  assert.ok(guasta(d => { d.meta.relations.blocs.west.alliances = 'NATO'; }).length > 0, 'alliances che non è una lista: non notato');
+  assert.ok(guasta(d => { delete d.meta.relations.blocs.west.label; }).length > 0, 'blocco senza nome: non notato');
+  assert.ok(guasta(d => { d.meta.relations.groups[0].members = ['urss']; }).length > 0, 'codice in minuscolo nel gruppo: non notato');
+  assert.ok(guasta(d => { d.meta.relations.groups[0].value = '80'; }).length > 0, 'valore del gruppo come testo: non notato');
+  assert.ok(guasta(d => { d.meta.relations.metropoles['Colonia portoghese'] = 'prt'; }).length > 0, 'madrepatria in minuscolo: non notato');
+  assert.ok(guasta(d => { d.meta.relations.metropole_value = '60'; }).length > 0, 'metropole_value come testo: non notato');
 });

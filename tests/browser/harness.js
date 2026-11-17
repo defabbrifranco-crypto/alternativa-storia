@@ -39,6 +39,10 @@ function instrument(html) {
     sendActions, removeAction, renderQueue, setActionMsg, cleanSavedGame, MAX_PENDING, MAX_ACTION_LEN, MAX_OTHER_MOVES, getBusy: () => turnBusy() });
   if (typeof renderTerrList !== 'undefined') Object.assign(window.__t, { renderTerrList, provLabel, provCenter, nextProvince, ensureVisible, setRoving,
     announce, scrollBehavior, getRoving: () => rovingEl });
+  if (typeof relGet !== 'undefined') Object.assign(window.__t, { REL, REL_PROVISIONAL, REL_BANDS, REL_STEP_MAX, MAX_REL_CHANGES, REL_CONQUEST, REL_OCCUPATION, REL_DRIFT, JUMP_MONTHS,
+    relKey, relBaseline, relGet, relSet, relAdd, relBand, fmtRel, relText, relOthers, relationsContext, relationsRules, relationsSummary, relationsWith,
+    applyRelationChanges, territorySnapshot, territoryRelationEffects, driftRelations, relationLines, relationsForSave, cleanRelationsSave,
+    renderRelations, fillRelationRow, spotlightCodes });
 })();`;
   return html.replace(tail, hook);
 }
@@ -123,7 +127,11 @@ async function launch({ width = 390, height = 844, store = {}, withSample = true
 let pass = 0, fail = 0; const fails = [];
 function check(name, cond, extra) {
   if (cond) { pass++; console.log('  ok   ' + name); }
-  else { fail++; fails.push(name); console.log('  FAIL ' + name + (extra !== undefined ? '  -> ' + JSON.stringify(extra) : '')); }
+  else {
+    fail++; fails.push(name); console.log('  FAIL ' + name + (extra !== undefined ? '  -> ' + JSON.stringify(extra) : ''));
+    // FAIL_FAST=1: ci si ferma al primo controllo fallito (serve alle prove dei difetti messi apposta, che non hanno bisogno di arrivare in fondo)
+    if (process.env.FAIL_FAST) { console.log(`\n${pass} passed, ${fail} failed (FAIL_FAST)`); process.exit(1); }
+  }
 }
 function summary() { console.log(`\n${pass} passed, ${fail} failed`); if (fail) console.log('FAILED:', fails); return fail; }
 // Un turno completo nel flusso attuale: «Invia» mette le azioni in attesa (una per riga), «Avanza» fa passare il tempo.
