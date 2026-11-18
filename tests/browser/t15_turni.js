@@ -55,7 +55,7 @@ const lines = (n, base = 'Ordine numero ') => Array.from({ length: n }, (_, i) =
     advInTime: !!document.querySelector('.time-block #jump') && !!document.querySelector('.time-block #advanceBtn'),
     sendOutOfTime: !document.querySelector('.time-block #sendBtn') && !document.querySelector('.time-block #actionInput'),
     text: document.getElementById('actionsPanel').textContent,
-    desc: ['actionInput', 'advanceBtn'].map(id => { const d = document.getElementById(document.getElementById(id).getAttribute('aria-describedby')); return d ? d.textContent : null; })
+    desc: ['actionInput', 'advanceBtn'].map(id => { const d = document.getElementById(document.getElementById(id).getAttribute('aria-describedby').split(/\s+/)[0]); /* il primo dei collegamenti: a «Avanza» ne è stato aggiunto un secondo, per i messaggi */ return d ? d.textContent : null; })
   }));
   check('non c\'è più un pulsante unico «Agisci e avanza»', i0.noOld && !/Agisci e avanza/.test(i0.text), i0.noOld);
   check('c\'è una casella di testo «Cosa fai?» con il pulsante «Invia»', i0.tag === 'TEXTAREA' && i0.label === 'Cosa fai?' && i0.send === 'Invia' && i0.sendOutOfTime, i0);
