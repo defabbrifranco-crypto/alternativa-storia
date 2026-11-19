@@ -43,6 +43,10 @@ function instrument(html) {
     relKey, relBaseline, relGet, relSet, relAdd, relBand, fmtRel, relText, relOthers, relationsContext, relationsRules, relationsSummary, relationsWith,
     applyRelationChanges, territorySnapshot, territoryRelationEffects, driftRelations, relationLines, relationsForSave, cleanRelationsSave,
     renderRelations, fillRelationRow, spotlightCodes });
+  if (typeof receiveMessages !== 'undefined') Object.assign(window.__t, { MSG_TYPES, MSG_ALIASES, MSG_WEIGHTS, MSG_DEFAULT_WEIGHT, MAX_NEW_MESSAGES, MAX_INBOX, MAX_MSG_LEN, MAX_MSG_READ,
+    MAX_TALKS, MAX_TALKS_PROMPT, TALK_YOU_LEN, TALK_THEY_LEN, msgTypeOf, msgWeight, messageStatus, messageChoice, messageEffect, msgTableText, msgNoteText,
+    receiveMessages, resolveMessages, newMessageLines, messagesContext, talksContext, messagesRules, messagesSummary, recordTalk, cleanInboxSave, cleanTalksSave,
+    renderMessages, decideMessage, replyToMessage, newDiplo, getDiploBusy: () => diploBusy() });
 })();`;
   return html.replace(tail, hook);
 }

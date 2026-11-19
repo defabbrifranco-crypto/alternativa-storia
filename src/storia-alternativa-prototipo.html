@@ -123,6 +123,22 @@
   .rel-bar i { position:absolute; top:0; bottom:0; border-radius:999px; }
   .rel-bar i.pos { left:50%; background:var(--rel-pos); }
   .rel-bar i.neg { right:50%; background:var(--rel-neg); }
+  /* messages from the other states: each one has a weight from 1 to 5 (written in words and in dots) that scales what the answer does to the relations */
+  .entry-msg { font-size:.88rem; background:var(--user-msg); border-left:3px dashed var(--accent); border-radius:6px; padding:6px 10px; line-height:1.4; }
+  .msg-list { list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:10px; }
+  .msg-item { border:1px solid var(--border); border-radius:8px; padding:10px; background:var(--bg); }
+  .msg-head { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:2px 10px; }
+  .msg-from { font-weight:700; font-size:.92rem; overflow-wrap:anywhere; }
+  .msg-type { font-size:.8rem; color:var(--muted); }
+  .msg-weight { font-size:.78rem; margin:2px 0 0; }
+  .msg-dots { letter-spacing:2px; color:var(--accent); }
+  .msg-text { font-size:.92rem; line-height:1.45; margin:6px 0; overflow-wrap:anywhere; }
+  .msg-stakes, .msg-status { font-size:.78rem; color:var(--muted); line-height:1.4; margin:4px 0; }
+  .msg-status { color:var(--ink); }
+  .msg-actions { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .msg-actions button.ghost.small { margin-top:0; }
+  .msg-actions button[aria-pressed="true"] { background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
+  .msg-empty { color:var(--muted); font-size:.82rem; line-height:1.35; margin:6px 0 0; }
   /* borders: one thin line per border / coast, the same thickness on screen at every zoom */
   .border-coast, .border-land { fill:none; vector-effect:non-scaling-stroke; stroke-linejoin:round; stroke-linecap:round; pointer-events:none; }
   .border-coast { stroke:#3a3022; stroke-width:.8px; }
@@ -282,6 +298,7 @@
     .meter-fill { forced-color-adjust:none; background:Highlight; }
     .rel-bar { forced-color-adjust:none; background:Canvas; border:1px solid CanvasText; }
     .rel-bar i { forced-color-adjust:none; background:Highlight; }
+    .msg-actions button[aria-pressed="true"] { forced-color-adjust:none; background:Highlight; color:HighlightText; border-color:Highlight; }
     .dot, .sw { forced-color-adjust:none; border:1px solid CanvasText; }
   }
 </style>
@@ -297,7 +314,7 @@
     <header class="panel" id="appHead">
       <h1 id="appTitle" tabindex="-1"><span aria-hidden="true">🗺️ </span>Storia Alternativa</h1>
       <p class="sub">Prototipo ispirato al funzionamento di Pax Historia: scegli lo scenario fisso della Guerra Fredda o crea un tuo scenario libero.</p>
-      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 32</p>
+      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 33</p>
     </header>
 
     <div class="panel hidden" id="resumeBanner">
@@ -519,6 +536,12 @@
 
     <div id="actionsPanel" role="tabpanel" aria-labelledby="tabActions">
       <div class="panel log" id="log" role="log" aria-label="Cronaca della partita" tabindex="0"></div>
+      <section class="panel hidden" id="msgPanel" aria-labelledby="msgTitle">
+        <h3 id="msgTitle">Messaggi in arrivo</h3>
+        <p class="msg-empty" id="msgEmpty">Nessun messaggio in arrivo. Quando fai avanzare il tempo, le altre nazioni possono scriverti: proposte, richieste, ultimatum.</p>
+        <ul class="msg-list" id="msgList" aria-labelledby="msgTitle"></ul>
+        <details class="pp-det" id="msgHow"><summary>Come funzionano i messaggi</summary><p class="pp-note" id="msgNote"></p></details>
+      </section>
       <div class="panel">
         <label for="actionInput">Cosa fai?</label>
         <textarea id="actionInput" rows="2" aria-describedby="actionNote" placeholder="es. Mobilita le riserve al confine orientale"></textarea>
@@ -541,9 +564,10 @@
                 <option value="1 anno">1 anno</option>
               </select>
             </div>
-            <button class="primary" id="advanceBtn" type="button" aria-describedby="advanceNote">Avanza</button>
+            <button class="primary" id="advanceBtn" type="button" aria-describedby="advanceNote msgWarn">Avanza</button>
           </div>
           <p class="field-note" id="advanceNote">«Avanza» fa passare il tempo scelto: le azioni in attesa vengono eseguite e anche le altre nazioni agiscono.</p>
+          <p class="field-msg hidden" id="msgWarn"></p>
         </div>
         <button class="ghost" id="advisorBtn"><span aria-hidden="true">🧭 </span>Chiedi consiglio al Consigliere</button>
         <p class="thinking hidden" id="thinking">Il motore storico sta elaborando...</p>
@@ -6561,7 +6585,10 @@ window.MAP_SVG = {
       stats: { stabilita: 50, economia: 50, esercito: 50, prestigio: 50 },
       rel: {},                          // relations that differ from their starting value: {"AAA|BBB": -100..100} (see «relations between the states»)
       relClock: 0,                      // months of time passed but not yet counted for the slow return of the relations (a fraction of a month)
-      diplo: { target: '', history: [], bubbles: [] }
+      inbox: [],                        // the messages the other states wrote to the player, waiting to be answered (see «messages from the other nations»)
+      msgSeq: 0,                        // the last number given to a message: ids are m1, m2, …
+      talks: [],                        // what was said in the talks (tab Diplomazia) since the time last advanced: [{to, you, they}]
+      diplo: { target: '', history: [], bubbles: [], intro: '', msgId: '' }
     };
   }
   let state = freshState();
@@ -6592,8 +6619,10 @@ window.MAP_SVG = {
   }
 
   // ---- log entries are data (so a game can be saved and restored) ------
-  // k: a = player action, t = turn result, n = what the other nations did, v = advisor, g = map/game notice, r = changes of the relations, x = transient notice (not saved)
+  // k: a = player action, t = turn result, n = what the other nations did, v = advisor, g = map/game notice, r = changes of the relations,
+  // m = messages from the other nations (the ones that arrived and what was done with the ones waiting), x = transient notice (not saved)
   function renderLogEntry(e) {
+    if (e.k === 'm') return `<div class="entry-msg">✉️ <b>Messaggi</b><br>${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
     if (e.k === 'r') return `<div class="entry-rel">🤝 <b>Relazioni</b><br>${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
     if (e.k === 'a') return `<div class="entry-action">✍️ ${escapeHtml(e.text)}</div>`;
     if (e.k === 't') return `<div class="entry-year">${escapeHtml(e.year)}</div>${e.headline ? `<div class="entry-headline">${escapeHtml(e.headline)}</div>` : ''}<div class="entry-narr">${escapeHtml(e.narr)}</div>`;
@@ -6608,9 +6637,12 @@ window.MAP_SVG = {
   }
 
   // «Invia» and «Avanza» are the two halves of the old «Agisci e avanza»; «Rimuovi» takes an order back out of the queue.
+  // While the time advances nothing the turn will count can change: the orders, the answers to the messages and the talks are all frozen.
   function setTurnControls(on) {
     sendBtn.disabled = !on; advanceBtn.disabled = !on;
     el('queueList').querySelectorAll('button').forEach(b => { b.disabled = !on; });
+    el('msgList').querySelectorAll('button').forEach(b => { b.disabled = !on; });
+    el('diploSendBtn').disabled = !on;
   }
   function setGameButtons(enabled) {
     setTurnControls(enabled); advisorBtn.disabled = !enabled;
@@ -6707,6 +6739,7 @@ window.MAP_SVG = {
     el('yearLabel').textContent = state.year;
     renderStats();
     renderRelations();                                  // only in a game on the map
+    renderMessages();                                   // the same
     gameEl.classList.remove('hidden');
     el('gameTitle').setAttribute('aria-level', mode === 'free' ? '1' : '2');     // the page has one h1 at a time
     updateModeUI();                                     // a game is running: the editor is off
@@ -7191,6 +7224,7 @@ window.MAP_SVG = {
     el('tabActions').onclick();
     renderStats();
     renderRelations();                                  // no game: the panel is hidden and the new state has no relations of its own
+    renderMessages();                                   // nor messages
     setGameButtons(!!sample);
     thinkingEl.classList.add('hidden');
     gameEl.classList.add('hidden');
@@ -7232,6 +7266,8 @@ window.MAP_SVG = {
   const MAX_PENDING = 12, MAX_ACTION_LEN = 400, MAX_OTHER_MOVES = 10;
   let busySession = -1;                         // the game session whose turn is being worked out (-1: none)
   const turnBusy = () => busySession === gameSession;
+  let diploPending = -1;                        // the talk (diplomacySession) whose answer is on its way (-1: none)
+  const diploBusy = () => diploPending === diplomacySession;
   const splitActions = text => String(text == null ? '' : text).split(/\r?\n/).map(s => s.replace(/\s+/g, ' ').trim()).filter(Boolean);
   const cleanAction = s => String(s == null ? '' : s).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, MAX_ACTION_LEN);
   function setActionMsg(text) {
@@ -7295,6 +7331,231 @@ window.MAP_SVG = {
   });
   el('actionInput').addEventListener('input', () => { if (!el('actionMsg').classList.contains('hidden')) setActionMsg(''); });
 
+  /* ---- messages from the other nations ------------------------------------------------------------------------
+     When the time advances the engine may report up to MAX_NEW_MESSAGES messages that other states write to the player ("messaggi"): a request
+     for a talk, a proposal of agreement, a request, an ultimatum. Each one has a weight from 1 to 5, how much it matters, chosen by the engine
+     and checked here. The player accepts it, refuses it, answers with a talk (tab Diplomazia) or does nothing. The answers count when the time
+     advances («Avanza»): the relations with the sender change by the value of that kind of message and of that answer times the weight (a rule
+     of the game, not history), the engine is told what was decided and writes the consequences, and every message is settled: one with no answer
+     counts as ignored, one answered with a talk has no automatic effect (the engine reads the talk). Messages and talks are part of the saved
+     game. Messages exist only in a game on the map: without the map there are no relations to change.                                      */
+  const MSG_TYPES = {
+    colloquio: { label: 'Richiesta di colloquio', accept: 2, refuse: -1, ignore: -1 },
+    accordo:   { label: 'Proposta di accordo',    accept: 4, refuse: -2, ignore: -1 },
+    richiesta: { label: 'Richiesta',              accept: 3, refuse: -3, ignore: -2 },
+    ultimatum: { label: 'Ultimatum',              accept: 0, refuse: -5, ignore: -5 }
+  };
+  const MSG_ALIASES = { proposta: 'accordo', patto: 'accordo', incontro: 'colloquio', minaccia: 'ultimatum' };    // words the engine may use instead
+  const MSG_WEIGHTS = ['Minore', 'Medio', 'Rilevante', 'Alto', 'Cruciale'];        // the weight, 1 to 5, in words
+  const MSG_DEFAULT_WEIGHT = 2;                                                    // when the engine gives none that can be read
+  const MAX_NEW_MESSAGES = 3, MAX_INBOX = 6, MAX_MSG_LEN = 360, MAX_MSG_READ = 20;     // new ones per turn / kept in a save / their text / entries read
+  const MAX_TALKS = 12, MAX_TALKS_PROMPT = 5, TALK_YOU_LEN = 200, TALK_THEY_LEN = 240;  // talks kept / told to the engine / the length of each side
+  const MSG_CHOICE_TEXT = { accept: 'accettato', refuse: 'rifiutato', ignore: 'ignorato (senza risposta)', talk: 'in trattativa (colloquio)' };
+  const MSG_STATUS_TEXT = {
+    nuovo: 'Senza risposta: se fai avanzare il tempo conta come ignorato.',
+    accettato: 'Accettato: avrà effetto quando fai avanzare il tempo.',
+    rifiutato: 'Rifiutato: avrà effetto quando fai avanzare il tempo.',
+    trattativa: 'In trattativa: il colloquio conta per questo periodo, senza effetto automatico sulle relazioni.'
+  };
+  const msgTypeOf = v => { const t = typeof v === 'string' ? foldName(v) : ''; return own(MSG_TYPES, t) ? t : own(MSG_ALIASES, t) ? MSG_ALIASES[t] : ''; };   // only a text is a kind: a list holding «accordo» is not
+  function msgWeight(v) {                                                          // a whole number from 1 to 5; what cannot be read counts as «Medio»
+    if (typeof v === 'string') v = v.trim() === '' ? NaN : Number(v.replace(',', '.'));
+    return typeof v === 'number' && Number.isFinite(v) ? Math.max(1, Math.min(5, Math.round(v))) : MSG_DEFAULT_WEIGHT;
+  }
+  const msgTypeName = m => MSG_TYPES[m.type].label.toLowerCase();
+  const messageStatus = m => (m.decision === 'accept' ? 'accettato' : m.decision === 'refuse' ? 'rifiutato' : m.talk ? 'trattativa' : 'nuovo');
+  const messageChoice = m => m.decision || (m.talk ? 'talk' : 'ignore');
+  // What an answer does to the relations with the sender: the value of the kind of message and of the answer, times the weight.
+  const messageEffect = (m, choice) => (choice === 'accept' || choice === 'refuse' || choice === 'ignore' ? MSG_TYPES[m.type][choice] * m.weight : 0);
+  const msgTableText = () => Object.keys(MSG_TYPES).map(k => { const t = MSG_TYPES[k]; return `${t.label}: accettare ${fmtRel(t.accept)}, rifiutare ${fmtRel(t.refuse)}, ignorare ${fmtRel(t.ignore)}`; }).join('; ');
+  const msgNoteText = () => 'Ogni messaggio ha un peso da 1 a 5, scelto dal motore: più è alto, più pesa la tua risposta sulle relazioni con chi lo scrive. '
+    + 'Le risposte contano quando fai avanzare il tempo. Un messaggio senza risposta conta come ignorato. «Rispondi» apre un colloquio nella scheda Diplomazia: il motore lo legge e non c\'è un effetto automatico. '
+    + 'Per ogni punto di peso le relazioni cambiano così — ' + msgTableText() + '. Sono regole del gioco, non dati storici.';
+
+  // The engine's new messages: [{da, tipo, peso, testo}]. Each one is checked (a sender that is a state of the map, still exists and is not the player;
+  // a known kind; a text) and what is not valid, or comes after the third, is left out and counted. At most one message from each state.
+  // Returns the messages to keep (not yet in the inbox) and how many were refused.
+  function receiveMessages(list) {
+    const res = { added: [], refused: 0 };
+    if (!Array.isArray(list)) return res;
+    const alive = provinceCounts(), seen = new Set();
+    list.slice(0, MAX_MSG_READ).forEach(item => {
+      if (res.added.length >= MAX_NEW_MESSAGES) { res.refused++; return; }
+      const ok = !!item && typeof item === 'object' && !Array.isArray(item);
+      const raw = ok ? pickKey(item, 'da', 'mittente', 'nazione', 'paese') : undefined;
+      const from = typeof raw === 'string' && own(countries, raw.trim().toUpperCase()) ? raw.trim().toUpperCase() : '';
+      const type = ok ? msgTypeOf(pickKey(item, 'tipo', 'genere')) : '';
+      const text = ok ? cleanText(pickKey(item, 'testo', 'messaggio', 'contenuto'), MAX_MSG_LEN) : '';
+      if (!from || from === selectedCountryId || !alive[from] || !type || !text || seen.has(from)) { res.refused++; return; }
+      seen.add(from);
+      res.added.push({ id: 'm' + (++state.msgSeq), from, type, weight: msgWeight(pickKey(item, 'peso', 'importanza')), text, decision: '', talk: false });
+    });
+    res.refused += Math.max(0, list.length - MAX_MSG_READ);
+    return res;
+  }
+  // The messages waiting are settled: the relations with each sender change by the effect of the answer (a rule of the game); returns the events
+  // (for the lines of the relations) and one line for each message (for the log).
+  function resolveMessages(list) {
+    const res = { events: [], lines: [] };
+    list.forEach(m => {
+      if (!own(countries, m.from)) return;
+      const choice = messageChoice(m), d = messageEffect(m, choice);
+      res.lines.push(`Messaggio di ${countries[m.from].name} (${msgTypeName(m)}, peso ${m.weight}): ${MSG_CHOICE_TEXT[choice]}`);
+      if (d) {
+        relAdd(selectedCountryId, m.from, d);
+        res.events.push({ a: selectedCountryId, b: m.from, why: `${msgTypeName(m)} (peso ${m.weight}): ${MSG_CHOICE_TEXT[choice]}` });
+      }
+    });
+    return res;
+  }
+  const newMessageLines = (added, refused) => added.map(m => `Nuovo messaggio da ${countries[m.from].name} (${msgTypeName(m)}, peso ${m.weight}): «${m.text}»`)
+    .concat(refused ? [`⚠️ Messaggi scartati: ${refused} (mittente, tipo o testo non validi, due messaggi dallo stesso Stato, oppure oltre il massimo di ${MAX_NEW_MESSAGES} per periodo)`] : []);
+
+  // What the engine is told: the answers to the messages of the last period (map games), the talks of this one, and how to write new messages.
+  function messagesContext() {
+    if (!mapGameStarted || !selectedCountryId || !state.inbox.length) return '';
+    const rows = state.inbox.filter(m => own(countries, m.from)).map(m => `- ${countries[m.from].name} (${m.from}), ${msgTypeName(m)}, peso ${m.weight}/5: ${MSG_CHOICE_TEXT[messageChoice(m)].toUpperCase()}. Testo: «${m.text}»`);
+    return `Messaggi che il giocatore aveva ricevuto e come ha risposto (il gioco applica da solo l'effetto sulle relazioni: non ripeterlo in "relazioni"; racconta invece le conseguenze di ciò che ha accettato, rifiutato o lasciato cadere, anche con statistiche e territori se valgono):\n${rows.join('\n')}\n`;
+  }
+  function talksContext(mapMode) {
+    const talks = state.talks.slice(-MAX_TALKS_PROMPT);
+    if (!talks.length) return '';
+    return `Colloqui avuti dal giocatore in questo periodo (scheda Diplomazia; sono parole, non fatti compiuti):\n${talks.map(t => `- con ${t.to}: il giocatore dice «${t.you}»; risposta: «${t.they}»`).join('\n')}\nTienine conto nelle conseguenze: promesse, minacce, intese o offese possono cambiare i rapporti${mapMode ? ' (campo "relazioni")' : ''} e gli eventi, ma un'intesa vale solo se la narrazione la realizza.\n`;
+  }
+  function messagesRules() {
+    return `Messaggi: alla fine del periodo da 0 a ${MAX_NEW_MESSAGES} altre nazioni (diverse fra loro, mai il giocatore) possono scrivergli: elencali in "messaggi" come {"da":"CODICE","tipo":"colloquio" | "accordo" | "richiesta" | "ultimatum","peso":intero da 1 a 5,"testo":"il messaggio in prima persona, 1-3 frasi"}. `
+      + `Tipi: colloquio = chiede un incontro; accordo = propone un patto, un'alleanza o un aiuto; richiesta = chiede qualcosa al giocatore; ultimatum = intima di fare o smettere di fare qualcosa sotto minaccia. `
+      + `Il peso dice quanto il messaggio conta (1 minore, 2 medio, 3 rilevante, 4 alto, 5 cruciale: 4 e 5 solo per svolte gravi) e deve seguire i fatti del periodo e le relazioni (gli amici propongono, gli ostili minacciano). `
+      + `Non decidere tu la risposta del giocatore. Se nessuna nazione scrive, "messaggi" è un array vuoto.\n`;
+  }
+  // A few words for the advisor: the messages the player still has in front of him.
+  function messagesSummary() {
+    if (!mapGameStarted || !selectedCountryId || !state.inbox.length) return '';
+    const rows = state.inbox.filter(m => own(countries, m.from)).map(m => `${countries[m.from].name} (${msgTypeName(m)}, peso ${m.weight}/5${m.decision ? '; già deciso: ' + (m.decision === 'accept' ? 'accettare' : 'rifiutare') : m.talk ? '; in colloquio' : ''})`);
+    return ` Messaggi ricevuti dalle altre nazioni, ai quali risponde prima di avanzare: ${rows.join('; ')}.`;
+  }
+  // What was said in a talk, kept until the time advances: the engine reads it (the last MAX_TALKS_PROMPT of them) and then the list is emptied.
+  function recordTalk(to, you, they) {
+    const t = { to: cleanText(to, 60), you: cleanText(you, TALK_YOU_LEN), they: cleanText(they, TALK_THEY_LEN) };
+    if (!t.to || !(t.you || t.they)) return;
+    state.talks.push(t);
+    if (state.talks.length > MAX_TALKS) state.talks.splice(0, state.talks.length - MAX_TALKS);
+  }
+
+  // In a save: the messages waiting, whatever the document says: a sender that is a state of the map, a known kind, a weight that is a whole number
+  // from 1 to 5, a text, an id like m12 that appears once; at most MAX_INBOX of them.
+  function cleanInboxSave(raw) {
+    const out = [], ids = new Set();
+    if (!Array.isArray(raw)) return out;
+    for (const m of raw) {
+      if (out.length >= MAX_INBOX) break;
+      if (!m || typeof m !== 'object' || Array.isArray(m)) continue;
+      const id = typeof m.id === 'string' && /^m\d{1,7}$/.test(m.id) ? m.id : '';
+      const from = typeof m.from === 'string' && own(countries, m.from) ? m.from : '';
+      const type = typeof m.type === 'string' && own(MSG_TYPES, m.type) ? m.type : '';
+      const text = cleanText(m.text, MAX_MSG_LEN);
+      if (!id || ids.has(id) || !from || !type || !text || !(typeof m.weight === 'number' && Number.isInteger(m.weight) && m.weight >= 1 && m.weight <= 5)) continue;
+      ids.add(id);
+      out.push({ id, from, type, weight: m.weight, text, decision: m.decision === 'accept' || m.decision === 'refuse' ? m.decision : '', talk: m.talk === true });
+    }
+    return out;
+  }
+  function cleanTalksSave(raw) {
+    if (!Array.isArray(raw)) return [];
+    return raw.filter(t => t && typeof t === 'object' && !Array.isArray(t)).slice(-MAX_TALKS)
+      .map(t => ({ to: cleanText(t.to, 60), you: cleanText(t.you, TALK_YOU_LEN), they: cleanText(t.they, TALK_THEY_LEN) }))
+      .filter(t => t.to && (t.you || t.they));
+  }
+
+  // ---- what the player sees: the panel «Messaggi in arrivo», and the line next to «Avanza» ----
+  const textNode = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; n.textContent = text; return n; };
+  function messageItem(m, off) {
+    const c = countries[m.from], T = MSG_TYPES[m.type], st = messageStatus(m), name = c.name;
+    const li = document.createElement('li');
+    li.className = 'msg-item'; li.dataset.id = m.id;
+    const head = document.createElement('div'); head.className = 'msg-head';
+    head.append(textNode('span', 'msg-from', name), textNode('span', 'msg-type', T.label));
+    const weight = document.createElement('p'); weight.className = 'msg-weight';
+    const dots = textNode('span', 'msg-dots', '●'.repeat(m.weight) + '○'.repeat(5 - m.weight)); dots.setAttribute('aria-hidden', 'true');
+    weight.append(dots, ` Peso ${m.weight} su 5 · ${MSG_WEIGHTS[m.weight - 1]}`);
+    const v = relGet(selectedCountryId, m.from);
+    const stakes = `Relazioni con ${name} ora ${fmtRel(v)} (${relBand(v)}). Se accetti ${fmtRel(messageEffect(m, 'accept'))}, se rifiuti ${fmtRel(messageEffect(m, 'refuse'))}, se non rispondi ${fmtRel(messageEffect(m, 'ignore'))}; con un colloquio nessun effetto automatico.`;
+    const acts = document.createElement('div'); acts.className = 'msg-actions';
+    const btn = (act, label, aria, pressed) => {
+      const b = textNode('button', 'ghost small', label);
+      b.type = 'button'; b.dataset.id = m.id; b.dataset.act = act;
+      b.setAttribute('aria-label', aria);
+      if (pressed !== null) b.setAttribute('aria-pressed', String(pressed));
+      b.disabled = off || (act === 'reply' && diploBusy());
+      return b;
+    };
+    const what = `messaggio di ${name} (${T.label.toLowerCase()}, peso ${m.weight})`;       // each button names its message: «Accetta il messaggio di Francia (…)»
+    acts.append(btn('accept', 'Accetta', `Accetta il ${what}`, m.decision === 'accept'), btn('refuse', 'Rifiuta', `Rifiuta il ${what}`, m.decision === 'refuse'),
+      btn('reply', 'Rispondi', `Rispondi al ${what} con un colloquio nella scheda Diplomazia`, null));
+    li.append(head, weight, textNode('p', 'msg-text', '«' + m.text + '»'), textNode('p', 'msg-stakes', stakes), textNode('p', 'msg-status', MSG_STATUS_TEXT[st]), acts);
+    return li;
+  }
+  // focus = {id, act}: the control to give the cursor back to after the list is drawn again.
+  function renderMessages(focus) {
+    const on = relVisible() && !gameOver;
+    el('msgPanel').classList.toggle('hidden', !on);
+    const open = on ? state.inbox.filter(m => messageStatus(m) === 'nuovo').length : 0;
+    setTextIf('msgWarn', open ? (open === 1 ? 'Hai 1 messaggio senza risposta: se premi «Avanza» conta come ignorato.' : `Hai ${open} messaggi senza risposta: se premi «Avanza» contano come ignorati.`) : '');
+    el('msgWarn').classList.toggle('hidden', !open);
+    const list = el('msgList');
+    if (!on) { list.textContent = ''; return; }
+    const n = state.inbox.filter(m => own(countries, m.from)).length, off = turnBusy() || !sample;
+    setTextIf('msgTitle', n ? `Messaggi in arrivo (${n})` : 'Messaggi in arrivo');
+    setTextIf('msgNote', msgNoteText());
+    el('msgEmpty').classList.toggle('hidden', n > 0);
+    list.classList.toggle('hidden', !n);
+    const frag = document.createDocumentFragment();
+    state.inbox.filter(m => own(countries, m.from)).forEach(m => frag.appendChild(messageItem(m, off)));
+    list.textContent = '';
+    list.appendChild(frag);
+    if (focus) {
+      const b = list.querySelector(`button[data-id="${focus.id}"][data-act="${focus.act}"]`);
+      if (b && !b.disabled) { try { b.focus({ preventScroll: true }); } catch (e) { b.focus(); } }
+    }
+  }
+  // Accept / refuse: the answer is only written down, it counts when the time advances. The same button again takes it back.
+  function decideMessage(id, act) {
+    const m = state.inbox.find(x => x.id === id);
+    if (!m || (act !== 'accept' && act !== 'refuse') || turnBusy() || gameOver || !gameMode || !sample || !own(countries, m.from)) return false;
+    m.decision = m.decision === act ? '' : act;
+    renderMessages({ id, act });
+    announce(m.decision ? `Messaggio di ${countries[m.from].name}: ${m.decision === 'accept' ? 'accettato' : 'rifiutato'}. Avrà effetto quando fai avanzare il tempo.` : `Messaggio di ${countries[m.from].name}: risposta annullata.`);
+    autoSave();
+    return true;
+  }
+  function newDiplo(target, intro, msgId) { return { target: target || '', history: [], bubbles: [], intro: intro || '', msgId: msgId || '' }; }
+  // «Rispondi»: a talk with the sender opens in the tab Diplomazia, starting from their message. A talk already open for this message is kept.
+  function replyToMessage(id) {
+    const m = state.inbox.find(x => x.id === id);
+    if (!m || turnBusy() || diploBusy() || gameOver || !gameMode || !sample || !own(countries, m.from)) return false;
+    const name = countries[m.from].name;
+    if (!state.diplo.target || state.diplo.msgId !== m.id) {
+      diplomacySession += 1;
+      state.diplo = newDiplo(name, `Poco fa hai scritto tu al giocatore questo messaggio (${msgTypeName(m)}, peso ${m.weight} su 5): «${m.text}». Ora il giocatore ti risponde.`, m.id);
+      diploLogEl.innerHTML = '';
+      el('diploInput').value = '';
+      el('diploTargetLabel').textContent = name;
+      el('diploSetup').classList.add('hidden'); el('diploChat').classList.remove('hidden');
+      el('diploThinking').classList.add('hidden');
+      addBubble({ w: 'o', t: m.text });
+    }
+    selectTab('diplo', true);
+    focusEl('diploInput');
+    announce(`Colloquio con ${name} aperto: scrivi la tua risposta.`);
+    autoSave();
+    return true;
+  }
+  el('msgList').addEventListener('click', e => {
+    const b = e.target && e.target.closest ? e.target.closest('button[data-act]') : null;
+    if (!b || b.disabled) return;
+    if (b.dataset.act === 'reply') replyToMessage(b.dataset.id); else decideMessage(b.dataset.id, b.dataset.act);
+  });
+
   // The nations the engine is asked to give room to this time, so that the smaller states act too and not only the big
   // powers. The list rotates with the turn number and uses no randomness: the same game always gives the same list.
   function spotlightCodes(n) {
@@ -7327,8 +7588,8 @@ window.MAP_SVG = {
     const s = state.stats;
     const spotCodes = mapMode ? spotlightCodes(3) : [];
     const extraText = actions.join(' ') + ' ' + (state.worldSummary || '');
-    const mapPart = mapMode ? territoryContext() + "\n" + territoryRules(extraText) + relationsContext(extraText, spotCodes) + relationsRules() + markerRules() : "";
-    const schemaExtra = mapMode ? ', "cambi_territoriali": [{"provincia": "ID", "nuovo_proprietario": "CODICE"}], "cambi_controllo": [{"provincia": "ID", "nuovo_controllore": "CODICE"}], "relazioni": [{"nazione_a": "CODICE", "nazione_b": "CODICE", "variazione": numero intero da -' + REL_STEP_MAX + ' a ' + REL_STEP_MAX + ', "motivo": "frase breve"}], ' + markerSchema : '';
+    const mapPart = mapMode ? territoryContext() + "\n" + territoryRules(extraText) + relationsContext(extraText, spotCodes.concat(state.inbox.map(m => m.from))) + relationsRules() + messagesContext() + messagesRules() + markerRules() : "";
+    const schemaExtra = mapMode ? ', "cambi_territoriali": [{"provincia": "ID", "nuovo_proprietario": "CODICE"}], "cambi_controllo": [{"provincia": "ID", "nuovo_controllore": "CODICE"}], "relazioni": [{"nazione_a": "CODICE", "nazione_b": "CODICE", "variazione": numero intero da -' + REL_STEP_MAX + ' a ' + REL_STEP_MAX + ', "motivo": "frase breve"}], "messaggi": [{"da": "CODICE", "tipo": "colloquio, accordo, richiesta o ultimatum", "peso": numero intero da 1 a 5, "testo": "il messaggio, 1-3 frasi"}], ' + markerSchema : '';
     const orders = actions.length
       ? `Nel frattempo il giocatore dà ${actions.length === 1 ? "quest'ordine" : `questi ${actions.length} ordini, uno per riga`}:\n${actions.map((a, i) => `${i + 1}. "${a}"`).join('\n')}\nEsegui ogni ordine con realismo: può riuscire, riuscire solo in parte o fallire, secondo i mezzi del paese e la situazione.`
       : "Nel frattempo il giocatore non dà ordini nuovi: il suo governo prosegue l'ordinaria amministrazione e il mondo va avanti.";
@@ -7338,12 +7599,16 @@ window.MAP_SVG = {
 ${mapPart}Stato del mondo finora: ${state.worldSummary || "(inizio partita, nessun evento ancora)"}
 Statistiche attuali (0-100): Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.
 Il tempo avanza di ${jump}. ${orders}
-${others}
+${talksContext(mapMode)}${others}
 Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto, di tutto ciò che avviene in questo periodo (gli ordini del giocatore e le mosse delle altre nazioni) e aggiorna le statistiche in modo coerente. Rispondi SOLO con un oggetto JSON: {"evento_titolo": "titolo giornalistico breve, max 6 parole", "narrativa": "3-5 frasi in italiano su cosa succede", "mosse_altre_nazioni": [{"nazione": "nome della nazione", "mossa": "una frase su cosa fa"}], "riepilogo_mondo": "1-2 frasi che aggiornano lo stato del mondo per il turno successivo", "nuovo_anno": "l'anno risultante dopo il salto, come testo breve", "stabilita": numero 0-100, "economia": numero 0-100, "esercito": numero 0-100, "prestigio": numero 0-100${schemaExtra}}`;
   }
 
   advanceBtn.onclick = async () => {
     if (turnBusy() || !sample || gameOver || !gameMode) return;
+    if (diploBusy()) {                          // the answer in a talk is still on its way: it has to count for this period, so the turn waits for it
+      setActionMsg("Aspetta la risposta nel colloquio diplomatico, poi premi «Avanza»: il colloquio conta per questo periodo.");
+      return;
+    }
     const input = el('actionInput');
     if (input.value.trim()) {                   // written but not sent: it would be lost, so the time does not advance
       setActionMsg("Nella casella c'è del testo che non hai inviato. Premi «Invia» per metterlo tra le azioni (oppure cancellalo), poi «Avanza».");
@@ -7352,6 +7617,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     }
     setActionMsg('');
     const actions = state.pending.slice();
+    const waiting = state.inbox.slice(), talked = state.talks.slice();         // the messages this turn settles and the talks it hands to the engine
     const jump = el('jump').value;
     const requestSession = gameSession;
     busySession = requestSession;
@@ -7387,13 +7653,21 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
         const before = territorySnapshot();
         const lines = applyTerritoryChanges(r.cambi_territoriali).concat(applyControlChanges(r.cambi_controllo), applyMarkerChanges(r.segnaposto));
         if (lines.length) addLog({ k: 'g', lines });
-        // what the territories that changed hands cost the relations (a rule of the game), then what the engine reports
+        // what the territories that changed hands cost the relations (a rule of the game), what the answers to the messages cost or gain
+        // (the same), then what the engine reports
+        const decided = resolveMessages(waiting);
         const asked = applyRelationChanges(r.relazioni);
-        const relLines = relationLines(relStart, territoryRelationEffects(before).concat(asked.events), asked.refused);
+        const relLines = relationLines(relStart, territoryRelationEffects(before).concat(decided.events, asked.events), asked.refused);
         if (relLines.length) addLog({ k: 'r', lines: relLines });
+        const got = receiveMessages(r.messaggi);                // the messages that settled are gone, the new ones take their place
+        state.inbox = got.added;
+        const msgLines = decided.lines.concat(newMessageLines(got.added, got.refused));
+        if (msgLines.length) addLog({ k: 'm', lines: msgLines });
+        if (got.added.length) announce(got.added.length === 1 ? 'Nuovo messaggio da un\'altra nazione.' : `${got.added.length} nuovi messaggi da altre nazioni.`);
         renderRelations();
         checkGameOver();
       }
+      state.talks = state.talks.filter(t => !talked.includes(t));       // the talks handed to the engine are done with; the ones held meanwhile (none can be) stay
     } catch (e) {
       const cancelled = !!(e && e.cancelled);
       const why = String((e && e.message) || e || 'errore sconosciuto');
@@ -7404,6 +7678,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
         busySession = -1;
         thinkingEl.classList.add('hidden');
         renderQueue();
+        renderMessages();
         setTurnControls(!gameOver);
         restoreFocus(advanceBtn);               // the button was off while the answer was on its way: the cursor goes back to it
         autoSave();
@@ -7418,7 +7693,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     thinkingEl.classList.remove('hidden');
     announce('Il Consigliere sta preparando un consiglio…');
     const s = state.stats;
-    const prompt = `Sei un consigliere storico per chi guida ${state.nation} nell'anno ${state.year}. ${territoryContext()}${relationsSummary()} Stato del mondo: ${state.worldSummary || "inizio partita"}. Statistiche: Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.${state.pending.length ? ` Il giocatore ha già deciso queste azioni per il prossimo periodo (non ripeterle: puoi integrarle o correggerle): ${state.pending.join('; ')}.` : ''} Dai un breve consiglio strategico (2-3 frasi) su cosa potrebbe fare ora, in italiano.`;
+    const prompt = `Sei un consigliere storico per chi guida ${state.nation} nell'anno ${state.year}. ${territoryContext()}${relationsSummary()}${messagesSummary()} Stato del mondo: ${state.worldSummary || "inizio partita"}. Statistiche: Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.${state.pending.length ? ` Il giocatore ha già deciso queste azioni per il prossimo periodo (non ripeterle: puoi integrarle o correggerle): ${state.pending.join('; ')}.` : ''} Dai un breve consiglio strategico (2-3 frasi) su cosa potrebbe fare ora, in italiano.`;
     try {
       const res = await sample(prompt, { cache: false });
       if (requestSession !== gameSession) return;
@@ -7445,7 +7720,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     const t = el('diploTarget').value.trim();
     if (!t || !sample || gameOver) return;
     diplomacySession += 1;
-    state.diplo = { target: t, history: [], bubbles: [] };
+    state.diplo = newDiplo(t);
     el('diploTargetLabel').textContent = t;
     diploLogEl.innerHTML = '';
     el('diploSetup').classList.add('hidden');
@@ -7453,31 +7728,34 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
   };
   el('diploResetBtn').onclick = () => {
     diplomacySession += 1;                       // an answer still on its way belongs to the talk being closed
-    state.diplo = { target: '', history: [], bubbles: [] };
+    state.diplo = newDiplo();
     el('diploChat').classList.add('hidden');
     el('diploSetup').classList.remove('hidden');
     el('diploTarget').value = '';
     el('diploInput').value = '';
     el('diploThinking').classList.add('hidden');
-    el('diploSendBtn').disabled = !sample || gameOver;
+    el('diploSendBtn').disabled = !sample || gameOver || turnBusy();
     diploLogEl.innerHTML = '';
+    renderMessages();                            // a message answered in this talk keeps its answer, the button «Rispondi» is free again
     autoSave();
   };
   el('diploSendBtn').onclick = async () => {
     const input = el('diploInput');
     const msg = input.value.trim();
-    if (!msg || !sample || gameOver) return;
+    if (!msg || !sample || gameOver || turnBusy() || diploBusy()) return;
     const btn = el('diploSendBtn');
     const requestGame = gameSession, requestDiplo = diplomacySession;
     const live = () => requestGame === gameSession && requestDiplo === diplomacySession;
+    diploPending = requestDiplo;                 // «Avanza» waits for this answer, so that the talk counts for the period
     btn.disabled = true;
+    renderMessages();                            // and «Rispondi» is off until it arrives
     el('diploThinking').classList.remove('hidden');
     announce('In attesa di risposta…');
     addBubble({ w: 'u', t: msg });
 
     const isFirst = state.diplo.history.length === 0;
     const content = isFirst
-      ? `Sei ${state.diplo.target}, una figura di potere straniera, nell'anno ${state.year}. Il tuo interlocutore guida ${state.nation}. Contesto della partita: ${state.worldSummary || "inizio partita"}. ${territoryContext()}${relationsWith(state.diplo.target)} Rispondi sempre in character, in italiano, con 2-4 frasi per turno, restando coerente col contesto storico.\n\n${msg}`
+      ? `Sei ${state.diplo.target}, una figura di potere straniera, nell'anno ${state.year}. Il tuo interlocutore guida ${state.nation}. Contesto della partita: ${state.worldSummary || "inizio partita"}. ${territoryContext()}${relationsWith(state.diplo.target)}${state.diplo.intro ? ' ' + state.diplo.intro : ''} Rispondi sempre in character, in italiano, con 2-4 frasi per turno, restando coerente col contesto storico.\n\n${msg}`
       : msg;
     state.diplo.history.push({ role: 'user', content });
 
@@ -7486,6 +7764,9 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
       if (!live()) return;
       state.diplo.history.push({ role: 'assistant', content: res.text });
       addBubble({ w: 'o', t: res.text });
+      recordTalk(state.diplo.target, msg, res.text);       // what was said counts for the period: the engine reads it when the time advances
+      const about = state.diplo.msgId ? state.inbox.find(x => x.id === state.diplo.msgId) : null;
+      if (about) about.talk = true;                         // a message answered with a talk is no longer «ignored»
     } catch (e) {
       if (live()) {
         state.diplo.history.pop();          // keep user/assistant turns alternating
@@ -7493,9 +7774,11 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
       }
     } finally {
       if (live()) {
+        diploPending = -1;
         input.value = '';
         el('diploThinking').classList.add('hidden');
-        btn.disabled = gameOver;
+        btn.disabled = gameOver || turnBusy();
+        renderMessages();
         autoSave();
       }
     }
@@ -7530,10 +7813,15 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
           bubbles: state.diplo.bubbles.slice(-30)
         }
       };
+      if (state.diplo.intro) payload.game.diplo.intro = state.diplo.intro;        // a talk opened from a message: what the other side wrote, and which message
+      if (state.diplo.msgId) payload.game.diplo.msgId = state.diplo.msgId;
+      if (state.talks.length) payload.game.talks = state.talks.slice(-MAX_TALKS);  // the talks the engine has not read yet
+      if (state.msgSeq > 0) payload.game.msgSeq = state.msgSeq;
       if (gameMode === 'fixed') {                                // the relations: only the pairs that differ from the start, and the time not yet counted
         const rels = relationsForSave();
         if (Object.keys(rels).length) payload.game.relations = rels;
         if (state.relClock > 0) payload.game.relClock = state.relClock;
+        if (state.inbox.length) payload.game.inbox = state.inbox.map(m => ({ id: m.id, from: m.from, type: m.type, weight: m.weight, text: m.text, decision: m.decision, talk: m.talk }));
       }
     }
     return payload;
@@ -7608,14 +7896,21 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     out.relations = g.mode === 'fixed' ? cleanRelationsSave(g.relations) : {};
     const clock = Number(g.relClock);
     out.relClock = g.mode === 'fixed' && Number.isFinite(clock) && clock > 0 && clock < 1 ? Math.floor(clock * 4) / 4 : 0;
+    // the messages waiting (only in a game on the map), the talks the engine has not read yet, and the last number given to a message
+    out.inbox = g.mode === 'fixed' ? cleanInboxSave(g.inbox) : [];
+    out.talks = cleanTalksSave(g.talks);
+    const seq = Number(g.msgSeq);
+    out.msgSeq = Math.max(Number.isFinite(seq) ? Math.max(0, Math.min(1000000, Math.floor(seq))) : 0, ...out.inbox.map(m => Number(m.id.slice(1))));
     out.log = list(g.log).filter(e => e && typeof e === 'object' && typeof e.k === 'string').slice(-200).map(e =>
       e.k === 't' ? { k: 't', year: str(e.year), headline: str(e.headline), narr: str(e.narr) }
-      : e.k === 'g' || e.k === 'n' || e.k === 'r' ? { k: e.k, lines: list(e.lines).slice(0, 60).map(str).filter(l => l.trim()) }
+      : e.k === 'g' || e.k === 'n' || e.k === 'r' || e.k === 'm' ? { k: e.k, lines: list(e.lines).slice(0, 60).map(str).filter(l => l.trim()) }
       : { k: e.k, text: str(e.text) }).filter(e => !(e.lines && !e.lines.length));      // a block of lines with no line is not shown
     if (g.diplo && typeof g.diplo === 'object') out.diplo = {
       target: str(g.diplo.target),
       history: list(g.diplo.history).filter(m => m && typeof m === 'object' && typeof m.content === 'string' && (m.role === 'user' || m.role === 'assistant')).slice(-40).map(m => ({ role: m.role, content: m.content })),
-      bubbles: list(g.diplo.bubbles).filter(b => b && typeof b === 'object').slice(-100).map(b => ({ w: b.w === 'u' ? 'u' : 'o', t: str(b.t) }))
+      bubbles: list(g.diplo.bubbles).filter(b => b && typeof b === 'object').slice(-100).map(b => ({ w: b.w === 'u' ? 'u' : 'o', t: str(b.t) })),
+      intro: cleanText(g.diplo.intro, 700),
+      msgId: typeof g.diplo.msgId === 'string' && /^m\d{1,7}$/.test(g.diplo.msgId) ? g.diplo.msgId : ''
     };
     return out;
   }
@@ -7656,14 +7951,18 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     state.pending = Array.isArray(g.pending) ? g.pending : [];
     state.turn = Number.isFinite(g.turn) ? g.turn : 0;
     state.rel = g.relations || {}; state.relClock = g.relClock || 0;
+    state.msgSeq = g.msgSeq || 0; state.talks = g.talks || [];
     if (g.diplo) state.diplo = {
       target: String(g.diplo.target || ''),
       history: Array.isArray(g.diplo.history) ? g.diplo.history : [],
-      bubbles: Array.isArray(g.diplo.bubbles) ? g.diplo.bubbles : []
+      bubbles: Array.isArray(g.diplo.bubbles) ? g.diplo.bubbles : [],
+      intro: String(g.diplo.intro || ''), msgId: String(g.diplo.msgId || '')
     };
     gameOver = !!g.over;
     mapGameStarted = g.mode === 'fixed';
     selectedCountryId = (mapGameStarted && own(countries, data.selectedCountryId)) ? data.selectedCountryId : null;
+    state.inbox = mapGameStarted ? (g.inbox || []).filter(m => m.from !== selectedCountryId) : [];      // a state does not write to itself
+    if (!state.inbox.some(m => m.id === state.diplo.msgId)) state.diplo.msgId = '';                     // the message of an open talk is gone
 
     [logEl, diploLogEl].forEach(n => n.setAttribute('aria-live', 'off'));       // a loaded game is not read out entry by entry
     logEl.innerHTML = '';
