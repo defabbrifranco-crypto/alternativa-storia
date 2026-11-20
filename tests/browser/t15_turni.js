@@ -229,7 +229,7 @@ const lines = (n, base = 'Ordine numero ') => Array.from({ length: n }, (_, i) =
   const po = await lastPrompt();
   check('la richiesta chiede alle altre nazioni di agire di propria iniziativa, non solo in risposta al giocatore', /anche le altre nazioni agiscono liberamente, di propria iniziativa e non solo in risposta al giocatore/.test(po), po.slice(0, 700));
   check('…da 3 a 6 nazioni diverse, non solo le superpotenze', po.includes('Fai agire da 3 a 6 nazioni diverse, non solo le superpotenze'));
-  check('…con le loro mosse che contano davvero (narrazione, statistiche e, con la mappa, i cambi territoriali)', /Le loro mosse contano davvero/.test(po) && /vanno elencate nei cambi territoriali/.test(po));
+  check('…con le loro mosse che contano davvero (narrazione, statistiche e, con la mappa, i cambi di sovranità in «cambi_territoriali» e quelli del solo controllo in «cambi_controllo»)', /Le loro mosse contano davvero/.test(po) && /e se cambiano chi possiede un territorio vanno elencate in "cambi_territoriali" \(se ne cambia solo il controllo, per occupazione o restituzione, in "cambi_controllo"\)\. Riportale/.test(po) && !/se cambiano chi possiede o controlla/.test(po));
   check('…e le chiede nella risposta, in «mosse_altre_nazioni», con lo schema', po.includes('Riportale in "mosse_altre_nazioni", una frase ciascuna.') && po.includes('"mosse_altre_nazioni": [{"nazione": "nome della nazione", "mossa": "una frase su cosa fa"}]'));
   check('la narrazione deve coprire ordini del giocatore e mosse delle altre nazioni', /di tutto ciò che avviene in questo periodo \(gli ordini del giocatore e le mosse delle altre nazioni\)/.test(po));
   check('lo schema della risposta ha ancora il resto (statistiche, territori, controllo, segnaposto)', ['"evento_titolo"', '"narrativa"', '"riepilogo_mondo"', '"nuovo_anno"', '"stabilita"', '"cambi_territoriali"', '"cambi_controllo"', '"segnaposto"'].every(k => po.includes(k)));
@@ -287,7 +287,7 @@ const lines = (n, base = 'Ordine numero ') => Array.from({ length: n }, (_, i) =
   await page.fill('#nation', 'Roma'); await page.fill('#startYear', '400'); await page.click('#startBtn');
   await advance();
   const pf = await lastPrompt();
-  check('scenario libero: le altre nazioni agiscono lo stesso, senza elenco di nazioni in evidenza né regole della mappa', /anche le altre nazioni agiscono liberamente/.test(pf) && pf.includes('mosse_altre_nazioni') && !pf.includes('dai spazio anche a') && !pf.includes('cambi_territoriali') && !pf.includes('vanno elencate nei cambi territoriali'), pf.slice(0, 300));
+  check('scenario libero: le altre nazioni agiscono lo stesso, senza elenco di nazioni in evidenza né regole della mappa', /anche le altre nazioni agiscono liberamente/.test(pf) && pf.includes('mosse_altre_nazioni') && !pf.includes('dai spazio anche a') && !pf.includes('cambi_territoriali') && !pf.includes('vanno elencate in "cambi_territoriali"') && !pf.includes('cambi_controllo'), pf.slice(0, 300));
   await ev(() => window.__t.resetGame());
 
   // =============================================================== 9. le altre nazioni: la risposta
