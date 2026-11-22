@@ -469,7 +469,8 @@ const INBOX3 = M3.map((m, i) => ({ id: 'm' + (i + 1), from: m.da, type: m.tipo, 
     for (let i = 0; i < 12; i++) T.recordTalk('Francia', 'a'.repeat(300), 'b'.repeat(300));
     return { rules: T.messagesRules().length, ctx: T.messagesContext().length, talks: T.talksContext(true).length, vuoto, pieno: T.turnPrompt([], '1 mese', true).length, sommario: T.messagesSummary().length }; });
   check('le regole sono brevi (sotto 1.100 caratteri), la parte sulle risposte con 3 messaggi lunghi sotto 1.800, quella sui colloqui sotto 2.900', mis.rules < 1100 && mis.ctx < 1800 && mis.talks < 2900, mis);
-  check('la richiesta intera resta moderata: sotto 11.500 caratteri senza messaggi, sotto 15.000 nel caso peggiore (3 messaggi da 360 caratteri e 5 colloqui lunghi)', mis.vuoto < 11500 && mis.pieno < 15000, mis);
+  // i limiti erano 11.500 e 15.000 fino alla versione 34; i contatti fra altre nazioni (versione 35) aggiungono circa 900 caratteri a tutte e due le misure
+  check('la richiesta intera resta moderata: sotto 12.000 caratteri senza messaggi, sotto 16.500 nel caso peggiore (3 messaggi da 360 caratteri e 5 colloqui lunghi)', mis.vuoto < 12000 && mis.pieno < 16500, mis);
   const scelto = await ev(() => { const T = window.__t, S = T.getState(); S.inbox = []; S.talks.length = 0;
     const cand = ['LKA', 'THA', 'NPL', 'PRK', 'BTN', 'MNG']; const senza = T.turnPrompt([], '1 mese', true);
     const c = cand.find(x => !senza.includes('(' + x + ')'));
@@ -491,13 +492,12 @@ const INBOX3 = M3.map((m, i) => ({ id: 'm' + (i + 1), from: m.da, type: m.tipo, 
   console.log('— una partita libera non ha messaggi, ma i colloqui contano lo stesso');
   await ev(() => { window.__queue.length = 0; window.__textQueue.length = 0; window.__t.resetGame(); });
   await page.fill('#nation', 'Impero Romano'); await page.fill('#startYear', '400 d.C.');
-  await queueJson(TURN({ nuovo_anno: '401', messaggi: [MSG('FRA', 'accordo', 4, 'Non deve comparire.')] }));
-  await page.click('#startBtn');
-  await spinnerOff();
+  await page.click('#startBtn');                                   // «Inizia» apre la partita libera; la richiesta al motore parte al primo «Avanza»
+  await turn({ nuovo_anno: '401', messaggi: [MSG('FRA', 'accordo', 4, 'Non deve comparire.')] });
   const lib = await ev(() => ({ inbox: window.__t.getState().inbox.length, hidden: document.getElementById('msgPanel').classList.contains('hidden'), warn: document.getElementById('msgWarn').classList.contains('hidden'),
     m: document.querySelectorAll('#log .entry-msg').length, kinds: window.__t.getState().log.map(e => e.k).join(), mode: window.__t.getGameMode(), p: String(window.__prompts[window.__prompts.length - 1]) }));
   check('partita libera: la richiesta non ha le regole dei messaggi né il campo «messaggi»; se la risposta ne porta, vengono ignorati: posta vuota, pannello e avviso nascosti, nessuna voce nella cronaca',
-    lib.mode === 'free' && !lib.p.includes('"messaggi"') && !lib.p.includes('Messaggi:') && lib.inbox === 0 && lib.hidden && lib.warn && lib.m === 0 && !/m/.test(lib.kinds.replace(/t/g, '')), lib);
+    lib.mode === 'free' && lib.p.includes('Impero Romano') && lib.kinds === 't' && !lib.p.includes('"messaggi"') && !lib.p.includes('Messaggi:') && lib.inbox === 0 && lib.hidden && lib.warn && lib.m === 0, lib);
   await page.click('#tabDiplo');
   await ev(() => { document.getElementById('diploTarget').value = 'Carlo Magno'; document.getElementById('diploStartBtn').click(); });
   await queueText('Saluti, imperatore.'); await scrivi('Propongo un trattato.');

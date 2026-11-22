@@ -125,6 +125,8 @@
   .rel-bar i.neg { right:50%; background:var(--rel-neg); }
   /* messages from the other states: each one has a weight from 1 to 5 (written in words and in dots) that scales what the answer does to the relations */
   .entry-msg { font-size:.88rem; background:var(--user-msg); border-left:3px dashed var(--accent); border-radius:6px; padding:6px 10px; line-height:1.4; }
+  /* contacts between two other states (the player is not one of them): what the engine reports and the game settles by itself; dotted, to tell it from the player's messages */
+  .entry-contact { font-size:.88rem; background:var(--user-msg); border-left:3px dotted var(--accent); border-radius:6px; padding:6px 10px; line-height:1.4; overflow-wrap:anywhere; }  /* a long word wraps, it does not widen the log */
   .msg-list { list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:10px; }
   .msg-item { border:1px solid var(--border); border-radius:8px; padding:10px; background:var(--bg); }
   .msg-head { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:2px 10px; }
@@ -314,7 +316,7 @@
     <header class="panel" id="appHead">
       <h1 id="appTitle" tabindex="-1"><span aria-hidden="true">🗺️ </span>Storia Alternativa</h1>
       <p class="sub">Prototipo ispirato al funzionamento di Pax Historia: scegli lo scenario fisso della Guerra Fredda o crea un tuo scenario libero.</p>
-      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 34</p>
+      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 35</p>
     </header>
 
     <div class="panel hidden" id="resumeBanner">
@@ -6620,8 +6622,10 @@ window.MAP_SVG = {
 
   // ---- log entries are data (so a game can be saved and restored) ------
   // k: a = player action, t = turn result, n = what the other nations did, v = advisor, g = map/game notice, r = changes of the relations,
-  // m = messages from the other nations (the ones that arrived and what was done with the ones waiting), x = transient notice (not saved)
+  // m = messages from the other nations (the ones that arrived and what was done with the ones waiting), c = contacts between two other nations,
+  // x = transient notice (not saved)
   function renderLogEntry(e) {
+    if (e.k === 'c') return `<div class="entry-contact">📨 <b>Contatti fra le altre nazioni</b><br>${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
     if (e.k === 'm') return `<div class="entry-msg">✉️ <b>Messaggi</b><br>${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
     if (e.k === 'r') return `<div class="entry-rel">🤝 <b>Relazioni</b><br>${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
     if (e.k === 'a') return `<div class="entry-action">✍️ ${escapeHtml(e.text)}</div>`;
@@ -7467,6 +7471,62 @@ window.MAP_SVG = {
       .filter(t => t.to && (t.you || t.they));
   }
 
+  /* ---- contacts between two other nations --------------------------------------------------------------------------
+     The engine may also report up to MAX_NEW_CONTACTS contacts between two states that are not the player's ("contatti"): a request for a talk,
+     a proposal of agreement, a request, an ultimatum, with its weight from 1 to 5 and how it went (accepted, refused, ignored). The kinds and the
+     weights are the ones of the messages, and the engine chooses the outcome. The game applies the effect on the pair by itself with the same table
+     (the value of the kind and of the outcome times the weight), so the engine does not repeat it in "relazioni". The contacts are told in the log
+     (kind c) and in the lines of the relations; nothing else is kept: what they changed is in the relations, which are saved, and in the story. */
+  const MAX_NEW_CONTACTS = 3, MAX_CONTACT_READ = 20, MAX_CONTACT_LEN = 300;        // taken per turn / entries read / their text
+  const CONTACT_OUTCOMES = { accettato: 'accept', accettata: 'accept', accetta: 'accept', accolto: 'accept', accolta: 'accept',
+    rifiutato: 'refuse', rifiutata: 'refuse', rifiuta: 'refuse', respinto: 'refuse', respinta: 'refuse',
+    ignorato: 'ignore', ignorata: 'ignore', ignora: 'ignore', 'senza risposta': 'ignore' };           // words the engine may use for the three outcomes
+  const CONTACT_OUTCOME_TEXT = { accept: 'accettato', refuse: 'rifiutato', ignore: 'ignorato' };
+  // The outcome the engine wrote: only a text counts, and it must be one of the words above or start with one of them followed by other words
+  // («accettato con riserva»). «non accettato» starts with none of them, so it is not read as an acceptance.
+  function contactOutcomeOf(v) {
+    const t = typeof v === 'string' ? foldName(v) : '';
+    if (own(CONTACT_OUTCOMES, t)) return CONTACT_OUTCOMES[t];
+    const w = Object.keys(CONTACT_OUTCOMES).find(k => t.startsWith(k + ' '));
+    return w ? CONTACT_OUTCOMES[w] : '';
+  }
+  // The engine's contacts: [{da, a, tipo, peso, esito, testo}]. Each one is checked (two different states of the map that still exist and are not the
+  // player's; a known kind; an outcome that can be read; a text; one contact at most for each pair) and what is not valid, or comes after the
+  // third, is left out and counted. The effect on the pair is applied here. Returns the events (for the lines of the relations), the lines for
+  // the log and how many were refused.
+  function applyContacts(list) {
+    const res = { events: [], lines: [], refused: 0 };
+    if (!Array.isArray(list)) return res;
+    const alive = provinceCounts(), seen = new Set(), P = selectedCountryId;
+    const code = v => { const c = typeof v === 'string' ? v.trim().toUpperCase() : ''; return own(countries, c) ? c : ''; };
+    list.slice(0, MAX_CONTACT_READ).forEach(item => {
+      if (res.lines.length >= MAX_NEW_CONTACTS) { res.refused++; return; }
+      const ok = !!item && typeof item === 'object' && !Array.isArray(item);
+      const a = ok ? code(pickKey(item, 'da', 'mittente', 'nazione_a')) : '', b = ok ? code(pickKey(item, 'a', 'verso', 'destinatario', 'nazione_b')) : '';
+      const type = ok ? msgTypeOf(pickKey(item, 'tipo', 'genere')) : '';
+      const outcome = ok ? contactOutcomeOf(pickKey(item, 'esito', 'risposta', 'risultato')) : '';
+      const text = ok ? cleanText(pickKey(item, 'testo', 'descrizione', 'contenuto'), MAX_CONTACT_LEN) : '';
+      const key = a && b ? relKey(a, b) : '';
+      if (!a || !b || a === b || a === P || b === P || !alive[a] || !alive[b] || !type || !outcome || !text || seen.has(key)) { res.refused++; return; }
+      seen.add(key);
+      const weight = msgWeight(pickKey(item, 'peso', 'importanza')), kind = MSG_TYPES[type].label.toLowerCase(), done = CONTACT_OUTCOME_TEXT[outcome];
+      const d = MSG_TYPES[type][outcome] * weight;
+      if (d) {                                                         // an ultimatum that is accepted changes nothing: no reason to give in the lines of the relations
+        relAdd(a, b, d);
+        res.events.push({ a, b, why: `contatto: ${kind} (peso ${weight}): ${done}` });
+      }
+      res.lines.push(`${countries[a].name} → ${countries[b].name}: ${kind} (peso ${weight}), ${done} — «${text}»`);
+    });
+    res.refused += Math.max(0, list.length - MAX_CONTACT_READ);
+    return res;
+  }
+  const contactLines = res => res.lines.concat(res.refused ? [`⚠️ Contatti scartati: ${res.refused} (Stati o tipo non validi, esito o testo mancanti, il giocatore fra i due Stati, due contatti fra gli stessi Stati, oppure oltre il massimo di ${MAX_NEW_CONTACTS} per periodo)`] : []);
+  function contactsRules() {
+    return `Contatti fra altre nazioni: da 0 a ${MAX_NEW_CONTACTS} contatti diplomatici fra due Stati diversi che non siano il giocatore (con lui usa "messaggi") in "contatti", come {"da":"CODICE","a":"CODICE","tipo":"colloquio" | "accordo" | "richiesta" | "ultimatum","peso":intero da 1 a 5,"esito":"accettato" | "rifiutato" | "ignorato","testo":"cosa succede, una frase"}. `
+      + `Tipi e pesi come per i messaggi; l'esito lo decidi tu secondo interessi, alleanze e relazioni (non tutto va a buon fine, specie fra Stati ostili). `
+      + `Il gioco applica da solo l'effetto sulla coppia: non ripeterlo in "relazioni". Al massimo un contatto per coppia. Se non ce ne sono, "contatti" è un array vuoto.\n`;
+  }
+
   // ---- what the player sees: the panel «Messaggi in arrivo», and the line next to «Avanza» ----
   const textNode = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; n.textContent = text; return n; };
   function messageItem(m, off) {
@@ -7588,8 +7648,8 @@ window.MAP_SVG = {
     const s = state.stats;
     const spotCodes = mapMode ? spotlightCodes(3) : [];
     const extraText = actions.join(' ') + ' ' + (state.worldSummary || '');
-    const mapPart = mapMode ? territoryContext() + "\n" + territoryRules(extraText) + relationsContext(extraText, spotCodes.concat(state.inbox.map(m => m.from))) + relationsRules() + messagesRules() + markerRules() : "";
-    const schemaExtra = mapMode ? ', "cambi_territoriali": [{"provincia": "ID", "nuovo_proprietario": "CODICE"}], "cambi_controllo": [{"provincia": "ID", "nuovo_controllore": "CODICE"}], "relazioni": [{"nazione_a": "CODICE", "nazione_b": "CODICE", "variazione": numero intero da -' + REL_STEP_MAX + ' a ' + REL_STEP_MAX + ', "motivo": "frase breve"}], "messaggi": [{"da": "CODICE", "tipo": "colloquio, accordo, richiesta o ultimatum", "peso": numero intero da 1 a 5, "testo": "il messaggio, 1-3 frasi"}], ' + markerSchema : '';
+    const mapPart = mapMode ? territoryContext() + "\n" + territoryRules(extraText) + relationsContext(extraText, spotCodes.concat(state.inbox.map(m => m.from))) + relationsRules() + messagesRules() + contactsRules() + markerRules() : "";
+    const schemaExtra = mapMode ? ', "cambi_territoriali": [{"provincia": "ID", "nuovo_proprietario": "CODICE"}], "cambi_controllo": [{"provincia": "ID", "nuovo_controllore": "CODICE"}], "relazioni": [{"nazione_a": "CODICE", "nazione_b": "CODICE", "variazione": numero intero da -' + REL_STEP_MAX + ' a ' + REL_STEP_MAX + ', "motivo": "frase breve"}], "messaggi": [{"da": "CODICE", "tipo": "colloquio, accordo, richiesta o ultimatum", "peso": numero intero da 1 a 5, "testo": "il messaggio, 1-3 frasi"}], "contatti": [{"da": "CODICE", "a": "CODICE", "tipo": "colloquio, accordo, richiesta o ultimatum", "peso": numero intero da 1 a 5, "esito": "accettato, rifiutato o ignorato", "testo": "cosa succede, una frase"}], ' + markerSchema : '';
     const orders = actions.length
       ? `Nel frattempo il giocatore dà ${actions.length === 1 ? "quest'ordine" : `questi ${actions.length} ordini, uno per riga`}:\n${actions.map((a, i) => `${i + 1}. "${a}"`).join('\n')}\nEsegui ogni ordine con realismo: può riuscire, riuscire solo in parte o fallire, secondo i mezzi del paese e la situazione.`
       : "Nel frattempo il giocatore non dà ordini nuovi: il suo governo prosegue l'ordinaria amministrazione e il mondo va avanti.";
@@ -7660,11 +7720,14 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
         const before = territorySnapshot();
         const lines = applyTerritoryChanges(r.cambi_territoriali).concat(applyControlChanges(r.cambi_controllo), applyMarkerChanges(r.segnaposto));
         if (lines.length) addLog({ k: 'g', lines });
-        // what the territories that changed hands cost the relations (a rule of the game), what the answers to the messages cost or gain
-        // (the same), then what the engine reports
+        // what the answers to the messages cost or gain (a rule of the game), the same for the contacts between two other nations, then what the
+        // engine reports in "relazioni", and last what the territories that changed hands cost (the same)
         const decided = resolveMessages(waiting);
+        const contacts = applyContacts(r.contatti);
         const asked = applyRelationChanges(r.relazioni);
-        const relLines = relationLines(relStart, territoryRelationEffects(before).concat(decided.events, asked.events), asked.refused);
+        const relLines = relationLines(relStart, territoryRelationEffects(before).concat(decided.events, contacts.events, asked.events), asked.refused);
+        const cLines = contactLines(contacts);
+        if (cLines.length) addLog({ k: 'c', lines: cLines });
         if (relLines.length) addLog({ k: 'r', lines: relLines });
         const got = receiveMessages(r.messaggi);                // the messages that settled are gone, the new ones take their place
         state.inbox = got.added;
@@ -7910,7 +7973,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     out.msgSeq = Math.max(Number.isFinite(seq) ? Math.max(0, Math.min(1000000, Math.floor(seq))) : 0, ...out.inbox.map(m => Number(m.id.slice(1))));
     out.log = list(g.log).filter(e => e && typeof e === 'object' && typeof e.k === 'string').slice(-200).map(e =>
       e.k === 't' ? { k: 't', year: str(e.year), headline: str(e.headline), narr: str(e.narr) }
-      : e.k === 'g' || e.k === 'n' || e.k === 'r' || e.k === 'm' ? { k: e.k, lines: list(e.lines).slice(0, 60).map(str).filter(l => l.trim()) }
+      : e.k === 'g' || e.k === 'n' || e.k === 'r' || e.k === 'm' || e.k === 'c' ? { k: e.k, lines: list(e.lines).slice(0, 60).map(str).filter(l => l.trim()) }
       : { k: e.k, text: str(e.text) }).filter(e => !(e.lines && !e.lines.length));      // a block of lines with no line is not shown
     if (g.diplo && typeof g.diplo === 'object') out.diplo = {
       target: str(g.diplo.target),

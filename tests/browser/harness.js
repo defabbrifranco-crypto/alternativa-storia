@@ -47,6 +47,8 @@ function instrument(html) {
     MAX_TALKS, MAX_TALKS_PROMPT, TALK_YOU_LEN, TALK_THEY_LEN, msgTypeOf, msgWeight, messageStatus, messageChoice, messageEffect, msgTableText, msgNoteText,
     receiveMessages, resolveMessages, newMessageLines, messagesContext, talksContext, messagesRules, messagesSummary, recordTalk, cleanInboxSave, cleanTalksSave,
     renderMessages, decideMessage, replyToMessage, newDiplo, getDiploBusy: () => diploBusy() });
+  if (typeof applyContacts !== 'undefined') Object.assign(window.__t, { MAX_NEW_CONTACTS, MAX_CONTACT_READ, MAX_CONTACT_LEN, CONTACT_OUTCOMES, CONTACT_OUTCOME_TEXT,
+    contactOutcomeOf, applyContacts, contactLines, contactsRules });
 })();`;
   return html.replace(tail, hook);
 }
