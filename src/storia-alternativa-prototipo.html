@@ -314,7 +314,7 @@
     <header class="panel" id="appHead">
       <h1 id="appTitle" tabindex="-1"><span aria-hidden="true">🗺️ </span>Storia Alternativa</h1>
       <p class="sub">Prototipo ispirato al funzionamento di Pax Historia: scegli lo scenario fisso della Guerra Fredda o crea un tuo scenario libero.</p>
-      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 33</p>
+      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 34</p>
     </header>
 
     <div class="panel hidden" id="resumeBanner">
@@ -7582,25 +7582,32 @@ window.MAP_SVG = {
     }
     return lines;
   }
-  // The text the engine receives when the time advances: the state of the world, the player's orders (if any), the
-  // invitation to the other nations to act freely, and the shape of the answer.
+  // The text the engine receives when the time advances: the state of the world, the player's orders (if any), how the player answered the
+  // messages and what was said in the talks, the invitation to the other nations to act freely, and the shape of the answer.
   function turnPrompt(actions, jump, mapMode) {
     const s = state.stats;
     const spotCodes = mapMode ? spotlightCodes(3) : [];
     const extraText = actions.join(' ') + ' ' + (state.worldSummary || '');
-    const mapPart = mapMode ? territoryContext() + "\n" + territoryRules(extraText) + relationsContext(extraText, spotCodes.concat(state.inbox.map(m => m.from))) + relationsRules() + messagesContext() + messagesRules() + markerRules() : "";
+    const mapPart = mapMode ? territoryContext() + "\n" + territoryRules(extraText) + relationsContext(extraText, spotCodes.concat(state.inbox.map(m => m.from))) + relationsRules() + messagesRules() + markerRules() : "";
     const schemaExtra = mapMode ? ', "cambi_territoriali": [{"provincia": "ID", "nuovo_proprietario": "CODICE"}], "cambi_controllo": [{"provincia": "ID", "nuovo_controllore": "CODICE"}], "relazioni": [{"nazione_a": "CODICE", "nazione_b": "CODICE", "variazione": numero intero da -' + REL_STEP_MAX + ' a ' + REL_STEP_MAX + ', "motivo": "frase breve"}], "messaggi": [{"da": "CODICE", "tipo": "colloquio, accordo, richiesta o ultimatum", "peso": numero intero da 1 a 5, "testo": "il messaggio, 1-3 frasi"}], ' + markerSchema : '';
     const orders = actions.length
       ? `Nel frattempo il giocatore dà ${actions.length === 1 ? "quest'ordine" : `questi ${actions.length} ordini, uno per riga`}:\n${actions.map((a, i) => `${i + 1}. "${a}"`).join('\n')}\nEsegui ogni ordine con realismo: può riuscire, riuscire solo in parte o fallire, secondo i mezzi del paese e la situazione.`
       : "Nel frattempo il giocatore non dà ordini nuovi: il suo governo prosegue l'ordinaria amministrazione e il mondo va avanti.";
     const spot = spotCodes.map(c => countries[c].name);
-    const others = `Nello stesso periodo anche le altre nazioni agiscono liberamente, di propria iniziativa e non solo in risposta al giocatore: ognuna segue i propri interessi, le proprie alleanze e rivalità, in modo plausibile per la sua situazione e per la storia alternativa formatasi finora (diplomazia, accordi, crisi, riforme, riarmo, aiuti, colpi di stato, conflitti…). Fai agire da 3 a 6 nazioni diverse, non solo le superpotenze${spot.length ? `; dai spazio anche a: ${spot.join(', ')}` : ''}. Le loro mosse contano davvero: se toccano il giocatore o i suoi vicini devono vedersi nella narrazione e nelle statistiche${mapMode ? ', e se cambiano chi possiede o controlla un territorio vanno elencate nei cambi territoriali' : ''}. Riportale in "mosse_altre_nazioni", una frase ciascuna.`;
+    const others = `Nello stesso periodo anche le altre nazioni agiscono liberamente, di propria iniziativa e non solo in risposta al giocatore: ognuna segue i propri interessi, le proprie alleanze e rivalità, in modo plausibile per la sua situazione e per la storia alternativa formatasi finora (diplomazia, accordi, crisi, riforme, riarmo, aiuti, colpi di stato, conflitti…). Fai agire da 3 a 6 nazioni diverse, non solo le superpotenze${spot.length ? `; dai spazio anche a: ${spot.join(', ')}` : ''}. Le loro mosse contano davvero: se toccano il giocatore o i suoi vicini devono vedersi nella narrazione e nelle statistiche${mapMode ? ', e se cambiano chi possiede un territorio vanno elencate in "cambi_territoriali" (se ne cambia solo il controllo, per occupazione o restituzione, in "cambi_controllo")' : ''}. Riportale in "mosse_altre_nazioni", una frase ciascuna.`;
+    // How the player answered the messages and what was said in the talks comes right after the orders, and the last sentence names it: a model
+    // reading only the end of the text still has to tell the consequences in the story and in the summary of the world.
+    const msgBlock = messagesContext(), talkBlock = talksContext(mapMode);
+    const covers = ['gli ordini del giocatore'].concat(msgBlock ? ['le sue risposte ai messaggi'] : [], talkBlock ? ['i suoi colloqui'] : [], ['le mosse delle altre nazioni']);
+    const coversText = covers.length > 2 ? covers.slice(0, -1).join(', ') + ' e ' + covers[covers.length - 1] : covers.join(' e ');
+    const care = [msgBlock && 'di come il giocatore ha risposto ai messaggi (chi ha avuto un sì, un no o nessuna risposta reagisce di conseguenza)', talkBlock && 'di ciò che si è detto nei colloqui'].filter(Boolean).join(' e ');
+    const careText = care ? ` Nella narrativa e nel riepilogo del mondo tieni conto ${care}.` : '';
     return `Sei il motore di gioco di un sandbox di storia alternativa. Il giocatore guida: ${state.nation}. Data attuale: ${state.year}. Premessa: ${state.premise || "nessuna, segui la storia reale finché il giocatore non la devia"}.
 ${mapPart}Stato del mondo finora: ${state.worldSummary || "(inizio partita, nessun evento ancora)"}
 Statistiche attuali (0-100): Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.
 Il tempo avanza di ${jump}. ${orders}
-${talksContext(mapMode)}${others}
-Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto, di tutto ciò che avviene in questo periodo (gli ordini del giocatore e le mosse delle altre nazioni) e aggiorna le statistiche in modo coerente. Rispondi SOLO con un oggetto JSON: {"evento_titolo": "titolo giornalistico breve, max 6 parole", "narrativa": "3-5 frasi in italiano su cosa succede", "mosse_altre_nazioni": [{"nazione": "nome della nazione", "mossa": "una frase su cosa fa"}], "riepilogo_mondo": "1-2 frasi che aggiornano lo stato del mondo per il turno successivo", "nuovo_anno": "l'anno risultante dopo il salto, come testo breve", "stabilita": numero 0-100, "economia": numero 0-100, "esercito": numero 0-100, "prestigio": numero 0-100${schemaExtra}}`;
+${msgBlock}${talkBlock}${others}
+Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto, di tutto ciò che avviene in questo periodo (${coversText}) e aggiorna le statistiche in modo coerente.${careText} Rispondi SOLO con un oggetto JSON: {"evento_titolo": "titolo giornalistico breve, max 6 parole", "narrativa": "3-5 frasi in italiano su cosa succede", "mosse_altre_nazioni": [{"nazione": "nome della nazione", "mossa": "una frase su cosa fa"}], "riepilogo_mondo": "1-2 frasi che aggiornano lo stato del mondo per il turno successivo", "nuovo_anno": "l'anno risultante dopo il salto, come testo breve", "stabilita": numero 0-100, "economia": numero 0-100, "esercito": numero 0-100, "prestigio": numero 0-100${schemaExtra}}`;
   }
 
   advanceBtn.onclick = async () => {

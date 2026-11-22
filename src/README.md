@@ -17,7 +17,7 @@ Nessuna copia è collegata alla pagina o al sito (`../index.html` rinvia alla pa
 
 Che cosa le distingue dalla pagina attuale (controllato sui file il 7 novembre 2026; la riga «Capitali e alleanze», aggiunta con la versione 30, il 9 novembre 2026):
 
-| | Pagina attuale (versione 33) | `storia-alternativa-prototipo-v23.html` | `storia-alternativa-prototipo-map-overlay.html` | `../archive/storia-alternativa-prototipo.html` |
+| | Pagina attuale (versione 34) | `storia-alternativa-prototipo-v23.html` | `storia-alternativa-prototipo-map-overlay.html` | `../archive/storia-alternativa-prototipo.html` |
 |---|---|---|---|---|
 | Territori | 1.020 province, 83 Stati | la stessa mappa e le stesse unità della pagina attuale | 95 province, 84 voci fra Stati e territori dipendenti (69 giocabili) | 95 province, 83 Stati |
 | Le 14 repubbliche sovietiche | Stati separati e giocabili | Stati separati e giocabili | non giocabili e non sovrane: dipendono dall'URSS | Stati separati e giocabili |
