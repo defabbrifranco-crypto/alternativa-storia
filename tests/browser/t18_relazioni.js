@@ -530,7 +530,7 @@ const AVVISO = n => `⚠️ Variazioni di relazione ignorate: ${n} (Stati o valo
   check('lo schema della risposta ha il campo «relazioni» con le sue quattro chiavi', /"relazioni": \[\{"nazione_a": "CODICE", "nazione_b": "CODICE", "variazione": numero intero da -30 a 30, "motivo": "frase breve"\}\]/.test(p0));
   const parte = await ev(() => ({ ctx: window.__t.relationsContext('', []).length, rules: window.__t.relationsRules().length }));
   check('la parte sulle relazioni è breve: contesto sotto 1.000 caratteri e regole sotto 1.000 (insieme sotto 2.000)', parte.ctx < 1000 && parte.rules < 1000 && parte.ctx + parte.rules < 2000, parte);
-  check('la richiesta intera resta moderata (sotto 11.000 caratteri)', p0.length < 11000, p0.length);
+  check('la richiesta intera resta moderata (sotto 12.000 caratteri)', p0.length < 12000, p0.length);       // 11.000 fino alla versione 34; i contatti fra altre nazioni (versione 35) aggiungono circa 900 caratteri
   // dopo qualche cambiamento: le coppie fra altri Stati e le relazioni nominate negli ordini
   await ev(() => { const T = window.__t; T.relSet('FRA', 'GBR', 60); T.relSet('GDR', 'URSS', 20); T.relSet('ITA', 'AUT', 15); T.relSet('ITA', 'POL', 5); });
   await page.fill('#actionInput', 'Mando un ambasciatore in Polonia'); await page.click('#sendBtn');

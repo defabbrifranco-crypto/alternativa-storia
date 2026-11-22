@@ -179,7 +179,7 @@ const { launch, check, summary, playTurn } = require('./harness');
   check('the turn\'s markers are on the map, from the engine', t1.ms.length === 2 && t1.ms[0][1] === 'nucleare' && t1.ms[0][3] === 'motore' && t1.ms[1][1] === 'ribelli', t1.ms);
   check('the log reports them', t1.log.includes('📍 Nuovo segnaposto: Impianto nucleare «Centrale di Latina (prova)»') && t1.log.includes('«Insorti del Nord»'), t1.log);
   console.log('   whole turn prompt, characters: ' + t1.len);
-  check('the whole turn prompt stays moderate', t1.len < 11000, t1.len);       // 9.3k before the messages (their rules and their place in the answer add about 1k)
+  check('the whole turn prompt stays moderate', t1.len < 12000, t1.len);       // 9.3k before the messages (their rules and their place in the answer add about 1k), then the contacts between other nations (about 0.9k)
   const saved = await ev(async () => { const T = window.__t; await T.saveGame(); const snap = await window.claude.use('db').then(d => d.doc('save/state').get()); const d = snap.data(); return { v: d.v, markers: d.markers, seq: d.markerSeq, size: JSON.stringify(d).length, game: !!d.game }; });
   check('autosave: the document is v3 with the markers and the sequence number', saved.v === 3 && saved.markers.length === 2 && saved.seq === 2 && saved.game, saved);
   console.log('   saved document, characters: ' + saved.size);
