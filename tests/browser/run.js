@@ -25,6 +25,7 @@ const SUITES = [
   ['t18_relazioni.js', 'Relazioni fra gli Stati: valori di partenza, pannello e scheda, risposte del motore, territori, ritorno lento, salvataggio, guasti messi apposta'],
   ['t19_messaggi.js', 'Messaggi in arrivo dalle altre nazioni: peso, risposte (accetta, rifiuta, colloquio, ignora), effetto sulle relazioni, colloqui, salvataggio, guasti messi apposta'],
   ['t20_contatti.js', 'Contatti fra altre nazioni: tipo, esito e peso, effetto sulle relazioni, ordine degli effetti nel turno, cronaca, salvataggio, richiesta al motore, guasti messi apposta'],
+  ['t21_memoria.js', 'Quaderno delle nazioni: ricordi scritti dalla pagina e dal motore, richiesta al motore, colloqui, Consigliere, salvataggio, pannello e aspetto, guasti messi apposta'],
 ];
 if (process.argv.includes('--perf')) SUITES.push(['t6_perf.js', 'Prestazioni (soglie dipendenti dalla macchina)']);
 

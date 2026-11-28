@@ -307,7 +307,9 @@ const INBOX3 = M3.map((m, i) => ({ id: 'm' + (i + 1), from: m.da, type: m.tipo, 
     && !/colloqui/.test(ultimaFrase.slice(0, ultimaFrase.indexOf('Rispondi SOLO'))), ultimaFrase.slice(0, 600));
   await turn({ messaggi: [] });
   const pr3 = await lastPrompt();
-  check('al turno dopo si parla solo del messaggio rimasto aperto (Regno Unito, richiesta, IGNORATO): quelli già chiusi non tornano', pr3.includes('- Regno Unito (GBR), richiesta, peso 3/5: IGNORATO (SENZA RISPOSTA). Testo: «Chiediamo aiuto.»') && !/Proponiamo un patto|Ritirate le truppe/.test(pr3), pr3.slice(pr3.indexOf('Messaggi che')).slice(0, 500));
+  // nella parte sulle risposte (non nel quaderno delle nazioni, che dalla versione 36 ricorda anche i messaggi chiusi: v. t21_memoria.js)
+  const bloccoRisposte = pr3.slice(pr3.indexOf('Messaggi che il giocatore aveva ricevuto'), pr3.indexOf('Nello stesso periodo anche le altre nazioni'));
+  check('al turno dopo si parla solo del messaggio rimasto aperto (Regno Unito, richiesta, IGNORATO): quelli già chiusi non tornano', bloccoRisposte.includes('- Regno Unito (GBR), richiesta, peso 3/5: IGNORATO (SENZA RISPOSTA). Testo: «Chiediamo aiuto.»') && !/Proponiamo un patto|Ritirate le truppe/.test(bloccoRisposte) && bloccoRisposte.length > 200, bloccoRisposte.slice(0, 500));
   p = await pannello();
   check('dopo un turno senza messaggi nuovi la posta è vuota: pannello con la spiegazione, nessuna lista, nessun avviso; «messaggi: []» non dà errori', (await inbox()).length === 0 && p.title === 'Messaggi in arrivo' && !p.emptyHidden && p.listHidden && p.warnHidden && p.items.length === 0);
   const pr4 = (await (async () => { await turn(); return lastPrompt(); })());
@@ -358,7 +360,7 @@ const INBOX3 = M3.map((m, i) => ({ id: 'm' + (i + 1), from: m.da, type: m.tipo, 
   check('il colloquio sta nella richiesta fra gli ordini e le mosse delle altre nazioni (non prima del tempo che avanza)', pc.indexOf('Il tempo avanza di') < pc.indexOf('Colloqui avuti') && pc.indexOf('Colloqui avuti') < pc.indexOf('Genera le conseguenze'), [pc.indexOf('Il tempo avanza di'), pc.indexOf('Colloqui avuti'), pc.indexOf('Genera le conseguenze')]);
   check('con le risposte e i colloqui insieme: prima le risposte ai messaggi, poi i colloqui, poi le mosse delle altre nazioni; l\'ultima frase nomina anche i colloqui',
     pc.indexOf('Il tempo avanza di') < pc.indexOf('Messaggi che il giocatore aveva ricevuto') && pc.indexOf('Messaggi che il giocatore aveva ricevuto') < pc.indexOf('Colloqui avuti') && pc.indexOf('Colloqui avuti') < pc.indexOf('Nello stesso periodo anche le altre nazioni')
-    && pc.includes('(gli ordini del giocatore, le sue risposte ai messaggi, i suoi colloqui e le mosse delle altre nazioni) e aggiorna le statistiche in modo coerente. Nella narrativa e nel riepilogo del mondo tieni conto di come il giocatore ha risposto ai messaggi (chi ha avuto un sì, un no o nessuna risposta reagisce di conseguenza) e di ciò che si è detto nei colloqui. Rispondi SOLO'), pc.slice(pc.indexOf('Genera le conseguenze'), pc.indexOf('Genera le conseguenze') + 700));
+    && pc.includes('(gli ordini del giocatore, le sue risposte ai messaggi, i suoi colloqui e le mosse delle altre nazioni) e aggiorna le statistiche in modo coerente. Nella narrativa e nel riepilogo del mondo tieni conto di come il giocatore ha risposto ai messaggi (chi ha avuto un sì, un no o nessuna risposta reagisce di conseguenza) e di ciò che si è detto nei colloqui e di ciò che le nazioni ricordano (quaderno). Rispondi SOLO'), pc.slice(pc.indexOf('Genera le conseguenze'), pc.indexOf('Genera le conseguenze') + 700));
   check('un messaggio in trattativa non cambia le relazioni da solo (Regno Unito resta +35), gli altri sì (Francia +51, Unione Sovietica −85); la cronaca dice «in trattativa (colloquio)»',
     (await relOf(PL, 'GBR')) === 35 && (await relOf(PL, 'FRA')) === 51 && (await relOf(PL, 'URSS')) === -85 && (await logLines('m'))[1].includes('Messaggio di Regno Unito (richiesta di colloquio, peso 2): in trattativa (colloquio)')
     && !(await logLines('r'))[0].some(x => /Regno Unito/.test(x)), await logLines('m'));
@@ -469,8 +471,9 @@ const INBOX3 = M3.map((m, i) => ({ id: 'm' + (i + 1), from: m.da, type: m.tipo, 
     for (let i = 0; i < 12; i++) T.recordTalk('Francia', 'a'.repeat(300), 'b'.repeat(300));
     return { rules: T.messagesRules().length, ctx: T.messagesContext().length, talks: T.talksContext(true).length, vuoto, pieno: T.turnPrompt([], '1 mese', true).length, sommario: T.messagesSummary().length }; });
   check('le regole sono brevi (sotto 1.100 caratteri), la parte sulle risposte con 3 messaggi lunghi sotto 1.800, quella sui colloqui sotto 2.900', mis.rules < 1100 && mis.ctx < 1800 && mis.talks < 2900, mis);
-  // i limiti erano 11.500 e 15.000 fino alla versione 34; i contatti fra altre nazioni (versione 35) aggiungono circa 900 caratteri a tutte e due le misure
-  check('la richiesta intera resta moderata: sotto 12.000 caratteri senza messaggi, sotto 16.500 nel caso peggiore (3 messaggi da 360 caratteri e 5 colloqui lunghi)', mis.vuoto < 12000 && mis.pieno < 16500, mis);
+  // i limiti erano 11.500 e 15.000 fino alla versione 34; i contatti fra altre nazioni (versione 35) aggiungono circa 900 caratteri a tutte e due le misure;
+  // le regole del quaderno (versione 36) circa 650 a quella senza messaggi, e il quaderno stesso (qui: 10 voci di colloquio di Francia, ne passano 3) altri 600 al caso peggiore
+  check('la richiesta intera resta moderata: sotto 12.000 caratteri senza messaggi, sotto 17.500 nel caso peggiore (3 messaggi da 360 caratteri e 5 colloqui lunghi)', mis.vuoto < 12000 && mis.pieno < 17500, mis);
   const scelto = await ev(() => { const T = window.__t, S = T.getState(); S.inbox = []; S.talks.length = 0;
     const cand = ['LKA', 'THA', 'NPL', 'PRK', 'BTN', 'MNG']; const senza = T.turnPrompt([], '1 mese', true);
     const c = cand.find(x => !senza.includes('(' + x + ')'));

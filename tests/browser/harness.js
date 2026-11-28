@@ -49,6 +49,11 @@ function instrument(html) {
     renderMessages, decideMessage, replyToMessage, newDiplo, getDiploBusy: () => diploBusy() });
   if (typeof applyContacts !== 'undefined') Object.assign(window.__t, { MAX_NEW_CONTACTS, MAX_CONTACT_READ, MAX_CONTACT_LEN, CONTACT_OUTCOMES, CONTACT_OUTCOME_TEXT,
     contactOutcomeOf, applyContacts, contactLines, contactsRules });
+  if (typeof memAdd !== 'undefined') Object.assign(window.__t, { MAX_MEM_BOOKS, MAX_MEM_ENTRIES, MEM_NOTE_LEN, MEM_DATE_LEN, MEM_NAME_LEN, MAX_MEM_NEW, MAX_MEM_READ,
+    MEM_PROMPT_BOOKS, MEM_PROMPT_ENTRIES, MEM_PROMPT_CHARS, MEM_LOOSE_PROMPT, MEM_CHAT_ENTRIES, MEM_ADVISOR_BOOKS, MEM_ADVISOR_ENTRIES, MAX_ORDERS_KEPT, MAX_ORDERS_PROMPT,
+    ORDER_MEM_LEN, MAX_ADVICE_KEPT, ADVICE_MEM_LEN, MEM_TAGS, MSG_PLAYER_DID, clip, memLine, memKeyOf, memAdd, memName, memBooks, rememberMessages, rememberContacts,
+    rememberMoves, rememberTalk, rememberOrders, rememberAdvice, applyMemoryNotes, memoryLines, memPick, memoryBook, memoryOrders, memoryRules, memorySchema, memoryForChat,
+    chatRefresh, memoryForAdvisor, memoryForSave, cleanMemorySave, cleanNotesSave, renderMemory, renderDiploMem, prepareDiploSetup, otherMoveItems });
 })();`;
   return html.replace(tail, hook);
 }

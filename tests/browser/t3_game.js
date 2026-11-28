@@ -101,7 +101,7 @@ const { launch, check, summary, playTurn } = require('./harness');
   check('year updated', turn.year === 'gennaio 1961');
   check('the prompt had the map part, the schema and the action', turn.prompt.includes('Territori del giocatore') && turn.prompt.includes('"cambi_territoriali"') && turn.prompt.includes('Avanzo verso la Germania Est'), turn.prompt.slice(0, 300));
   check('the prompt gives the starting date 31 dicembre 1960', turn.prompt.includes('Data attuale: 31 dicembre 1960'), turn.prompt.slice(0, 200));
-  check('prompt size is moderate', turn.prompt.length < 12500, turn.prompt.length);       // 8.8k before the relations, 10.2k with them, 11.2k with the rules for the messages
+  check('prompt size is moderate', turn.prompt.length < 13200, turn.prompt.length);       // 8.8k before the relations, 10.2k with them, 11.2k with the rules for the messages, 12.1k with the contacts, 12.8k with the rules for the notebook of the nations
   const saved = await page.evaluate(() => null); // read the store from node
   await page.waitForTimeout(100);
   const doc = store['save/state'];

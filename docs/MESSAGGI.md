@@ -100,6 +100,8 @@ Accettare un ultimatum non migliora i rapporti (0): si cede e basta. **Un colloq
 
 **Aspettare e non sovrapporsi.** Se una risposta del colloquio è ancora in arrivo, «Avanza» non parte e spiega di aspettare («Aspetta la risposta nel colloquio diplomatico, poi premi «Avanza»: il colloquio conta per questo periodo.»); in quel momento anche «Rispondi» è spento. Mentre il tempo avanza, l'invio nel colloquio è spento. Se il turno fallisce, **risposte e colloqui restano** per il tentativo dopo.
 
+**La nazione ricorda (versione 36).** Ogni scambio entra anche nel **quaderno** della nazione con cui si parla (la voce «colloquio»: che cosa ha detto il giocatore, che cosa ha risposto lei) e resta lì anche dopo che il motore l'ha letto, a differenza dell'annotazione per il turno, che si cancella. Il primo messaggio di un colloquio porta alla nazione il suo quaderno («Ciò che ricordi…») e, se è passato del tempo dall'ultimo messaggio che portava il contesto, il primo messaggio dopo un «Avanza» comincia con una nota del gioco che le dice come va il mondo e che cosa ricorda. Vedi [`MEMORIA.md`](MEMORIA.md).
+
 ## Che cosa sa il motore
 
 La richiesta del turno, nello scenario con la mappa, contiene:
@@ -107,11 +109,12 @@ La richiesta del turno, nello scenario con la mappa, contiene:
 - le **regole per scrivere i messaggi** (circa 810 caratteri): da 0 a 3 nazioni diverse fra loro, mai il giocatore; il formato con i quattro tipi e il peso intero da 1 a 5; che cosa vuol dire ogni tipo e ogni peso (4 e 5 solo per svolte gravi); che il messaggio deve seguire i fatti e le relazioni; che il motore **non decide la risposta del giocatore**; che «messaggi» è vuoto se nessuno scrive;
 - i **messaggi del periodo precedente e come ha risposto il giocatore** (ACCETTATO, RIFIUTATO, IGNORATO (SENZA RISPOSTA) o IN TRATTATIVA (COLLOQUIO)), con il codice, il tipo, il peso e il testo. Si dice al motore che **l'effetto sulle relazioni lo applica già il gioco** (non va ripetuto in `relazioni`) e che deve invece raccontare le conseguenze di ciò che il giocatore ha accettato, rifiutato o lasciato cadere;
 - i **colloqui avuti** nel periodo (vedi sopra);
-- fra le relazioni mostrate al motore, anche gli Stati che hanno scritto.
+- fra le relazioni mostrate al motore, anche gli Stati che hanno scritto;
+- dalla versione 36, **il quaderno delle nazioni**: i messaggi chiusi restano nel quaderno di chi li ha scritti («il giocatore ha accettato…») anche dopo che escono da questa parte sulle risposte del periodo precedente ([`MEMORIA.md`](MEMORIA.md)).
 
 Il consigliere sa quali messaggi il giocatore ha davanti e che cosa ha già deciso. Il motore **non è obbligato** a scrivere messaggi né a rispettare un peso: è la pagina a decidere che cosa vale (tipo, mittente, testo, peso).
 
-**Dimensione.** Al primo turno con l'Italia la richiesta è di circa 11.150 caratteri (le regole dei messaggi sono 810; dalla versione 35 i contatti fra le altre nazioni ne aggiungono 866). Nel caso peggiore (tre messaggi di 360 caratteri con le risposte e cinque colloqui lunghi) arriva a circa 15.700: la prova controlla che resti sotto 12.000 senza messaggi e sotto 16.500 nel caso peggiore (erano 11.500 e 15.000 fino alla versione 34).
+**Dimensione.** Al primo turno con l'Italia la richiesta è di circa 11.800 caratteri (le regole dei messaggi sono 810; dalla versione 35 i contatti fra le altre nazioni ne aggiungono 866; dalla versione 36 le regole del quaderno ne aggiungono 631). Nel caso peggiore (tre messaggi di 360 caratteri con le risposte e cinque colloqui lunghi) arriva a circa 17.050, compresi tre ricordi del quaderno: la prova controlla che resti sotto 12.000 senza messaggi e sotto 17.500 nel caso peggiore (erano 11.500 e 15.000 fino alla versione 34, e 16.500 nel caso peggiore con i contatti).
 
 ## Salvataggio
 
