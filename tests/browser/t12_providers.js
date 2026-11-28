@@ -427,7 +427,7 @@ const SAVE_KEY = 'storia-alternativa:save/state';
   // un salvataggio fatto da questa pagina si ricarica identico (nessun campo perso dal controllo)
   await evH(() => window.__t.startFixedScenarioGame('ITA'));
   await evH(() => window.__t.getState().log.push({ k: 'a', text: 'Prima' }, { k: 't', year: '1961', headline: 'Titolo', narr: 'Testo' }, { k: 'v', text: 'Consiglio' }, { k: 'g', lines: ['Riga 1', 'Riga 2'] }));
-  await evH(() => { const s = window.__t.getState(); s.diplo = { target: 'Tizio', history: [{ role: 'user', content: 'Ciao' }, { role: 'assistant', content: 'Salve' }], bubbles: [{ w: 'u', t: 'Ciao' }, { w: 'o', t: 'Salve' }] }; });
+  await evH(() => { const s = window.__t.getState(); s.diplo = { target: 'Tizio', history: [{ role: 'user', content: 'Ciao' }, { role: 'assistant', content: 'Salve' }], bubbles: [{ w: 'u', t: 'Ciao' }, { w: 'o', t: 'Salve' }], seen: 0 }; });       // seen: come in una conversazione vera (v. newDiplo)
   const before = await evH(() => JSON.stringify(window.__t.buildSavePayload().game));
   const rrt = await importText(JSON.parse(await evH(() => JSON.stringify(window.__t.buildSavePayload()))));
   const after = await evH(() => JSON.stringify(window.__t.buildSavePayload().game));

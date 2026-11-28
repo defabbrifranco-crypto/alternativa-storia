@@ -127,6 +127,8 @@
   .entry-msg { font-size:.88rem; background:var(--user-msg); border-left:3px dashed var(--accent); border-radius:6px; padding:6px 10px; line-height:1.4; }
   /* contacts between two other states (the player is not one of them): what the engine reports and the game settles by itself; dotted, to tell it from the player's messages */
   .entry-contact { font-size:.88rem; background:var(--user-msg); border-left:3px dotted var(--accent); border-radius:6px; padding:6px 10px; line-height:1.4; overflow-wrap:anywhere; }  /* a long word wraps, it does not widen the log */
+  /* what the engine asks the nations to remember (a double border, to tell it from the other notices of the log) */
+  .entry-mem { font-size:.88rem; background:var(--user-msg); border-left:3px double var(--accent); border-radius:6px; padding:6px 10px; line-height:1.4; overflow-wrap:anywhere; }
   .msg-list { list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:10px; }
   .msg-item { border:1px solid var(--border); border-radius:8px; padding:10px; background:var(--bg); }
   .msg-head { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:2px 10px; }
@@ -141,6 +143,14 @@
   .msg-actions button.ghost.small { margin-top:0; }
   .msg-actions button[aria-pressed="true"] { background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
   .msg-empty { color:var(--muted); font-size:.82rem; line-height:1.35; margin:6px 0 0; }
+  /* the notebook of the nations: a block for each state, with what it remembers, one entry per line (date and source first) */
+  .mem-list { list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .mem-item { border-bottom:1px dashed var(--border); padding:0 0 8px; }
+  .mem-name { font-size:.88rem; font-weight:700; color:var(--ink); overflow-wrap:anywhere; }
+  .mem-entries { list-style:none; margin:3px 0 0; padding:0; display:flex; flex-direction:column; gap:3px; }
+  .mem-entries li { font-size:.82rem; line-height:1.4; color:var(--ink); overflow-wrap:anywhere; }
+  .mem-tag { font-size:.74rem; color:var(--muted); }
+  .diplo-mem { margin:2px 2px 8px; }
   /* borders: one thin line per border / coast, the same thickness on screen at every zoom */
   .border-coast, .border-land { fill:none; vector-effect:non-scaling-stroke; stroke-linejoin:round; stroke-linecap:round; pointer-events:none; }
   .border-coast { stroke:#3a3022; stroke-width:.8px; }
@@ -316,7 +326,7 @@
     <header class="panel" id="appHead">
       <h1 id="appTitle" tabindex="-1"><span aria-hidden="true">🗺️ </span>Storia Alternativa</h1>
       <p class="sub">Prototipo ispirato al funzionamento di Pax Historia: scegli lo scenario fisso della Guerra Fredda o crea un tuo scenario libero.</p>
-      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 35</p>
+      <p class="footnote" id="versionNote" style="text-align:left; margin-top:0;">Versione 36</p>
     </header>
 
     <div class="panel hidden" id="resumeBanner">
@@ -531,6 +541,16 @@
       </details>
     </section>
 
+    <section class="panel hidden" id="memPanel" aria-labelledby="memTitle">
+      <h3 id="memTitle">Quaderno delle nazioni</h3>
+      <p class="rel-gist" id="memGist"></p>
+      <details class="pp-det" id="memBox">
+        <summary id="memSummary">Che cosa ricordano le nazioni</summary>
+        <p class="pp-note" id="memNote"></p>
+        <ul class="mem-list" id="memList" aria-label="Che cosa ricorda ogni nazione"></ul>
+      </details>
+    </section>
+
     <div class="tabs" role="tablist" aria-label="Sezioni della partita">
       <button class="tab-btn active" id="tabActions" type="button" role="tab" aria-selected="true" aria-controls="actionsPanel" tabindex="0">Azioni</button>
       <button class="tab-btn" id="tabDiplo" type="button" role="tab" aria-selected="false" aria-controls="diploPanel" tabindex="-1">Diplomazia</button>
@@ -579,7 +599,9 @@
     <div id="diploPanel" class="hidden" role="tabpanel" aria-labelledby="tabDiplo">
       <div class="panel" id="diploSetup">
         <label for="diploTarget">Con chi vuoi negoziare?</label>
-        <input id="diploTarget" placeholder="es. il Cancelliere tedesco">
+        <input id="diploTarget" placeholder="es. il Cancelliere tedesco" list="diploNations" aria-describedby="diploTargetNote">
+        <datalist id="diploNations"></datalist>
+        <p class="field-note" id="diploTargetNote">Il colloquio ha un quaderno suo per ogni nome: si ritrova scrivendo lo stesso nome.</p>
         <button class="primary" id="diploStartBtn">Inizia colloquio</button>
       </div>
       <div class="hidden" id="diploChat">
@@ -587,6 +609,7 @@
           <strong id="diploTargetLabel"></strong>
           <button class="ghost small" id="diploResetBtn">Cambia</button>
         </div>
+        <p class="pp-note diplo-mem" id="diploMemNote"></p>
         <div class="panel log" id="diploLog" role="log" aria-label="Colloquio diplomatico" tabindex="0"></div>
         <div class="panel">
           <textarea id="diploInput" rows="2" placeholder="Scrivi cosa vuoi dire..." aria-label="Il tuo messaggio"></textarea>
@@ -6590,7 +6613,11 @@ window.MAP_SVG = {
       inbox: [],                        // the messages the other states wrote to the player, waiting to be answered (see «messages from the other nations»)
       msgSeq: 0,                        // the last number given to a message: ids are m1, m2, …
       talks: [],                        // what was said in the talks (tab Diplomazia) since the time last advanced: [{to, you, they}]
-      diplo: { target: '', history: [], bubbles: [], intro: '', msgId: '' }
+      memory: {},                       // the notebook of the nations: {key: {n: name, e: [{n, w, s, x}]}} (see «the notebook of the nations»)
+      memSeq: 0,                        // the last number given to an entry of the notebook (the higher, the newer)
+      orders: [],                       // the last orders carried out, [{w: date, x: text}]: the engine is reminded of them
+      advice: [],                       // the last advice of the Consigliere, [{w: date, x: text}]: he is reminded of it
+      diplo: { target: '', history: [], bubbles: [], intro: '', msgId: '', seen: 0 }
     };
   }
   let state = freshState();
@@ -6623,8 +6650,9 @@ window.MAP_SVG = {
   // ---- log entries are data (so a game can be saved and restored) ------
   // k: a = player action, t = turn result, n = what the other nations did, v = advisor, g = map/game notice, r = changes of the relations,
   // m = messages from the other nations (the ones that arrived and what was done with the ones waiting), c = contacts between two other nations,
-  // x = transient notice (not saved)
+  // q = what the engine asks the nations to remember (the notes of the notebook), x = transient notice (not saved)
   function renderLogEntry(e) {
+    if (e.k === 'q') return `<div class="entry-mem">📓 <b>Da ricordare</b><br>${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
     if (e.k === 'c') return `<div class="entry-contact">📨 <b>Contatti fra le altre nazioni</b><br>${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
     if (e.k === 'm') return `<div class="entry-msg">✉️ <b>Messaggi</b><br>${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
     if (e.k === 'r') return `<div class="entry-rel">🤝 <b>Relazioni</b><br>${(e.lines || []).map(escapeHtml).join('<br>')}</div>`;
@@ -6744,6 +6772,9 @@ window.MAP_SVG = {
     renderStats();
     renderRelations();                                  // only in a game on the map
     renderMessages();                                   // the same
+    renderMemory();                                     // in every game
+    prepareDiploSetup();                                // the suggestions of the states and the note under the name of a talk
+    renderDiploMem();
     gameEl.classList.remove('hidden');
     el('gameTitle').setAttribute('aria-level', mode === 'free' ? '1' : '2');     // the page has one h1 at a time
     updateModeUI();                                     // a game is running: the editor is off
@@ -7229,6 +7260,8 @@ window.MAP_SVG = {
     renderStats();
     renderRelations();                                  // no game: the panel is hidden and the new state has no relations of its own
     renderMessages();                                   // nor messages
+    renderMemory();                                     // nor notebook
+    renderDiploMem();
     setGameButtons(!!sample);
     thinkingEl.classList.add('hidden');
     gameEl.classList.add('hidden');
@@ -7444,6 +7477,7 @@ window.MAP_SVG = {
     if (!t.to || !(t.you || t.they)) return;
     state.talks.push(t);
     if (state.talks.length > MAX_TALKS) state.talks.splice(0, state.talks.length - MAX_TALKS);
+    rememberTalk(t.to, t.you, t.they);                      // the nation talked to remembers it, in its notebook
   }
 
   // In a save: the messages waiting, whatever the document says: a sender that is a state of the map, a known kind, a weight that is a whole number
@@ -7495,7 +7529,7 @@ window.MAP_SVG = {
   // third, is left out and counted. The effect on the pair is applied here. Returns the events (for the lines of the relations), the lines for
   // the log and how many were refused.
   function applyContacts(list) {
-    const res = { events: [], lines: [], refused: 0 };
+    const res = { events: [], lines: [], list: [], refused: 0 };      // list: who, with whom and what happened, for the notebook
     if (!Array.isArray(list)) return res;
     const alive = provinceCounts(), seen = new Set(), P = selectedCountryId;
     const code = v => { const c = typeof v === 'string' ? v.trim().toUpperCase() : ''; return own(countries, c) ? c : ''; };
@@ -7516,6 +7550,7 @@ window.MAP_SVG = {
         res.events.push({ a, b, why: `contatto: ${kind} (peso ${weight}): ${done}` });
       }
       res.lines.push(`${countries[a].name} → ${countries[b].name}: ${kind} (peso ${weight}), ${done} — «${text}»`);
+      res.list.push({ a, b, head: `${countries[a].name} → ${countries[b].name}: ${kind} (peso ${weight}), ${done}`, text });
     });
     res.refused += Math.max(0, list.length - MAX_CONTACT_READ);
     return res;
@@ -7527,8 +7562,262 @@ window.MAP_SVG = {
       + `Il gioco applica da solo l'effetto sulla coppia: non ripeterlo in "relazioni". Al massimo un contatto per coppia. Se non ce ne sono, "contatti" è un array vuoto.\n`;
   }
 
+  /* ---- the notebook of the nations -----------------------------------------------------------------------------------
+     The engine answers every turn without remembering the earlier ones (it is only given a short summary of the world), and a talk with a nation
+     starts afresh. The notebook gives each nation a memory: a few short entries, each with its date and where it comes from, saved with the game.
+     The page writes by itself the facts it knows: the messages and how the player answered them, the contacts between two other nations, the
+     talks, the moves the engine reports. The engine adds notes about what a nation must remember (a promise, a commitment, a threat, a favour, a
+     grudge: "memoria"). The engine, the talks with a nation and the Consigliere read it, and the engine is also reminded of the last orders carried
+     out and the Consigliere of his last advice. A state's notebook is under its code. A name the page cannot tie to one state of the map (a leader,
+     «il Cancelliere tedesco», which fits two states) has a notebook of its own under the words written; without the map every name is like that.
+     What the engine writes is part of the story it generates, not history.                                                             */
+  const MAX_MEM_BOOKS = 30, MAX_MEM_ENTRIES = 10, MEM_NOTE_LEN = 160, MEM_DATE_LEN = 24, MEM_NAME_LEN = 60;   // notebooks kept / entries in each / characters of an entry, a date, a name
+  const MAX_MEM_NEW = 4, MAX_MEM_READ = 12;                                                    // notes taken from the engine per turn / entries read
+  const MEM_PROMPT_BOOKS = 8, MEM_PROMPT_ENTRIES = 3, MEM_PROMPT_CHARS = 2400, MEM_LOOSE_PROMPT = 2;     // what the engine reads: notebooks / entries of each / characters in all / names that are not states
+  const MEM_CHAT_ENTRIES = 6, MEM_ADVISOR_BOOKS = 5, MEM_ADVISOR_ENTRIES = 2;                  // what a nation in a talk reads / what the Consigliere reads
+  const MAX_ORDERS_KEPT = 8, MAX_ORDERS_PROMPT = 4, ORDER_MEM_LEN = 100;                       // the orders carried out: kept / told to the engine and the Consigliere / their length
+  const MAX_ADVICE_KEPT = 3, ADVICE_MEM_LEN = 220;                                             // the advice given: kept (and told to the Consigliere) / its length
+  const MEM_TAGS = { m: 'messaggio', c: 'contatto', t: 'colloquio', o: 'mossa', e: 'nota' };    // where an entry comes from
+  const MSG_PLAYER_DID = { accept: 'ha accettato', refuse: 'ha rifiutato', ignore: 'non ha risposto', talk: 'ha risposto con un colloquio' };
+  const memLow = e => e.s === 'o' || e.s === 't';                                               // moves and talks give way first when a notebook is full
+  const memGame = () => mapGameStarted && !!selectedCountryId;
+  const memDate = () => cleanText(state.year, MEM_DATE_LEN);
+  const memBook = key => (own(state.memory, key) ? state.memory[key] : null);
+  const memLast = key => { const e = state.memory[key].e; return e.length ? e[e.length - 1].n : 0; };
+  const memBooks = () => Object.keys(state.memory).filter(k => state.memory[k].e.length).sort((a, b) => memLast(b) - memLast(a) || (a < b ? -1 : 1));    // the newest first
+  const memName = key => (key[0] === '~' ? ((memBook(key) && memBook(key).n) || key.slice(1)) : own(countries, key) ? countries[key].name : key);
+  // A quotation cut to fit, with an ellipsis; and a sentence followed, when there is room for it, by a quotation.
+  function clip(s, n) {
+    const t = cleanText(s, 1000);
+    return t.length > n ? t.slice(0, Math.max(0, n - 1)).trimEnd() + '…' : t;
+  }
+  function memLine(head, quote) {
+    const room = MEM_NOTE_LEN - head.length - 5;
+    return quote && room >= 12 ? `${head} — «${clip(quote, room)}»` : head.slice(0, MEM_NOTE_LEN);
+  }
+
+  // The notebook a name belongs to: the code of a state of the map when the text is that code, is the exact name of a state or names one state only
+  // (the words the rest of the page recognises); otherwise a notebook of its own under the words written ('~' and the name in lower case). The player's own
+  // nation has none. What the engine writes about a name that is not a state of the map is left out ('') in a game on the map.
+  function memKeyOf(text, fromEngine) {
+    const raw = cleanText(text, MEM_NAME_LEN);
+    if (!raw) return '';
+    const f = foldName(raw);
+    if (memGame()) {
+      const up = raw.toUpperCase();
+      if (own(countries, up)) return up === selectedCountryId ? '' : up;
+      for (const c in countries) if (c !== selectedCountryId && foldName(countries[c].name) === f) return c;
+      const m = mentionedCountries(raw);
+      if (m.length === 1) return m[0];
+      if (fromEngine) return '';
+    }
+    const key = f.slice(0, 40).trim();
+    return !key || key === foldName(state.nation) ? '' : '~' + key;
+  }
+  // Writes an entry in a notebook. A notebook that is full loses its oldest move or talk first, else its oldest entry; when there are too many
+  // notebooks the one written in least recently goes. Returns whether the entry was kept.
+  function memAdd(key, source, text, name) {
+    const x = cleanText(text, MEM_NOTE_LEN);
+    if (!key || !x || !own(MEM_TAGS, source)) return false;
+    if (!own(state.memory, key)) {
+      const keys = Object.keys(state.memory);
+      if (keys.length >= MAX_MEM_BOOKS) delete state.memory[keys.reduce((a, k) => (memLast(k) < memLast(a) ? k : a))];
+      state.memory[key] = { n: key[0] === '~' ? cleanText(name, MEM_NAME_LEN) : '', e: [] };
+    }
+    const book = state.memory[key], entry = { n: ++state.memSeq, w: memDate(), s: source, x };
+    book.e.push(entry);
+    while (book.e.length > MAX_MEM_ENTRIES) {
+      const i = book.e.findIndex(memLow);
+      book.e.splice(i < 0 ? 0 : i, 1);
+    }
+    return book.e.includes(entry);
+  }
+
+  // What the page writes by itself, one function for each source.
+  // A message that was settled: its sender remembers what the player did with it.
+  function rememberMessages(list) {
+    list.forEach(m => {
+      if (own(countries, m.from)) memAdd(m.from, 'm', memLine(`${MSG_TYPES[m.type].label} al giocatore (peso ${m.weight}); il giocatore ${MSG_PLAYER_DID[messageChoice(m)]}`, m.text));
+    });
+  }
+  // A contact between two other nations (the result of applyContacts): both remember it.
+  function rememberContacts(res) {
+    res.list.forEach(c => { const line = memLine(c.head, c.text); memAdd(c.a, 'c', line); memAdd(c.b, 'c', line); });
+  }
+  // The moves the engine reports (otherMoveItems): each nation that can be told apart remembers its own.
+  function rememberMoves(items) {
+    items.forEach(m => { if (m.who) memAdd(memKeyOf(m.who, true), 'o', clip(m.what, MEM_NOTE_LEN), m.who); });
+  }
+  // What was said in a talk: the nation talked to remembers it (under its code, or under the name the player wrote).
+  function rememberTalk(to, you, they) {
+    const said = you ? `il giocatore dice «${clip(you, 50)}»` : 'il giocatore tace';
+    memAdd(memKeyOf(to), 't', `Colloquio: ${said}${they ? `; risposta: «${clip(they, 60)}»` : '; nessuna risposta'}`, to);
+  }
+  // The orders carried out (with the date they were given), and the advice the Consigliere gave.
+  function rememberOrders(list, when) {
+    list.forEach(a => state.orders.push({ w: cleanText(when, MEM_DATE_LEN), x: clip(a, ORDER_MEM_LEN) }));
+    if (state.orders.length > MAX_ORDERS_KEPT) state.orders.splice(0, state.orders.length - MAX_ORDERS_KEPT);
+  }
+  function rememberAdvice(text) {
+    const x = clip(text, ADVICE_MEM_LEN);
+    if (!x) return;
+    state.advice.push({ w: memDate(), x });
+    if (state.advice.length > MAX_ADVICE_KEPT) state.advice.splice(0, state.advice.length - MAX_ADVICE_KEPT);
+  }
+
+  // The engine's notes: [{nazione, nota}]. Each one is checked (a state of the map, or any name in a game without the map; never the player's own nation;
+  // a text) and what is not valid, or comes after the fourth, is left out and counted. Returns the lines for the log and how many were refused.
+  function applyMemoryNotes(list) {
+    const res = { lines: [], refused: 0 };
+    if (!Array.isArray(list)) return res;
+    list.slice(0, MAX_MEM_READ).forEach(item => {
+      if (res.lines.length >= MAX_MEM_NEW) { res.refused++; return; }
+      const ok = !!item && typeof item === 'object' && !Array.isArray(item);
+      const who = ok ? pickKey(item, 'nazione', 'paese', 'stato', 'codice') : undefined;
+      const note = ok ? cleanText(pickKey(item, 'nota', 'testo', 'ricordo', 'memoria'), MEM_NOTE_LEN) : '';
+      const key = typeof who === 'string' ? memKeyOf(who, true) : '';
+      if (!key || !note || !memAdd(key, 'e', note, who)) { res.refused++; return; }
+      res.lines.push(`${memName(key)}: ${note}`);
+    });
+    res.refused += Math.max(0, list.length - MAX_MEM_READ);
+    return res;
+  }
+  const memoryLines = res => res.lines.concat(res.refused ? [`⚠️ Note di memoria scartate: ${res.refused} (nazione non valida o uguale alla tua, testo mancante, oppure oltre il massimo di ${MAX_MEM_NEW} per periodo)`] : []);
+
+  // The entries of a notebook that matter most: the notes, the messages and the contacts before the talks and the moves, the newest first, shown
+  // in the order they were written.
+  function memPick(list, n) {
+    return list.map((e, i) => ({ e, i })).sort((a, b) => (memLow(a.e) ? 1 : 0) - (memLow(b.e) ? 1 : 0) || b.i - a.i).slice(0, n).sort((a, b) => a.i - b.i).map(x => x.e);
+  }
+  const memEntryText = e => `[${e.w}, ${MEM_TAGS[e.s]}] ${e.x}`;
+  const memOrdersText = () => state.orders.slice(-MAX_ORDERS_PROMPT).map(o => `[${o.w}] «${o.x}»`).join('; ');
+  // What the engine reads: the notebooks that matter this time (the states named in the orders and in the story, the ones given room, the senders of
+  // the messages, then the ones written in most recently; the states that no longer exist are left out), the entries that matter most in each, within
+  // MEM_PROMPT_CHARS; and, apart, the last orders carried out. Nothing written yet, nothing said.
+  function memoryBook(extraText, hotCodes) {
+    const map = memGame(), alive = map ? provinceCounts() : null;
+    const hot = new Set(map ? mentionedCountries(extraText).concat(hotCodes || []) : []);
+    const keys = memBooks().filter(k => !map || k[0] === '~' || alive[k]);
+    keys.sort((a, b) => (hot.has(b) ? 1 : 0) - (hot.has(a) ? 1 : 0) || memLast(b) - memLast(a));
+    const lines = [];
+    let used = 0, loose = 0;
+    for (const k of keys) {
+      if (lines.length >= MEM_PROMPT_BOOKS) break;
+      if (k[0] === '~' && map && ++loose > MEM_LOOSE_PROMPT) continue;
+      const who = !map ? memName(k) : k[0] === '~' ? `«${memName(k)}» (nome scritto dal giocatore: può essere uno Stato o un suo capo)` : `${memName(k)} (${k})`;     // without the map every name is plain
+      const line = `- ${who}: ${memPick(state.memory[k].e, MEM_PROMPT_ENTRIES).map(memEntryText).join('; ')}`;
+      if (lines.length && used + line.length > MEM_PROMPT_CHARS) break;
+      lines.push(line); used += line.length;
+    }
+    return lines.length ? `Quaderno delle nazioni (ciò che gli Stati ricordano; tienine conto e non contraddirlo):\n${lines.join('\n')}\n` : '';
+  }
+  const memoryOrders = () => (state.orders.length ? `Ordini recenti del giocatore, già eseguiti: ${memOrdersText()}.\n` : '');
+  function memoryRules(mapMode) {
+    return `Memoria: il quaderno dice ciò che ogni Stato ricorda (promesse, accordi, offese, favori): tienine conto e non contraddirlo finché la storia non lo cambia. `
+      + `Se in questo periodo uno Stato prende o riceve un impegno, una promessa, una minaccia, un favore o un rancore che deve ricordare, scrivilo in "memoria" come {"nazione":"${mapMode ? 'CODICE' : 'nome della nazione'}","nota":"una frase"}: da 0 a ${MAX_MEM_NEW} note, mai sul giocatore stesso. `
+      + `Non ripetere ciò che il gioco registra da solo (${mapMode ? 'messaggi, contatti, colloqui' : 'colloqui'} e mosse delle altre nazioni). Se non c'è nulla da ricordare, "memoria" è un array vuoto.\n`;
+  }
+  const memorySchema = mapMode => `"memoria": [{"nazione": "${mapMode ? 'CODICE' : 'nome della nazione'}", "nota": "da ricordare, una frase"}]`;
+
+  // A nation in a talk reads its own notebook. The first message of a talk carries it with the rest of the context. Later the nation is told only what the
+  // player writes, so when the time has advanced since the last message that carried the context a short note brings it up to date.
+  function memoryForChat(target) {
+    const k = memKeyOf(target), b = k && memBook(k);
+    return b && b.e.length ? ` Ciò che ricordi (dal più vecchio al più recente): ${memPick(b.e, MEM_CHAT_ENTRIES).map(memEntryText).join('; ')}.` : '';
+  }
+  function chatRefresh(target) {
+    return `[Nota del gioco, non citarla: dall'ultimo scambio il tempo è passato; ora è ${state.year}. Stato del mondo: ${state.worldSummary || 'invariato'}.${relationsWith(target)}${memoryForChat(target)} Tienine conto restando in character.]\n\n`;
+  }
+  // The Consigliere reads the notebooks written in most recently, the last orders carried out and the advice he has already given.
+  function memoryForAdvisor() {
+    const keys = memBooks().slice(0, MEM_ADVISOR_BOOKS);
+    return (keys.length ? ` Quaderno delle nazioni (ciò che ricordano): ${keys.map(k => `${memName(k)}: ${memPick(state.memory[k].e, MEM_ADVISOR_ENTRIES).map(memEntryText).join('; ')}`).join(' | ')}.` : '')
+      + (state.orders.length ? ` Ordini già eseguiti di recente: ${memOrdersText()}.` : '')
+      + (state.advice.length ? ` Consigli che hai già dato (non ripeterli: dì se la situazione è cambiata, altrimenti dai un consiglio nuovo): ${state.advice.map(a => `[${a.w}] «${a.x}»`).join(' | ')}.` : '');
+  }
+
+  // In a save: the notebooks as a list (their keys are words, not names of fields). From a save, whatever the document says: a key that is a state of the
+  // map (only in a game on the map) or '~' and words, a known source, a text, at most MAX_MEM_ENTRIES entries in each and MAX_MEM_BOOKS notebooks; the
+  // numbers that order the entries are given again from 1, in the order they had (and the entries of a notebook are put in that order).
+  function memoryForSave() {
+    return memBooks().map(k => ({ k, n: state.memory[k].n, e: state.memory[k].e.map(e => ({ n: e.n, w: e.w, s: e.s, x: e.x })) }));
+  }
+  function cleanMemorySave(raw, map) {
+    const out = {}, all = [];
+    if (!Array.isArray(raw)) return out;
+    raw.slice(0, MAX_MEM_BOOKS).forEach((b, bi) => {
+      if (!b || typeof b !== 'object' || Array.isArray(b) || typeof b.k !== 'string' || own(out, b.k)) return;
+      const coded = /^[A-Z]{3,4}$/.test(b.k);
+      if (coded ? !(map && own(countries, b.k)) : !/^~[a-z0-9 ]{1,40}$/.test(b.k)) return;
+      const e = (Array.isArray(b.e) ? b.e : []).filter(x => x && typeof x === 'object' && !Array.isArray(x) && own(MEM_TAGS, x.s))
+        .map(x => ({ n: Number.isInteger(x.n) && x.n > 0 ? x.n : 0, w: cleanText(x.w, MEM_DATE_LEN), s: x.s, x: cleanText(x.x, MEM_NOTE_LEN) }))
+        .filter(x => x.x).sort((p, q) => p.n - q.n).slice(-MAX_MEM_ENTRIES);        // the oldest first, whatever the order in the document
+      if (!e.length) return;
+      out[b.k] = { n: coded ? '' : cleanText(b.n, MEM_NAME_LEN), e };
+      e.forEach((x, i) => all.push({ x, bi, i }));
+    });
+    all.sort((p, q) => p.x.n - q.x.n || p.bi - q.bi || p.i - q.i).forEach((p, i) => { p.x.n = i + 1; });
+    return out;
+  }
+  // The last orders and the last advice, from a save: a date and a text, the last few.
+  function cleanNotesSave(raw, max, len) {
+    return (Array.isArray(raw) ? raw : []).filter(o => o && typeof o === 'object' && !Array.isArray(o))
+      .map(o => ({ w: cleanText(o.w, MEM_DATE_LEN), x: cleanText(o.x, len) })).filter(o => o.x).slice(-max);
+  }
+
+  // ---- what the player sees: the panel «Quaderno delle nazioni», and the line under the name in a talk ----
+  const memNoteText = () => 'Ogni nazione ricorda ciò che le succede: '
+    + (memGame() ? 'i messaggi che ti ha scritto e come hai risposto, i contatti con altre nazioni, ' : '') + 'i colloqui, le sue mosse e le note che il motore scrive quando c\'è una promessa, un impegno o un rancore da ricordare. '
+    + 'Il motore a ogni «Avanza», i colloqui nella scheda Diplomazia e il Consigliere leggono il quaderno. Le note del motore fanno parte della storia generata, non sono storia vera. '
+    + `Ogni nazione tiene al massimo ${MAX_MEM_ENTRIES} voci: quando sono troppe cadono prima le più vecchie fra mosse e colloqui. `
+    + (memGame() ? 'Un nome che non è uno Stato della mappa (un capo di governo, un titolo) ha un quaderno suo. ' : 'Senza la mappa ogni nome ha il suo quaderno: si ritrova scrivendolo allo stesso modo. ')
+    + 'Il quaderno si salva con la partita.';
+  function renderMemory() {
+    const on = !!gameMode;
+    el('memPanel').classList.toggle('hidden', !on);
+    const list = el('memList');
+    if (!on) { list.textContent = ''; return; }
+    const keys = memBooks(), total = keys.reduce((n, k) => n + state.memory[k].e.length, 0);
+    setTextIf('memGist', keys.length
+      ? `${total === 1 ? '1 voce' : total + ' voci'} nel quaderno, di ${keys.length === 1 ? '1 nazione' : keys.length + ' nazioni'}. Scritta per ultima: ${memName(keys[0])}.`
+      : 'Ancora vuoto: si riempie man mano che passa il tempo, che rispondi ai messaggi e che parli con le nazioni.');
+    setTextIf('memSummary', keys.length ? `Che cosa ricordano le nazioni (${keys.length})` : 'Che cosa ricordano le nazioni');
+    setTextIf('memNote', memNoteText());
+    const frag = document.createDocumentFragment();
+    keys.forEach(k => {
+      const li = document.createElement('li'), ul = document.createElement('ul');
+      li.className = 'mem-item'; ul.className = 'mem-entries';
+      state.memory[k].e.forEach(e => {
+        const item = document.createElement('li');
+        item.append(textNode('span', 'mem-tag', `${e.w} · ${MEM_TAGS[e.s]}: `), document.createTextNode(e.x));
+        ul.appendChild(item);
+      });
+      li.append(textNode('span', 'mem-name', memName(k) + (k[0] === '~' && memGame() ? ' (non è uno Stato della mappa)' : '')), ul);
+      frag.appendChild(li);
+    });
+    list.textContent = '';
+    list.appendChild(frag);
+  }
+  // Under the name in a talk: whose notebook the talk uses.
+  function renderDiploMem() {
+    const t = state.diplo.target, k = t ? memKeyOf(t) : '', b = k && memBook(k), n = b ? b.e.length : 0;
+    setTextIf('diploMemNote', !k ? '' : k[0] !== '~' ? `Quaderno di ${memName(k)}: ${n === 0 ? 'ancora vuoto' : n === 1 ? '1 voce' : n + ' voci'}.`
+      : memGame() ? 'Nome non riconosciuto come uno Stato della mappa: questo interlocutore ha un quaderno suo. Per usare quello di uno Stato scrivi il nome dello Stato (per esempio «Francia»).'
+      : 'Questo interlocutore ha un quaderno suo: si ritrova scrivendo lo stesso nome.');
+  }
+  // Before a talk: the names of the states as suggestions (a game on the map), and what the note under the field says.
+  function prepareDiploSetup() {
+    const list = el('diploNations');
+    list.textContent = '';
+    if (memGame()) Object.keys(countries).filter(c => c !== selectedCountryId).map(c => countries[c].name).sort((a, b) => a.localeCompare(b, 'it'))
+      .forEach(name => { const o = document.createElement('option'); o.value = name; list.appendChild(o); });
+    setTextIf('diploTargetNote', memGame()
+      ? 'Scrivi il nome di uno Stato (per esempio «Francia») per usare i suoi ricordi nel quaderno; con altri nomi, come un capo di governo, il colloquio ha un quaderno suo.'
+      : 'Il colloquio ha un quaderno suo per ogni nome: si ritrova scrivendo lo stesso nome.');
+  }
+
   // ---- what the player sees: the panel «Messaggi in arrivo», and the line next to «Avanza» ----
-  const textNode = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; n.textContent = text; return n; };
+  const textNode =(tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; n.textContent = text; return n; };
   function messageItem(m, off) {
     const c = countries[m.from], T = MSG_TYPES[m.type], st = messageStatus(m), name = c.name;
     const li = document.createElement('li');
@@ -7588,7 +7877,8 @@ window.MAP_SVG = {
     autoSave();
     return true;
   }
-  function newDiplo(target, intro, msgId) { return { target: target || '', history: [], bubbles: [], intro: intro || '', msgId: msgId || '' }; }
+  // seen: the number of times the time had advanced when the nation was last given the context (the first message of a talk, or a note that brings it up to date)
+  function newDiplo(target, intro, msgId) { return { target: target || '', history: [], bubbles: [], intro: intro || '', msgId: msgId || '', seen: 0 }; }
   // «Rispondi»: a talk with the sender opens in the tab Diplomazia, starting from their message. A talk already open for this message is kept.
   function replyToMessage(id) {
     const m = state.inbox.find(x => x.id === id);
@@ -7602,6 +7892,7 @@ window.MAP_SVG = {
       el('diploTargetLabel').textContent = name;
       el('diploSetup').classList.add('hidden'); el('diploChat').classList.remove('hidden');
       el('diploThinking').classList.add('hidden');
+      renderDiploMem();
       addBubble({ w: 'o', t: m.text });
     }
     selectTab('diplo', true);
@@ -7629,19 +7920,20 @@ window.MAP_SVG = {
   }
   const spotlightNations = n => spotlightCodes(n).map(c => countries[c].name);
   // What the other nations did, as the engine reports it ([{nazione, mossa}] or plain sentences): checked and shortened
-  // before it is shown. Anything that is not a move is ignored.
-  function otherMoveLines(list) {
+  // before it is shown. Anything that is not a move is ignored. The items say who did it (a plain sentence has no «who») and what.
+  function otherMoveItems(list) {
     if (!Array.isArray(list)) return [];
-    const lines = [];
+    const items = [];
     for (const m of list.slice(0, MAX_OTHER_MOVES)) {
-      if (typeof m === 'string') { const t = cleanText(m, 300); if (t) lines.push(t); continue; }
+      if (typeof m === 'string') { const t = cleanText(m, 300); if (t) items.push({ who: '', what: t }); continue; }
       if (!m || typeof m !== 'object') continue;
       const who = cleanText(pickKey(m, 'nazione', 'paese', 'stato', 'nome'), 48);
       const what = cleanText(pickKey(m, 'mossa', 'azione', 'descrizione', 'testo'), 280);
-      if (what) lines.push(who ? `${who}: ${what}` : what);
+      if (what) items.push({ who, what });
     }
-    return lines;
+    return items;
   }
+  const otherMoveLines = list => otherMoveItems(list).map(m => (m.who ? `${m.who}: ${m.what}` : m.what));
   // The text the engine receives when the time advances: the state of the world, the player's orders (if any), how the player answered the
   // messages and what was said in the talks, the invitation to the other nations to act freely, and the shape of the answer.
   function turnPrompt(actions, jump, mapMode) {
@@ -7658,16 +7950,18 @@ window.MAP_SVG = {
     // How the player answered the messages and what was said in the talks comes right after the orders, and the last sentence names it: a model
     // reading only the end of the text still has to tell the consequences in the story and in the summary of the world.
     const msgBlock = messagesContext(), talkBlock = talksContext(mapMode);
+    // the notebook of the nations (what each one remembers) and the last orders, if there are any, then how to read it and how to add to it
+    const memData = memoryBook(extraText, spotCodes.concat(state.inbox.map(m => m.from))), memBlock = memData + memoryOrders() + memoryRules(mapMode);
     const covers = ['gli ordini del giocatore'].concat(msgBlock ? ['le sue risposte ai messaggi'] : [], talkBlock ? ['i suoi colloqui'] : [], ['le mosse delle altre nazioni']);
     const coversText = covers.length > 2 ? covers.slice(0, -1).join(', ') + ' e ' + covers[covers.length - 1] : covers.join(' e ');
-    const care = [msgBlock && 'di come il giocatore ha risposto ai messaggi (chi ha avuto un sì, un no o nessuna risposta reagisce di conseguenza)', talkBlock && 'di ciò che si è detto nei colloqui'].filter(Boolean).join(' e ');
+    const care = [msgBlock && 'di come il giocatore ha risposto ai messaggi (chi ha avuto un sì, un no o nessuna risposta reagisce di conseguenza)', talkBlock && 'di ciò che si è detto nei colloqui', memData && 'di ciò che le nazioni ricordano (quaderno)'].filter(Boolean).join(' e ');
     const careText = care ? ` Nella narrativa e nel riepilogo del mondo tieni conto ${care}.` : '';
     return `Sei il motore di gioco di un sandbox di storia alternativa. Il giocatore guida: ${state.nation}. Data attuale: ${state.year}. Premessa: ${state.premise || "nessuna, segui la storia reale finché il giocatore non la devia"}.
 ${mapPart}Stato del mondo finora: ${state.worldSummary || "(inizio partita, nessun evento ancora)"}
-Statistiche attuali (0-100): Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.
+${memBlock}Statistiche attuali (0-100): Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.
 Il tempo avanza di ${jump}. ${orders}
 ${msgBlock}${talkBlock}${others}
-Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto, di tutto ciò che avviene in questo periodo (${coversText}) e aggiorna le statistiche in modo coerente.${careText} Rispondi SOLO con un oggetto JSON: {"evento_titolo": "titolo giornalistico breve, max 6 parole", "narrativa": "3-5 frasi in italiano su cosa succede", "mosse_altre_nazioni": [{"nazione": "nome della nazione", "mossa": "una frase su cosa fa"}], "riepilogo_mondo": "1-2 frasi che aggiornano lo stato del mondo per il turno successivo", "nuovo_anno": "l'anno risultante dopo il salto, come testo breve", "stabilita": numero 0-100, "economia": numero 0-100, "esercito": numero 0-100, "prestigio": numero 0-100${schemaExtra}}`;
+Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto, di tutto ciò che avviene in questo periodo (${coversText}) e aggiorna le statistiche in modo coerente.${careText} Rispondi SOLO con un oggetto JSON: {"evento_titolo": "titolo giornalistico breve, max 6 parole", "narrativa": "3-5 frasi in italiano su cosa succede", "mosse_altre_nazioni": [{"nazione": "nome della nazione", "mossa": "una frase su cosa fa"}], "riepilogo_mondo": "1-2 frasi che aggiornano lo stato del mondo per il turno successivo", "nuovo_anno": "l'anno risultante dopo il salto, come testo breve", "stabilita": numero 0-100, "economia": numero 0-100, "esercito": numero 0-100, "prestigio": numero 0-100${schemaExtra}, ${memorySchema(mapMode)}}`;
   }
 
   advanceBtn.onclick = async () => {
@@ -7685,7 +7979,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     setActionMsg('');
     const actions = state.pending.slice();
     const waiting = state.inbox.slice(), talked = state.talks.slice();         // the messages this turn settles and the talks it hands to the engine
-    const jump = el('jump').value;
+    const jump = el('jump').value, when = state.year;                         // when = the date the orders are given
     const requestSession = gameSession;
     busySession = requestSession;
     setTurnControls(false);
@@ -7704,6 +7998,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
       state.pending = [];                                       // carried out: the orders enter the story
       state.turn += 1;
       actions.forEach(a => addLog({ k: 'a', text: a }));
+      rememberOrders(actions, when);                            // the engine is reminded of them in the turns to come
       state.worldSummary = r.riepilogo_mondo || state.worldSummary;
       if (r.nuovo_anno) { state.year = String(r.nuovo_anno); el('yearLabel').textContent = state.year; }
       s.stabilita = clampStat(r.stabilita, s.stabilita);
@@ -7714,6 +8009,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
       addLog({ k: 't', year: state.year, headline: r.evento_titolo || '', narr: r.narrativa || '(nessuna risposta)' });
       const moves = otherMoveLines(r.mosse_altre_nazioni);
       if (moves.length) addLog({ k: 'n', lines: moves });
+      rememberMoves(otherMoveItems(r.mosse_altre_nazioni));     // each nation remembers its own move (the notebook)
       if (mapMode) {
         const relStart = Object.assign({}, state.rel);          // the relations as they were before this turn
         driftRelations(jump);                                   // time passes: the gaps from the starting values shrink a little
@@ -7723,7 +8019,9 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
         // what the answers to the messages cost or gain (a rule of the game), the same for the contacts between two other nations, then what the
         // engine reports in "relazioni", and last what the territories that changed hands cost (the same)
         const decided = resolveMessages(waiting);
+        rememberMessages(waiting);                              // the senders remember what the player did with their messages
         const contacts = applyContacts(r.contatti);
+        rememberContacts(contacts);                             // and the two nations of each contact remember it
         const asked = applyRelationChanges(r.relazioni);
         const relLines = relationLines(relStart, territoryRelationEffects(before).concat(decided.events, contacts.events, asked.events), asked.refused);
         const cLines = contactLines(contacts);
@@ -7737,6 +8035,8 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
         renderRelations();
         checkGameOver();
       }
+      const noted = memoryLines(applyMemoryNotes(r.memoria));   // what the engine asks the nations to remember (in every game)
+      if (noted.length) addLog({ k: 'q', lines: noted });
       state.talks = state.talks.filter(t => !talked.includes(t));       // the talks handed to the engine are done with; the ones held meanwhile (none can be) stay
     } catch (e) {
       const cancelled = !!(e && e.cancelled);
@@ -7749,6 +8049,8 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
         thinkingEl.classList.add('hidden');
         renderQueue();
         renderMessages();
+        renderMemory();
+        renderDiploMem();                       // the notebook of the nation in the open talk may have changed
         setTurnControls(!gameOver);
         restoreFocus(advanceBtn);               // the button was off while the answer was on its way: the cursor goes back to it
         autoSave();
@@ -7763,11 +8065,12 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     thinkingEl.classList.remove('hidden');
     announce('Il Consigliere sta preparando un consiglio…');
     const s = state.stats;
-    const prompt = `Sei un consigliere storico per chi guida ${state.nation} nell'anno ${state.year}. ${territoryContext()}${relationsSummary()}${messagesSummary()} Stato del mondo: ${state.worldSummary || "inizio partita"}. Statistiche: Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.${state.pending.length ? ` Il giocatore ha già deciso queste azioni per il prossimo periodo (non ripeterle: puoi integrarle o correggerle): ${state.pending.join('; ')}.` : ''} Dai un breve consiglio strategico (2-3 frasi) su cosa potrebbe fare ora, in italiano.`;
+    const prompt = `Sei un consigliere storico per chi guida ${state.nation} nell'anno ${state.year}. ${territoryContext()}${relationsSummary()}${messagesSummary()} Stato del mondo: ${state.worldSummary || "inizio partita"}. Statistiche: Stabilità ${s.stabilita}, Economia ${s.economia}, Esercito ${s.esercito}, Prestigio ${s.prestigio}.${memoryForAdvisor()}${state.pending.length ? ` Il giocatore ha già deciso queste azioni per il prossimo periodo (non ripeterle: puoi integrarle o correggerle): ${state.pending.join('; ')}.` : ''} Dai un breve consiglio strategico (2-3 frasi) su cosa potrebbe fare ora, in italiano.`;
     try {
       const res = await sample(prompt, { cache: false });
       if (requestSession !== gameSession) return;
       addLog({ k: 'v', text: res.text });
+      rememberAdvice(res.text);                 // he will be reminded of it the next time (it is not sent to the engine: the advice changes nothing in the game)
     } catch (e) {
       if (requestSession === gameSession) addLog({ k: 'x', text: e && e.cancelled ? 'Richiesta al Consigliere annullata.' : '⚠️ Consigliere non disponibile ora.' }, false);
     } finally {
@@ -7795,6 +8098,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     diploLogEl.innerHTML = '';
     el('diploSetup').classList.add('hidden');
     el('diploChat').classList.remove('hidden');
+    renderDiploMem();                            // whose notebook this talk uses
   };
   el('diploResetBtn').onclick = () => {
     diplomacySession += 1;                       // an answer still on its way belongs to the talk being closed
@@ -7806,6 +8110,7 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     el('diploThinking').classList.add('hidden');
     el('diploSendBtn').disabled = !sample || gameOver || turnBusy();
     diploLogEl.innerHTML = '';
+    renderDiploMem();
     renderMessages();                            // a message answered in this talk keeps its answer, the button «Rispondi» is free again
     autoSave();
   };
@@ -7824,14 +8129,16 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     addBubble({ w: 'u', t: msg });
 
     const isFirst = state.diplo.history.length === 0;
+    const stale = !isFirst && state.turn > state.diplo.seen;       // the time advanced since the nation was last given the context: a note brings it up to date
     const content = isFirst
-      ? `Sei ${state.diplo.target}, una figura di potere straniera, nell'anno ${state.year}. Il tuo interlocutore guida ${state.nation}. Contesto della partita: ${state.worldSummary || "inizio partita"}. ${territoryContext()}${relationsWith(state.diplo.target)}${state.diplo.intro ? ' ' + state.diplo.intro : ''} Rispondi sempre in character, in italiano, con 2-4 frasi per turno, restando coerente col contesto storico.\n\n${msg}`
-      : msg;
+      ? `Sei ${state.diplo.target}, una figura di potere straniera, nell'anno ${state.year}. Il tuo interlocutore guida ${state.nation}. Contesto della partita: ${state.worldSummary || "inizio partita"}. ${territoryContext()}${relationsWith(state.diplo.target)}${memoryForChat(state.diplo.target)}${state.diplo.intro ? ' ' + state.diplo.intro : ''} Rispondi sempre in character, in italiano, con 2-4 frasi per turno, restando coerente col contesto storico.\n\n${msg}`
+      : (stale ? chatRefresh(state.diplo.target) : '') + msg;
     state.diplo.history.push({ role: 'user', content });
 
     try {
       const res = await sample(state.diplo.history, { cache: false });
       if (!live()) return;
+      if (isFirst || stale) state.diplo.seen = state.turn;           // the context has reached the nation (not if the answer failed: it is sent again)
       state.diplo.history.push({ role: 'assistant', content: res.text });
       addBubble({ w: 'o', t: res.text });
       recordTalk(state.diplo.target, msg, res.text);       // what was said counts for the period: the engine reads it when the time advances
@@ -7849,6 +8156,8 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
         el('diploThinking').classList.add('hidden');
         btn.disabled = gameOver || turnBusy();
         renderMessages();
+        renderMemory();                      // the talk is now in the notebook of the nation
+        renderDiploMem();
         autoSave();
       }
     }
@@ -7880,13 +8189,17 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
         diplo: {
           target: state.diplo.target,
           history: h.length > 20 ? [h[0], { role: 'assistant', content: '(parte precedente della conversazione omessa)' }, ...h.slice(-18)] : h,
-          bubbles: state.diplo.bubbles.slice(-30)
+          bubbles: state.diplo.bubbles.slice(-30),
+          seen: state.diplo.seen                                                   // when the nation was last given the context (see newDiplo)
         }
       };
       if (state.diplo.intro) payload.game.diplo.intro = state.diplo.intro;        // a talk opened from a message: what the other side wrote, and which message
       if (state.diplo.msgId) payload.game.diplo.msgId = state.diplo.msgId;
       if (state.talks.length) payload.game.talks = state.talks.slice(-MAX_TALKS);  // the talks the engine has not read yet
       if (state.msgSeq > 0) payload.game.msgSeq = state.msgSeq;
+      if (Object.keys(state.memory).length) payload.game.memory = memoryForSave();   // the notebook of the nations, as a list
+      if (state.orders.length) payload.game.orders = state.orders.slice(-MAX_ORDERS_KEPT);
+      if (state.advice.length) payload.game.advice = state.advice.slice(-MAX_ADVICE_KEPT);
       if (gameMode === 'fixed') {                                // the relations: only the pairs that differ from the start, and the time not yet counted
         const rels = relationsForSave();
         if (Object.keys(rels).length) payload.game.relations = rels;
@@ -7971,16 +8284,21 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     out.talks = cleanTalksSave(g.talks);
     const seq = Number(g.msgSeq);
     out.msgSeq = Math.max(Number.isFinite(seq) ? Math.max(0, Math.min(1000000, Math.floor(seq))) : 0, ...out.inbox.map(m => Number(m.id.slice(1))));
+    // the notebook of the nations, the last orders carried out and the last advice (saves from before them have none)
+    out.memory = cleanMemorySave(g.memory, g.mode === 'fixed');
+    out.orders = cleanNotesSave(g.orders, MAX_ORDERS_KEPT, ORDER_MEM_LEN);
+    out.advice = cleanNotesSave(g.advice, MAX_ADVICE_KEPT, ADVICE_MEM_LEN);
     out.log = list(g.log).filter(e => e && typeof e === 'object' && typeof e.k === 'string').slice(-200).map(e =>
       e.k === 't' ? { k: 't', year: str(e.year), headline: str(e.headline), narr: str(e.narr) }
-      : e.k === 'g' || e.k === 'n' || e.k === 'r' || e.k === 'm' || e.k === 'c' ? { k: e.k, lines: list(e.lines).slice(0, 60).map(str).filter(l => l.trim()) }
+      : e.k === 'g' || e.k === 'n' || e.k === 'r' || e.k === 'm' || e.k === 'c' || e.k === 'q' ? { k: e.k, lines: list(e.lines).slice(0, 60).map(str).filter(l => l.trim()) }
       : { k: e.k, text: str(e.text) }).filter(e => !(e.lines && !e.lines.length));      // a block of lines with no line is not shown
     if (g.diplo && typeof g.diplo === 'object') out.diplo = {
       target: str(g.diplo.target),
       history: list(g.diplo.history).filter(m => m && typeof m === 'object' && typeof m.content === 'string' && (m.role === 'user' || m.role === 'assistant')).slice(-40).map(m => ({ role: m.role, content: m.content })),
       bubbles: list(g.diplo.bubbles).filter(b => b && typeof b === 'object').slice(-100).map(b => ({ w: b.w === 'u' ? 'u' : 'o', t: str(b.t) })),
       intro: cleanText(g.diplo.intro, 700),
-      msgId: typeof g.diplo.msgId === 'string' && /^m\d{1,7}$/.test(g.diplo.msgId) ? g.diplo.msgId : ''
+      msgId: typeof g.diplo.msgId === 'string' && /^m\d{1,7}$/.test(g.diplo.msgId) ? g.diplo.msgId : '',
+      seen: Number.isInteger(g.diplo.seen) && g.diplo.seen >= 0 && g.diplo.seen <= 1000000 ? g.diplo.seen : null      // null: a save from before it (the game's own turn is taken)
     };
     return out;
   }
@@ -8022,17 +8340,21 @@ Genera le conseguenze narrative, plausibili e coerenti con quanto già accaduto,
     state.turn = Number.isFinite(g.turn) ? g.turn : 0;
     state.rel = g.relations || {}; state.relClock = g.relClock || 0;
     state.msgSeq = g.msgSeq || 0; state.talks = g.talks || [];
+    state.memory = g.memory || {}; state.orders = g.orders || []; state.advice = g.advice || [];
+    state.memSeq = Object.keys(state.memory).reduce((m, k) => Math.max(m, ...state.memory[k].e.map(e => e.n)), 0);
     if (g.diplo) state.diplo = {
       target: String(g.diplo.target || ''),
       history: Array.isArray(g.diplo.history) ? g.diplo.history : [],
       bubbles: Array.isArray(g.diplo.bubbles) ? g.diplo.bubbles : [],
-      intro: String(g.diplo.intro || ''), msgId: String(g.diplo.msgId || '')
+      intro: String(g.diplo.intro || ''), msgId: String(g.diplo.msgId || ''),
+      seen: Number.isInteger(g.diplo.seen) ? g.diplo.seen : state.turn
     };
     gameOver = !!g.over;
     mapGameStarted = g.mode === 'fixed';
     selectedCountryId = (mapGameStarted && own(countries, data.selectedCountryId)) ? data.selectedCountryId : null;
     state.inbox = mapGameStarted ? (g.inbox || []).filter(m => m.from !== selectedCountryId) : [];      // a state does not write to itself
     if (!state.inbox.some(m => m.id === state.diplo.msgId)) state.diplo.msgId = '';                     // the message of an open talk is gone
+    if (selectedCountryId) delete state.memory[selectedCountryId];                                      // the player's own nation has no notebook
 
     [logEl, diploLogEl].forEach(n => n.setAttribute('aria-live', 'off'));       // a loaded game is not read out entry by entry
     logEl.innerHTML = '';
